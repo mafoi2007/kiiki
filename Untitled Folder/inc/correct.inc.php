@@ -1,0 +1,142 @@
+<?php
+	function e1_1()
+		{
+		// Le corrigé de l'exercice 1
+		
+		if(isset($_POST['e1_1']))
+			{
+			// On récupère toutes les variables postées
+			echo "<pre>";
+			print_r($_POST);
+			echo "</pre>";
+			
+			$rep1 = htmlspecialchars($_POST['rep1']);		
+			$rep2 = $_POST['rep2'];
+			$rep3 = $_POST['rep3'];
+			$rep4 = $_POST['rep4'];
+			$rep5 = $_POST['rep5'];
+			$rep6 = $_POST['rep6'];
+			$rep7 = $_POST['rep7'];
+			$rep8 = $_POST['rep8'];
+			$rep9 = $_POST['rep9'];
+			$rep10 = $_POST['rep10'];
+			
+			// Je compare avec les reponses du corrigé 
+			$corr1 = "c'est"; if($rep1==$corr1){ $r1=1;} else{ $r1=0;}
+			$corr2 = "s'est"; if($rep2==$corr2){ $r2=1;} else{ $r2=0;}
+			$corr3 = "c'est"; if($rep3==$corr3){ $r3=1;} else{ $r3=0;}
+			$corr4 = "ses";   if($rep4==$corr4){ $r4=1;} else{ $r4=0;}
+			$corr5 = "ses";   if($rep5==$corr5){ $r5=1;} else{ $r5=0;}
+			$corr6 = "c'est"; if($rep6==$corr6){ $r6=1;} else{ $r6=0;}
+			$corr7 = "s'est";  if($rep7==$corr7){ $r7=1;} else{ $r7=0;}
+			$corr8 = "ses";   if($rep8==$corr8){ $r8=1;} else{ $r8=0;}
+			$corr9 = "ces";  if($rep9==$corr9){ $r9=1;} else{ $r9=0;}
+			$corr10 = "ces";  if($rep10==$corr10){ $r10=1;} else{ $r10=0;}
+			
+			//et j'attribue le point.
+			$r = $r1 + $r2 + $r3 + $r4 + $r5 + $r6 + $r7 + $r8 + $r9 + $r10;
+			echo "<h4> Pour cet exercice, vous avez eu la note de ".$r." / 10.</h4>";
+			echo "<h5> <a href=''>Refaire un autre exercice</a>.</h5>";
+			
+			
+			
+			}
+		}
+		
+		
+		
+		
+		
+	function e1_2()
+		{
+		// Le corrigé de l'exercice 2
+		
+		if(isset($_POST['e1_2']))
+			{
+			// On récupère toutes les variables postées
+			echo "<pre>";
+			print_r($_POST);
+			echo "</pre>";
+			
+			$rep1 = htmlspecialchars($_POST['rep1']);		
+			$rep2 = htmlspecialchars($_POST['rep2']);
+			$rep3 = htmlspecialchars($_POST['rep3']);
+			$rep4 = htmlspecialchars($_POST['rep4']);
+			$rep5 = htmlspecialchars($_POST['rep5']);
+			$rep6 = htmlspecialchars($_POST['rep6']);
+			$rep7 = htmlspecialchars($_POST['rep7']);
+			$rep8 = htmlspecialchars($_POST['rep8']);
+			$rep9 = htmlspecialchars($_POST['rep9']);
+			$rep10 = htmlspecialchars($_POST['rep10']);
+			
+			// Je compare avec les reponses du corrigé 
+			$corr1 = "sait"; if($rep1==$corr1){ $r1=1;} else{ $r1=0;}
+			$corr2 = "ses"; if($rep2==$corr2){ $r2=1;} else{ $r2=0;}
+			$corr3 = "c'est"; if($rep3==$corr3){ $r3=1;} else{ $r3=0;}
+			$corr4 = "c'est";   if($rep4==$corr4){ $r4=1;} else{ $r4=0;}
+			$corr5 = "s'est";   if($rep5==$corr5){ $r5=1;} else{ $r5=0;}
+			$corr6 = "c'est"; if($rep6==$corr6){ $r6=1;} else{ $r6=0;}
+			$corr7 = "sait";  if($rep7==$corr7){ $r7=1;} else{ $r7=0;}
+			$corr8 = "sais";   if($rep8==$corr8){ $r8=1;} else{ $r8=0;}
+			$corr9 = "s'est";  if($rep9==$corr9){ $r9=1;} else{ $r9=0;}
+			$corr10 = "ses";  if($rep10==$corr10){ $r10=1;} else{ $r10=0;}
+			
+			//et j'attribue le point.
+			$r = $r1 + $r2 + $r3 + $r4 + $r5 + $r6 + $r7 + $r8 + $r9 + $r10;
+			echo "<h4> Pour cet exercice, vous avez eu la note de ".$r." / 10.</h4>";
+			echo "<h5> <a href=''>Refaire un autre exercice</a>.</h5>";
+			}
+		}
+		
+		
+		
+		
+	
+	function e1_3()
+		{
+		// Le corrigé de l'exercice 3
+		
+		if(isset($_POST['e1_3']))
+			{
+			// On récupère toutes les variables postées
+			echo "<pre>";
+			print_r($_POST);
+			echo "</pre>";
+			
+			$rep1 = htmlspecialchars($_POST['rep1']);		
+			$rep2 = htmlspecialchars($_POST['rep2']);
+			$rep3 = htmlspecialchars($_POST['rep3']);
+			$rep4 = htmlspecialchars($_POST['rep4']);
+			$rep5 = htmlspecialchars($_POST['rep5']);
+			$rep6 = htmlspecialchars($_POST['rep6']);
+			$rep7 = htmlspecialchars($_POST['rep7']);
+			$rep8 = htmlspecialchars($_POST['rep8']);
+			$rep9 = htmlspecialchars($_POST['rep9']);
+			$rep10 = htmlspecialchars($_POST['rep10']);
+			
+			// Je compare avec les reponses du corrigé 
+			$corr1 = "s'est"; if($rep1==$corr1){ $r1=1;} else{ $r1=0;}
+			$corr2 = "c'est"; if($rep2==$corr2){ $r2=1;} else{ $r2=0;}
+			$corr3 = "c'est"; if($rep3==$corr3){ $r3=1;} else{ $r3=0;}
+			$corr4 = "s'est";   if($rep4==$corr4){ $r4=1;} else{ $r4=0;}
+			$corr5 = "ses";   if($rep5==$corr5){ $r5=1;} else{ $r5=0;}
+			$corr6 = "c'est"; if($rep6==$corr6){ $r6=1;} else{ $r6=0;}
+			$corr7 = "sais";  if($rep7==$corr7){ $r7=1;} else{ $r7=0;}
+			$corr8 = "s'est";   if($rep8==$corr8){ $r8=1;} else{ $r8=0;}
+			$corr9 = "c'est";  if($rep9==$corr9){ $r9=1;} else{ $r9=0;}
+			$corr10 = "s'est";  if($rep10==$corr10){ $r10=1;} else{ $r10=0;}
+			
+			//et j'attribue le point.
+			$r = $r1 + $r2 + $r3 + $r4 + $r5 + $r6 + $r7 + $r8 + $r9 + $r10;
+			echo "<h4> Pour cet exercice, vous avez eu la note de ".$r." / 10.</h4>";
+			echo "<h5> <a href=''>Refaire un autre exercice</a>.</h5>";
+			}
+		}
+		
+		
+		
+	
+	function e1_4()
+		{
+		// Le corrigé de l'exercice 4
+		}

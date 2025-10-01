@@ -1,0 +1,86 @@
+﻿<?php
+	session_start();
+	// Chargement des paramètres de connexion
+	require_once('inc/connect.inc.php');
+	// Appel de la classe devant gérer l'authentification
+	$gestionnaire = new gestionnaire();
+	//require_once('inc/fonction.inc.php');
+	
+	
+	//Si on n'a pas de variables de session, on affiche le formulaire
+	if(!isset($_SESSION['poste']))
+		{
+?>
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="styles/style.css" />
+	<link rel ="shortcut icon" type="image/x-icon" href="images/banniere.png" />
+	<link type="text/javascript" src="javascript/js.js" />
+	<title>Mafoi 1.0, Connectez-vous</title>
+</head>
+
+<body>
+	
+<form method='post' action='' id='connect'>
+	<h4>Connectez-vous à votre espace de gestion</h4>
+	<img src='images/cle.png' alt="connection">
+	<?php $gestionnaire->authentification($_POST['connexion']); ?>
+	<p>Login : &nbsp;&nbsp;&nbsp;&nbsp;
+	<input 
+		type='text' 
+		name='login' 
+		id='login' 
+		placeholder="Votre nom d'utilisateur" 
+		value = "<?php if(isset($_POST['login'])) { echo $_POST['login']; } ?>" required /> </p>
+	<p>Mot de Passe : 
+	<input 
+	type='password' 
+	name='mdp' 
+	id='mdp' 
+	placeholder='Votre mot de passe' required />
+	<p><input type='submit' value='Se connecter' name='connexion' /> &nbsp;&nbsp;&nbsp;<input type='reset' value='Réinitialiser' /></p>
+	<h5>Mot de passe oublié ? Engager la procédure de réinitilisation</h5>
+</form>
+
+
+<?php
+	}
+		
+	//Si on avait déjà les variables de connexion, on est rédirigé automatiquement vers sa page.
+	elseif(isset($_SESSION['poste']))
+		{
+		//on peut être professeur, admin, sg, censeur, proviseur
+		
+		if($_SESSION['poste']=='prof')
+			{
+			header('Location:prof/');
+			}
+		elseif($_SESSION['poste']=='admin')
+			{
+			header('Location:admin/');
+			}
+		elseif($_SESSION['poste']=='sg')
+			{
+			header('Location:sg/');
+			}
+		elseif($_SESSION['poste']=='censeur')
+			{
+			header('Location:censeur/');
+			}		
+		elseif($_SESSION['poste']=='proviseur')
+			{
+			
+			header('Location:proviseur/');
+			}
+		//Sinon on renvoie un message d'erreur car la connexion est frauduleuse
+		else
+			{
+			session_destroy();
+			echo "<h4 class='alert'>Vous tentez d'avoir une connexion non autorisée. Vous serez déconnecté.</h4>";
+			exit;
+			}
+		}

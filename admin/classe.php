@@ -1,0 +1,92 @@
+﻿<?php
+	require('../inc/connect.inc.php');
+	session_start();
+	
+	$config = new config();
+	$gestionnaire = new gestionnaire();
+	if($_SESSION['message']){
+		echo "<script>alert('".$_SESSION['message']."');</script>";
+	}
+	unset($_SESSION['message']);
+	if($_SESSION['poste']=='admin')
+		{
+	
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="../styles/style.css" />
+	<link rel ="shortcut icon" type="image/x-icon" href="../images/banniere.png" />
+	<link type="text/javascript" src="../javascript/js.js" />
+	<title>Configuration Classe</title>
+</head>
+
+<body>
+	<?php
+		require('../part/entete.php');
+		
+		require('../part/menu.php');
+	?>
+	
+	<div id="body">
+		<h2>Ce module a pour but de permettre à l'administrateur d'ajouter ou de supprimer une classe de la Base de Données
+		de l'établissement.</h2>
+		<ul>
+			<li><h3><a href="classe.php?choix=<?php echo sha1('ajout'); ?>#body2" title="Ajouter une ou plusieurs classes à l'établissement">Ajouter une classe</a></h3></li>
+			
+			<li><h3><a href="classe.php?choix=<?php echo sha1('consult'); ?>#body2" title="Consulter les classes de la Base de Données">Consulter la liste des classes</a></h3></li>
+		</ul>
+	</div>
+	
+	
+	<div id="body2">
+	<?php
+		if(isset($_GET['choix'])) // ON A FAIT UN CHOIX SUR LA GESTION DES CLASSES: SOIT ON VEUT AJOUTER(FORMULAIRE D'AJOUT), SOIT ON VEUT SUPPR
+			{
+	
+			if($_GET['choix']==sha1('ajout'))
+				{
+				include('classe/formAjout.php');
+				}
+			elseif($_GET['choix']==sha1('suppr'))
+				{
+				include('classe/formSuppr.php');
+				}
+			elseif($_GET['choix']==sha1('consult'))
+				{
+				include('classe/formConsult.php');
+				}
+			elseif($_GET['choix']==sha1('maj'))
+				{
+				include('classe/formMaj.php');
+				}
+			else
+				{
+				echo "<h3 class='alert'>Désolé, l'application ne prend pas en charge votre choix.</h3>";
+				}
+	
+			}
+	?>
+	
+	</div>
+		
+	
+	
+	<?php
+		require('../part/footer.php');
+	?>
+</body>
+</html>
+
+
+
+<?php
+		}
+	else	// Si on est connecté mais qu'on n'est pas administrateur de l'application, la page ne doit pas s'afficher.
+	/* Ceci a été conçu dans le but d'empêcher que quelqu'un réussisse à se connecter à la BD
+	et pense qu'il a accès à tous les espaces. Un admin ne peut être qu'admin et un enseignant ne peut être qu'un enseignant
+	*/
+		{
+		echo $erreur_admin;
+		}

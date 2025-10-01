@@ -1,0 +1,157 @@
+<html>
+	<head>
+		<title>Initialisation de l'application</title>
+		<meta 
+			http-equiv="Content-Type" 
+			content="text/html; charset=utf-8" />
+		<link 
+			rel="stylesheet" 
+			type="text/css" 
+			href="styles/style.css" />
+		<link 
+			rel ="shortcut icon" 
+			type="image/x-icon" 
+			href="images/banniere.png" />
+		<link type="text/javascript" src="javascript/js.js" />
+		
+	</head>
+	<body>
+		<article id='connect'>
+		<h1>Initialisation de l'application Noteplus 1.0</h1>
+		<form method='post' action='trait.php'>
+		<table border='0' align='center'>
+			<tr>
+				<td>Année Scolaire :</td>
+				<td> &nbsp; &nbsp; &nbsp; &nbsp;</td>
+				<td><select name='as_debut'>
+					<?php 
+					for($a=DATE('Y')-2;$a<=DATE('Y')+1;$a++){
+						echo "<option value='";
+						echo $a;
+						echo "'>".$a."</option>";
+					}					
+					?>
+					<option selected>-Année Debut-</option>
+				</select>
+				<select name='as_fin'>
+					<?php 
+					for($a=DATE('Y')-1;$a<=DATE('Y')+2;$a++){
+						echo "<option value='";
+						echo $a;
+						echo "'>".$a."</option>";
+					}					
+					?>
+					<option selected>-Année Fin-</option>
+				</select>
+				</td>
+			</tr>
+			
+			<tr>
+				<td>Libellé Ministère : </td>
+				<td> &nbsp; &nbsp; &nbsp; &nbsp;</td>
+				<td><input 
+				type='text' 
+				name='ministere' 
+				required /></td>
+			</tr>
+			
+			<tr>
+				<td>Libellé Region : </td>
+				<td> &nbsp; &nbsp; &nbsp; &nbsp;</td>
+				<td><select name='region'>
+					<?php 
+						$region = array('','Adamaoua','Centre','Est',
+						'Extrême Nord','Littoral','Nord','Nord - Ouest','Ouest',
+						'Sud - Ouest','Sud');
+					for($a=1;$a<count($region);$a++){
+						echo "<option value='";
+						echo $region[$a];
+						echo "'>".$region[$a]."</option>";
+					}					
+					?>
+					<option selected>-votre region-</option>
+				</select></td>
+			</tr>
+			
+			<tr>
+				<td>Libellé Département : </td>
+				<td> &nbsp; &nbsp; &nbsp; &nbsp;</td>
+				<td><input 
+				type='text' 
+				name='departement' 
+				required /></td>
+			</tr>
+			
+			<tr>
+				<td>Lieu du <b>Fait à</b>  :</td>
+				<td> &nbsp; &nbsp; &nbsp; &nbsp;</td>
+				<td><input 
+				type='text' 
+				name='arrondissement' 
+				id='arrondissement' /></td>
+			</tr>
+			
+			<tr>
+				<td>Libellé Etablissement : </td>
+				<td> &nbsp; &nbsp; &nbsp; &nbsp;</td>
+				<td><input 
+				type='text' 
+				name='etablissement' 
+				id='etablissement' /></td>
+			</tr>
+			
+			<tr>
+				<td>Contact :</td>
+				<td> &nbsp; &nbsp; &nbsp; &nbsp;</td>
+				<td><input 
+				type='text' 
+				name='contact' 
+				placeholder='000-000-000' 
+				id='contact' /></td>
+			</tr>
+			
+			<tr>
+				<td>Votre établissement est un : </td>
+				<td> &nbsp; &nbsp; &nbsp; &nbsp;</td>
+				<td><select name='type_ets'>
+					<option selected>-Type établissement-</option>
+					<option value='ces'>Un CES</option>
+					<option value='lycee'>Un Lycée</option>
+					<option value='college'>Un Collège Privé</option>
+				</select></td>
+			</tr>
+			
+			<tr>
+				<td>Nom du signataire des bulletins : </td>
+				<td> &nbsp; &nbsp; &nbsp; &nbsp;</td>
+				<td><input 
+				type='text' 
+				name='nom_signataire_bulletin' 
+				required /></td>
+			</tr>
+			
+			<tr>
+				<td>Le signataire des bulletins est  :</td>
+				<td> &nbsp; &nbsp; &nbsp; &nbsp;</td>
+				<td><select name='sexe_signataire_bulletin'>
+					<option selected>-Sexe Signataire-</option>
+					<option value='M'>Un homme</option>
+					<option value='F'>Une Femme</option>
+				</select></td>
+			</tr>
+			
+			<tr>
+				<td colspan='3' align='center'>
+					<input 
+						type='submit' 
+						name='init' 
+						value="Debuter l'année Scolaire" /></td>
+			</tr>
+		</table>
+			
+		
+		</form>
+		</article>
+		
+	</body>
+</html>

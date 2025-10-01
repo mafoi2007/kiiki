@@ -1,0 +1,37 @@
+<?php
+	session_start();
+	
+	
+		require_once('inc/connect.inc.php');
+		// Appel de la classe devant gérer l'authentification
+		$gestionnaire = new gestionnaire();
+		// Si on n'a pas de variables de session, on affiche le formulaire
+		if(!isset($_SESSION['poste'])){
+			require_once('formConnect.php');
+		}
+		// Si on avait déjà les variables de connexion, on est rédirigé
+		// automatiquement vers sa page.
+		elseif(isset($_SESSION['poste'])){
+			// on peut être professeur, admin, sg, censeur, proviseur
+			if($_SESSION['poste']=='prof'){
+				header('Location:prof/');
+			}
+			elseif($_SESSION['poste']=='admin'){
+				header('Location:admin/');
+			}
+			elseif($_SESSION['poste']=='censeur'){
+				header('Location:censeur/');
+			}
+			elseif($_SESSION['poste']=='sg'){
+				header('Location:sg/');
+			}
+			elseif($_SESSION['poste']=='proviseur'){
+				header('Location:proviseur/');
+			}
+			// Sinon on renvoie un message d'erreur car la 
+			// connexion est frauduleuse
+			else{
+				session_destroy();
+				exit;
+			}
+		}

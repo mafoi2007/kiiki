@@ -1,0 +1,14 @@
+<?php
+
+//Si on n'a pas encore choisi le gestionnaire à mettre à jour
+if(!isset($_GET['login']))
+	{
+	echo "Pas de Gestionnaire choisi";
+	}
+	
+
+// On a choisi le gestionnaire à mettre à jour
+elseif(isset($_GET['login']))
+	{
+	echo "On a choisi le gestionnaire";
+	}

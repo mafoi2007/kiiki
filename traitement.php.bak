@@ -1,0 +1,550 @@
+﻿<?php 
+	require_once('inc/connect.inc.php');
+	session_start();
+	
+	$config = new config();
+	$gestionnaire = new gestionnaire();
+	$note = new note();
+	
+	
+	/********************************************
+	*********************************************
+	*********************************************
+			Configuration des élèves		
+	**********************************************
+	**********************************************
+	*********************************************/
+	
+	if(isset($_REQUEST['ajout_eleve'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		
+		$config->ajouterEleve($source,
+								$_REQUEST['matricule'],
+								$_REQUEST['nom'],
+								$_REQUEST['prenom'],
+								$_REQUEST['sexe'],
+								$_REQUEST['date_naissance'],
+								$_REQUEST['lieu_naiss'],
+								$_REQUEST['classe'],
+								$_REQUEST['adresse'],
+								$_REQUEST['redoublant']);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	if(isset($_REQUEST['maj'])){
+		$source = 'admin/eleve.php';
+		$choix = $_REQUEST['maj'];
+		// On veut supprimer l'élève 
+		if($choix=='Supprimer'){
+			$config->supprimerEleve($_POST['idEleve']);
+		}
+		elseif($choix=='Mettre à jour'){
+			echo '<pre>';
+			print_r($_REQUEST);
+			$config->updEleve($_REQUEST['matricule'],
+							$_REQUEST['nom'],
+							$_REQUEST['prenom'],
+							$_REQUEST['sexe'],
+							$_REQUEST['date_naissance'],
+							$_REQUEST['lieu_naissance'],
+							$_REQUEST['classe'],
+							$_REQUEST['statut'],
+							$_REQUEST['idEleve'],
+							$_REQUEST['adresse_parent']);
+		}
+		header('Location:'.$source);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*********************************************
+	***************************************************
+	**********************************************
+	***		Configuration des classes		************
+	********************************************
+	***********************************************
+	****************************************************/
+	
+	if(isset($_REQUEST['ajout_classe'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		
+		$config->ajouterClasse($source,
+								$_REQUEST['nom_classe'],
+								$_REQUEST['code_classe'],
+								$_REQUEST['niveau_classe']);
+	}
+	
+	
+	
+	
+	if(isset($_REQUEST['addpp'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		$config->ajouterProfPrincipal($source,
+										$_REQUEST['cls'], 
+										$_REQUEST['prof']);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*********************************************
+	**********************************************
+	********************************************
+	******		Configuration des matières		************
+	*******************************************
+	***********************************************
+	***********************************************/
+	
+	if(isset($_REQUEST['ajout_matiere'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		
+		$config->ajouterMatiere($source,
+								$_POST['nom_matiere'],
+								$_POST['code_matiere']);
+	}
+	
+	
+	
+	
+	if(isset($_REQUEST['updmatiereclasse'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		
+		$config->addProfClasse($source, 
+								$_POST['matiere'],
+								$_POST['prof'],
+								$_POST['cls']);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/********************************************
+	*********************************************
+	************************************************
+			Configuration des gestionnaires		********************
+	*************************************************
+	*******************************************
+	*********************************************/
+	if(isset($_REQUEST['ajout_gestionnaire'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		
+		$config->ajouterGestionnaire($source,
+								$_POST['nom'],
+								$_POST['prenom'],
+								$_POST['sexe'],
+								$_POST['poste'],
+								$_POST['login'],
+								$_POST['mdp'],
+								$_POST['mdp_confirm']);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/***************************************
+	********************************************************
+	*******************************************************
+			Configuration des périodes			********************
+	************************************************
+	**************************************************
+	***********************************************/
+	
+	if(isset($_REQUEST['activer'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		
+		$config->ouvrirPeriode($source,
+								$_POST['sequence'],
+								$_POST['nbjour']);
+	}
+	
+	if(isset($_REQUEST['desactiver'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		$config->fermerPeriode($source,
+								$_POST['sequence']);
+								
+	}
+	
+	
+	
+	
+	
+	
+	
+	/**********************************************
+	************************************************
+	******************************************
+		Configuration spécifique			********************
+	*********************************************
+	************************************************
+	*****************************************/
+	
+	if(isset($_REQUEST['addmatcls'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		$config->addMatClasse($source,
+								$_POST['classe'],
+								$_POST['matiere'],
+								$_POST['coef'],
+								$_POST['groupe']
+								);
+	}
+	
+	
+	
+	
+	/**************************************
+	************************************************
+	*********************************************
+			TRAITEMENT DES NOTES GLE			********************
+	**************************************************
+	*****************************************
+	**********************************************/
+	
+	
+	/*On veut enregistrer les notes saisies*/
+	if(isset($_REQUEST['addnt'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		$note->ajouterNote($source, 
+							$_POST['classe'],
+							$_POST['matiere'],
+							$_POST['periode'],
+							$_POST['eleve'],
+							$_POST['note']
+							);
+	}
+	
+	
+	
+	/*On veut modifier les notes saisies */
+	if(isset($_REQUEST['updnt'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		$note->modifierNote($source,
+								$_POST['eleve'],
+								$_POST['note']);
+	
+							
+	}
+	
+	
+	
+	
+	/* On veut supprimer les notes de la Séquence pour la classe et la matière */
+	if(isset($_REQUEST['delnt'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		$note->supprimerNote($source,
+								$_POST['classe'],
+								$_POST['periode'],
+								$_POST['matiere']);
+	}
+	
+	
+	
+	/* On veut copier les notes d'une séquence à l'autre */
+	if(isset($_REQUEST['cpnt'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		$note->copierNote($source, 
+							$_POST['matiere'],
+							$_POST['classe'],
+							$_POST['sequence_depart'],
+							$_POST['sequence_cible']);
+	}
+	
+	
+	
+	
+	if(isset($_REQUEST['TraiterNoteSequentielle'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		$note->traiterNoteSequence($source,
+									$_POST['periode'],
+									$_POST['classe']);
+	}
+	
+	
+	
+	
+	if(isset($_REQUEST['TraiterMoyenneSequentielle'])){
+		$source = $_SERVER['HTTP_REFERER'];
+		echo '<pre>';
+		print_r($_REQUEST);
+		$note->traiterMoyenneSequence($source,
+									$_POST['periode'],
+									$_POST['classe']);
+	}
+	
+	
+	
+	
+	
+	
+	
+	/***************************************
+	******************************************
+	********************************************
+					GENERATION DE PDF			
+	********************************************
+	********************************************
+	********************************************/
+	
+	
+	
+	
+	
+	if(isset($_POST['print'])){
+		// On charge les informations relatives à l'établissement présente en BD
+		$infoEts = $config->chargerInformations();
+		$_SESSION['ministere'] = strtoupper(utf8_decode($infoEts['nom_ministere']));
+		$_SESSION['pays'] = $infoEts['nom_pays'];
+		$_SESSION['ets'] = $infoEts['nom_ets'];
+		$_SESSION['devise'] = $infoEts['nom_devise'];
+		$_SESSION['contact'] = '';
+		$_SESSION['signataire'] = $infoEts['titre_signataire'];
+		$_SESSION['arrondissement'] = $infoEts['arrondissement'];
+		$_SESSION['as'] = $infoEts['annee_scolaire'];
+		
+		/*---------------------------------------------------------
+		------------------------------------------------------------
+		-----------------------------------------------------------
+		On veut imprimer la liste des élèves
+		-------------------------------------------------------------
+		-----------------------------------------------------------*/
+		if($_POST['to_print']=='listeEleve'){
+			$object = $_POST['object'];
+			$liste = $config->listeEleve($object,'non_supprime');
+			$infoListe = $config->infoEleveClasse($object,'non_supprime');
+			$_SESSION['liste'] = $liste;
+			$_SESSION['infoListe'] = $infoListe;
+			$_SESSION['print'] = 'listeEleve';
+			// echo '<pre>';print_r($infoEts);
+			header('Location:print_pdf.php');
+		}
+		/*---------------------------------------------------------
+		------------------------------------------------------------
+		-----------------------------------------------------------
+		On veut imprimer les relevés de notes
+		-------------------------------------------------------------
+		-----------------------------------------------------------*/ 
+		elseif($_POST['to_print']=='ReleveNote'){
+			$object = $_POST['object'];
+			$liste = $config->listeEleve($object,'non_supprime');
+			$_SESSION['liste'] = $liste;
+			$_SESSION['print'] = 'ReleveNote';
+			// echo '<pre>';print_r($liste);
+			header('Location:print_pdf.php');
+		}
+		/*---------------------------------------------------------
+		------------------------------------------------------------
+		-----------------------------------------------------------
+		On veut visualiser les notes séquentielles
+		-------------------------------------------------------------
+		-----------------------------------------------------------*/ 
+		// 
+		elseif($_POST['to_print']=='VisualiserNoteSequentielle'){
+			// On envoie les notes dans la table créée spécialement 
+			// pour la circonstance 
+			
+			$object = $_POST['classe'];
+			$periode = $_POST['periode'];
+			$note->viewNoteSequentielle($periode, $object);
+			// On tente d'extraire : les noms des colonnes, les valeurs des lignes
+			$nomTable = "view_sequence_".$periode."_".$object;
+			$sql = "SELECT * FROM ".$nomTable;
+			$req = mysql_query($sql);
+			$nbCol = mysql_num_fields($req) - 7;  // Nombre de colonnes
+			for($a=7;$a<$nbCol+7;$a++){
+				$nomCol[] = mysql_field_name($req,$a);
+			}
+			$nbLigne = mysql_num_rows($req);
+			for($e=0;$e<$nbLigne;$e++){
+				$ligne[] = mysql_fetch_assoc($req);
+			}
+			
+			$_SESSION['print'] ='VisualiserNoteSequentielle';
+			$_SESSION['classe'] = $object;
+			$_SESSION['sequence'] = $periode;
+			$_SESSION['nbCol'] = $nbCol;
+			$_SESSION['nomCol'] = $nomCol;
+			$_SESSION['nbLn'] = $nbLigne;
+			$_SESSION['ligne'] = $ligne;
+			// echo $nbLigne;
+			// echo '<pre>';print_r($_SESSION['ligne']);
+			header('Location:print_pdf_landscape.php');
+		}
+		
+		/*********************************************
+		En construction
+		*****************************/
+		elseif($_POST['to_print']=='VisualiserNoteTrimestre'){
+			// On envoie les notes dans la table créée spécialement 
+			// pour la circonstance 
+			
+			$object = $_POST['classe'];
+			$periode = $_POST['periode'];
+			$note->viewNoteTrimestrielle($periode, $object);
+			// On tente d'extraire : les noms des colonnes, les valeurs des lignes
+			$nomTable = "view_trimestre_".$periode."_".$object;
+			$sql = "SELECT * FROM ".$nomTable;
+			$req = mysql_query($sql);
+			$nbCol = mysql_num_fields($req) - 7;  // Nombre de colonnes
+			for($a=7;$a<$nbCol+7;$a++){
+				$nomCol[] = mysql_field_name($req,$a);
+			}
+			$nbLigne = mysql_num_rows($req);
+			for($e=0;$e<$nbLigne;$e++){
+				$ligne[] = mysql_fetch_assoc($req);
+			}
+			
+			$_SESSION['print'] ='VisualiserNoteTrimestre';
+			$_SESSION['classe'] = $object;
+			$_SESSION['trimestre'] = $periode;
+			$_SESSION['nbCol'] = $nbCol;
+			$_SESSION['nomCol'] = $nomCol;
+			$_SESSION['nbLn'] = $nbLigne;
+			// $_SESSION['ligne'] = $ligne;
+			// echo $nbLigne;
+			// echo '<pre>';print_r($_SESSION['ligne']);
+			// header('Location:print_pdf_landscape.php');
+		}
+		
+		
+		
+		/*---------------------------------------------------------
+		------------------------------------------------------------
+		-----------------------------------------------------------
+		On veut visualiser la vue d'ensemble des effectifs
+		-------------------------------------------------------------
+		-----------------------------------------------------------*/
+		
+		
+		elseif($_POST['to_print']=='VueEffectif'){
+			// D'abord on sélectionne toutes les classes
+			$lsClasse = $config->viewClasse('actif');
+			for($i=0;$i<count($lsClasse);$i++){
+				$code_classe[] = $lsClasse[$i]['code_classe'];
+				$nom_classe[] = $lsClasse[$i]['nom_classe'];
+			}
+			// Ensuite on affiche les effectifs en fonction de ces classes
+			for($j=0;$j<count($code_classe);$j++){
+				$liste[$code_classe[$j]] = $config->infoEleveClasse($code_classe[$j],'non_supprime');
+				$name_classe[] = $code_classe[$j];
+			}
+			
+			// $liste = $config->infoEleveClasse($cls,'non_supprime');
+			$_SESSION['liste'] = $liste;
+			$_SESSION['nom_classe'] = $name_classe;
+			$_SESSION['print'] = 'VueEffectif';
+			// echo '<pre>';print_r($_SESSION['nom_classe']);
+			header('Location:print_pdf.php');
+		}
+		elseif($_POST['to_print']=='BulletinSequentiel'){
+			print_r($_POST);
+			$_SESSION['print'] =$_POST['print'];
+			$_SESSION['sequence'] = $_POST['periode'];
+			$_SESSION['classe'] = $_POST['classe'];
+			$_SESSION['nomClasse'] = $note->viewNomClasse($_POST['classe']);
+			$eleve = $note->moySequenceClasse($_POST['periode'], 
+												$_POST['classe']);
+			$eleve2 = $note->moySequenceClasseMerite($_POST['periode'], 
+												$_POST['classe']);
+			$tableBulletin = $note->sequenceClasse($_POST['periode'],
+												$_POST['classe']);
+			$tableStat = $note->statSequence($_POST['periode'], 
+												$_POST['classe']);
+			$nbGroupe = $note->afficheGroupe($_POST['classe']);
+			for($w=0;$w<count($nbGroupe);$w++){
+				$nomGpe = $nbGroupe[$w]['groupe'];
+				$matiereGroupe[$nomGpe] = $note->matiereGroupe($nbGroupe[$w]['groupe'],
+														$_POST['classe']);
+			}
+			
+			
+			$_SESSION['eleve'] = $eleve;
+			$_SESSION['eleve2'] = $eleve2;
+			$_SESSION['bulletin'] = $tableBulletin;
+			$_SESSION['stat'] = $tableStat;
+			$_SESSION['matiereGroupe'] = $matiereGroupe;
+			// echo '<pre>';print_r($tableStat);
+			// echo '<pre>';print_r($matiereGroupe);
+			// echo '<pre>';print_r($_SESSION['bulletin']);
+			header('Location:print_pdf.php');
+		}
+	}

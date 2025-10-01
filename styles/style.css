@@ -1,0 +1,485 @@
+
+
+
+/********************************************************************
+*********************************************************************
+		BODY DE L'APPLICATION
+*********************************************************************
+********************************************************************/
+body
+	{
+	background-color:#F0F8FF;
+	margin-top:10px;
+	margin-bottom:10px;
+	margin-left:10px;
+	margin-right:10px;
+	padding-top:10px;
+	padding-bottom:10px;
+	padding-right:10px;
+	padding-left:10px;
+	}
+
+
+
+
+
+
+
+
+
+/*************************************************************
+**************************************************************
+******************		ENTETE GENERALE			**************
+**************************************************************
+*************************************************************/
+header{
+	background-color:mintcream;
+	width:95%;
+	margin-top:10px;
+	margin-bottom:10px;
+	margin-left:10px;
+	margin-right:10px;
+	padding-top:10px;
+	padding-bottom:10px;
+	padding-right:10px;
+	padding-left:10px;
+}
+header h1{
+	text-align:center;
+	text-transform:uppercase;
+	color:gray;
+}
+#utilisateur{
+	float:right;
+	/* width:20%; */
+	/* border: 1px solid black; */
+	background-color:inherit;
+	
+}
+#utilisateur h3{
+	font-size:14px;
+	text-align:center;
+}
+#utilisateur p{
+	font-size:13px;
+	text-align:center;
+}
+
+
+
+
+
+/*************************************************************
+**************************************************************
+********		MENU DE NAVIGATION PRINCIPALE		**********
+**************************************************************
+*************************************************************/
+
+nav {
+	/* background-color:#FFDDCC; */
+	padding:5px 1px;
+	margin:5px 2px;
+	display:inline-block;
+	width:84%;
+	text-align:left;
+	/* position:fixed; */
+	/* left:5%; */
+	/* top:15%; */
+	/* border: 1px solid black; */
+	
+}
+nav ul {
+	
+	list-style-type:none;
+	/* background-color:#FFDDCC; */
+}
+
+nav li{
+	display:inline-block;
+	/* background-color:#FFDDCC; */
+	margin-right:2px;
+	text-transform: uppercase;
+	padding:2px 2px;
+}
+
+nav a {
+	/* font-size:14px; */
+	color:#181818;
+	padding-bottom:3px;
+	text-decoration:none;
+	background-color:#4500CC;
+	margin:3px 3px;
+	padding: 2px 2px;
+	border-radius:10px;
+	border-top: 3px solid #760001;
+	border-left: 3px solid #760001;
+	border-right: 3px solid #760001;
+	border-bottom: 3px solid #760001;
+}
+nav a:hover{
+	color: #76AA01;
+	border-bottom: 3px solid #76BB01;
+	border-top: 3px solid #76BB01;
+	border-left: 3px solid #76BB01;
+	border-right: 3px solid #76BB01;
+}
+nav a:visited{
+	color: #760001;
+	border-bottom: 3px solid #76BB01;
+	border-top: 3px solid #76BB01;
+	border-left: 3px solid #76BB01;
+	border-right: 3px solid #76BB01;
+}
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************
+***********************************************************
+*********** 		ARTICLE		***************************
+***********************************************************
+**********************************************************/
+article{
+	/* background-color:#EFFACE; */
+	background-color:inherit;
+	width:94%;
+	margin-top:1%;
+	margin-bottom:1%;
+	margin-left:1%;
+	margin-right:1%;
+	padding-top:1%;
+	padding-bottom:1%;
+	padding-right:1%;
+	padding-left:1%;
+	/* border: 1px solid black; */
+}
+
+article h1{
+	text-transform:uppercase;
+	text-align:center;
+}
+
+aside{
+	border: 1px solid black;
+	width:34%;
+	border-radius:15px;
+	float:right;
+	background-color:#EFFABE;
+}
+
+
+aside a {
+	color:blue;
+	text-decoration:none;
+}
+
+#aside2{
+	background-color:#efface;
+	width:60%;
+	margin-top:10px;
+	margin-bottom:10px;
+	margin-left:10px;
+	margin-right:10px;
+	padding-top:10px;
+	padding-bottom:10px;
+	padding-right:10px;
+	padding-left:10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+	
+
+#menu
+	{
+	background-color:#FFDDCC;
+	width:30%;
+	float:left;
+	margin-top:10px;
+	margin-bottom:10px;
+	margin-left:10px;
+	margin-right:10px;
+	padding-top:10px;
+	padding-bottom:10px;
+	padding-right:10px;
+	padding-left:10px;
+	}
+
+#menu h3
+	{
+	text-align:center;
+	}
+#sous_menu h3
+	{
+	background-color:#CCDDFF;
+	text-transform:uppercase;
+	}
+
+#sous_menu
+	{
+	background-color:#FFA500;
+	}
+	
+#sous_menu a{
+	text-decoration:none;
+	color:#1225FF;
+}
+#sous_menu a:hover{
+	text-decoration:none;
+	color:#1225FF;
+	/* text-transform:lowercase; */
+}
+#sous_menu ul li a
+	{
+	color:#1111FF;
+	/* background-color:#FF9100; */
+	/* text-transform:uppercase; */
+	}
+	
+#sous_menu ul li a:hover
+	{
+	color:blue;
+	background-color:#FF9100;
+	text-transform:uppercase;
+	}
+
+	
+	
+#body, #body2 ,#body3
+	{
+	background-color:#efface;
+	width:60%;
+	margin-top:10px;
+	margin-bottom:10px;
+	margin-left:35%;
+	margin-right:10px;
+	padding-top:10px;
+	padding-bottom:10px;
+	padding-right:10px;
+	padding-left:10px;
+	}
+#body h1,#body2 h1,#body3 h1
+	{
+	text-transform:uppercase;
+	text-align:center;
+	}
+#body a, #body2 a, #body3 a
+	{
+	text-decoration:none;
+	color:black;
+	}
+#body h3 a, #body2 h3 a, #body3 h3 a
+	{
+	color:#11AA00;
+	}
+footer
+	{
+	background-color:#000;
+	color:#fff;
+	margin-top:1%;
+	margin-bottom:1%;
+	margin-left:1%;
+	margin-right:1%;
+	padding-top:1%;
+	padding-bottom:1%;
+	padding-right:1%;
+	padding-left:1%;
+	width:80%;
+	}
+#droite{
+	float:right;
+	background-color:inherit;
+	width:25%;
+}
+#gauche{
+	float:left;
+	background-color:inherit;
+	width:25%;
+}
+footer a:visited{
+	color:blue;
+}
+
+
+
+
+	
+	
+	
+#connect
+	{
+	margin-top:100px;
+	margin-bottom:100px;
+	margin-left:100px;
+	margin-right:100px;
+	background-color:#efface;
+	width:60%;
+	text-align:center;
+	}
+#identite:hover
+	{
+	background-color:blue;
+	}	
+
+.alert
+	{
+	color:red;
+	}
+	
+	
+.bien
+	{
+	color:#0000FF;
+	font:15px;
+	}
+
+	
+.debut:hover
+	{
+	background-color:#eaaace; /* De toute manière, la couleur est à revoir */
+	}
+
+
+	
+	
+	
+#classe {
+	background-color:#affabb;
+	width:90%;
+	margin-top:20px;
+	margin-bottom:20px;
+	margin-left:10px;
+	margin-right:10px;
+	padding-top:10px;
+	padding-bottom:10px;
+	padding-right:10px;
+	padding-left:10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************************************************
+**************************************************************************************
+************* 	M 	E 	N 	U 			H 	O 	R 	I 	Z 	O 	N 	T 	A 	L ********
+************* 	D 	U 		P 	R 	O 	F 	E 	S 	S 	E 	U 	R 	******************
+**************************************************************************************
+*************************************************************************************/
+
+#menu_prof{
+	/* background-color:#aabb33; */
+	margin-top:10px;
+	margin-bottom:10px;
+	margin-left:10px;
+	margin-right:10px;
+	padding-top:10px;
+	padding-bottom:10px;
+	padding-right:10px;
+	padding-left:10px;
+}
+
+#menu_prof ul {
+	list-style-type:none;
+	/* background-color:#FFA500; */
+}
+#menu_prof ul li {
+	display:inline;
+	text-transform:uppercase;
+}
+#menu_prof li a {
+	text-decoration:none;
+	color:#FF2512;
+	border-color:#FF2512;
+	border:radius;
+	background-color:#CCDDFF;
+}
+
+#menu_prof a:hover{
+	/* text-decoration:none; */
+	color:#12251F;
+	/* font-size:14; */
+	/* text-transform:lowercase; */
+}
+
+
+
+#sous_menu ul li a
+	{
+	color:#1111FF;
+	/* background-color:#FF9100; */
+	/* text-transform:uppercase; */
+	}
+	
+#sous_menu ul li a:hover
+	{
+	color:blue;
+	background-color:#FF9100;
+	text-transform:uppercase;
+	}
+
+
+
+
+
+
+
+
+/*************************************************************************************
+**************************************************************************************
+************* 	L 	 E 	     B 	 O 	D 	Y 	   P	A	R	T	I	C	U L I E R ********
+************* 	D 	U 		P 	R 	O 	F 	E 	S 	S 	E 	U 	R 	******************
+**************************************************************************************
+*************************************************************************************/
+#body_prof, #body2_prof ,#body3_prof
+	{
+	background-color:#efface;
+	width:95%;
+	margin-top:10px;
+	margin-bottom:10px;
+	margin-left:10px;
+	margin-right:10px;
+	padding-top:10px;
+	padding-bottom:10px;
+	padding-right:10px;
+	padding-left:10px;
+	}
+#body_prof h1,#body2_prof h1,#body3_prof h1
+	{
+	text-transform:uppercase;
+	text-align:center;
+	}
+#body_prof a, #body2_prof a, #body3_prof a
+	{
+	text-decoration:none;
+	color:black;
+	}
+#body_prof h3 a, #body2_prof h3 a, #body3_prof h3 a
+	{
+	color:#11AA00;
+	}

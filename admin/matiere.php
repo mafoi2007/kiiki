@@ -1,0 +1,87 @@
+﻿<?php
+	require('../inc/connect.inc.php');
+	session_start();
+	
+	$config = new config();
+	$gestionnaire = new gestionnaire();
+	$matiere = new matiere();
+	if($_SESSION['message']){
+		echo "<script>alert('".$_SESSION['message']."');</script>";
+	}
+	unset($_SESSION['message']);
+	if($_SESSION['poste']=='admin')
+		{
+	
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="../styles/style.css" />
+	<link rel ="shortcut icon" type="image/x-icon" href="../images/banniere.png" />
+	<link type="text/javascript" src="../javascript/js.js" />
+	<title>Configuration Matière</title>
+</head>
+
+<body>
+	<?php
+		require('../part/entete.php');
+		
+		require('../part/menu.php');
+	?>
+	
+	<div id="body">
+		<h2>Il faut ici gérer les matières, c'est-à-dire les créer(les ajouter à la BD) ou les supprimer.</h2>
+		<ul>
+			<li><h3><a href="matiere.php?choix=<?php echo sha1('ajout'); ?>#body2" title="Ajouter une matière">Ajouter une Matière</a></h3></li>
+			
+			<li><h3><a href="matiere.php?choix=<?php echo sha1('consult'); ?>#body2" title="Consulter la liste des matières enregistrées">Liste des Matières</a></h3>
+	</div>
+	
+	
+	<div id="body2">
+	<?php
+		if(isset($_GET['choix'])) // ON A FAIT UN CHOIX SUR LA GESTION DES MATIERES: SOIT ON VEUT AJOUTER(FORMULAIRE D'AJOUT), SOIT ON VEUT MAJ OU SUPPR
+			{
+	
+			if($_GET['choix']==sha1('ajout'))
+				{
+				include('matiere/ajout.php');
+				}
+			elseif($_GET['choix']==sha1('suppr'))
+				{
+				include('matiere/suppr.php');
+				}
+			elseif($_GET['choix']==sha1('consult'))
+				{
+				include('matiere/consult.php');
+				}
+			else
+				{
+				echo "<h3 class='alert'>Désolé, l'application ne prend pas en charge votre choix.</h3>";
+				}
+	
+			}
+	?>
+	
+	</div>
+		
+	
+	
+	<?php
+		require('../part/footer.php');
+	?>
+</body>
+</html>
+
+
+
+<?php
+		}
+	else	// Si on est connecté mais qu'on n'est pas administrateur de l'application, la page ne doit pas s'afficher.
+	/* Ceci a été conçu dans le but d'empêcher que quelqu'un réussisse à se connecter à la BD
+	et pense qu'il a accès à tous les espaces. Un admin ne peut être qu'admin et un enseignant ne peut être qu'un enseignant
+	*/
+		{
+		echo $erreur_admin;
+		}

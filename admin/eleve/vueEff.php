@@ -1,0 +1,78 @@
+<h1>Vue d'ensemble des Effectifs</h1>
+	On affiche l'effectif des classes par sexe et sous forme de tableau.
+	
+	
+	<form method='post' action='../traitement.php' target=_blank>
+		<table border='1' width='70%' align='center'>
+			<tr>
+				<th>N°</th>
+				<th>Classe</th>
+				<th>Féminin</th>
+				<th>Masculin</th>
+				<th>Total</th>
+			</tr>
+		<?php	
+			$lsClasse = $config->viewClasse('actif');
+			// print_r($lsClasse);
+			$nb = 1;
+			for($i=0;$i<count($lsClasse);$i++){
+				echo "<tr>
+					<td>".$i."</td>
+					<td>".$lsClasse[$i]['nom_classe']."</td>";
+				$effectif = $config->infoEleveClasse($lsClasse[$i]['code_classe'],
+										'non_supprime');
+				echo '<pre>';/*print_r($effectif);*/
+					echo "<td>".$effectif['fille']."</td>
+					<td>".$effectif['garcon']."</td>
+					<td>".$effectif['total']."</td>
+				</tr>";
+				$nb++;
+			}
+			
+			
+			echo "<tr>
+				<td colspan='2' align='center'>Total</td>
+				<td> Fille</td>
+				<td> Garçons</td>
+				<td> Total</td>
+			</tr>";
+			
+			/*$a = 1;
+			$sql = "
+				SELECT eleve.id,matricule, nom, prenom, sexe, classe, 
+							eleve.etat,classe,statut 
+				FROM eleve 
+				WHERE eleve.etat='non_supprime' ORDER BY classe";
+			$req = mysql_query($sql) or die(mysql_error());
+		while($res=mysql_fetch_array($req)) {
+			echo "<tr>";
+				echo "<td>";
+					echo "<input type = 'checkbox'  name='eleve[".$res['id']."]' 
+						value='".$res['matricule']."' />";
+				echo "</td>";
+				echo "<td>";
+					echo ucwords($res['nom'])." ".ucwords($res['prenom']);
+				echo "</td>";
+				echo "<td>";
+					echo $res['classe']; 
+				echo "</td>";
+			echo "</tr>";
+			$a++;
+		}*/
+		/*$ll = $config->chargerInformations();
+		echo '<pre>';print_r($ll);*/
+		?>
+			
+				
+			
+			
+			<tr>
+				<input type='hidden' name='to_print' value='VueEffectif' />
+				<td colspan='5' align='center'>
+				<input 
+					type='submit' 
+					name='print' 
+					value='Imprimer' /></td>
+			</tr>
+		</table>
+	</form>
