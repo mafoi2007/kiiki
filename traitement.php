@@ -9,6 +9,11 @@
 	$source = $_SERVER['HTTP_REFERER'];
 	$writer = new XLSXWriter();
 	
+	$_SESSION['appName'] = appName;
+	$_SESSION['appVersion'] = appVersion;
+	$_SESSION['appContact'] = appContact;
+	$_SESSION['appSlogan'] = appSlogan;
+	
 	
 	// Authentification de l'utilisateur 
 	if(isset($_POST['connexion'])){
@@ -952,18 +957,9 @@
 	
 	
 	if(isset($_POST['print'])){
-		// On charge les informations relatives à l'établissement présente en BD
-		$infoEts = $config->chargerInformations();
-		$_SESSION['ministere'] = strtoupper(utf8_decode($infoEts['nom_ministere']));
-		$_SESSION['pays'] = $infoEts['nom_pays'];
-		$_SESSION['ets'] = $infoEts['nom_ets'];
-		$_SESSION['devise'] = $infoEts['nom_devise'];
-		$_SESSION['contact'] = '';
-		$_SESSION['titre_signataire'] = $infoEts['titre_signataire'];
-		$_SESSION['signataire'] = $infoEts['signataire'];
-		$_SESSION['arrondissement'] = $infoEts['arrondissement'];
-		$_SESSION['as'] = $infoEts['annee_scolaire'];
-		
+		$print = $_POST['to_print'];
+		echo '<pre>'; print_r($_POST); echo '</pre>';
+		$as = $config->getCurrentYear();  // Année Scolaire en Cours
 		
 		/***********************************************
 		Certificat de Scolarité 
@@ -1020,22 +1016,27 @@
 		-------------------------------------------------------------
 		-----------------------------------------------------------*/
 		if($_POST['to_print']=='listeEleve'){
-			echo '<pre>'; print_r($_POST); echo '</pre>';
-			$object = $_POST['classe'];
-			if($object=='-classe-'){
-				$_SESSION['message'] = 'Vous devez sélectionner une classe.';
-				header('Location:'.$source);
-			}else{
-				$liste = $config->listeEleve($object,'non_supprime');
-				$infoListe = $config->infoEleveClasse($object,'non_supprime');
-				$_SESSION['liste'] = $liste;
-				$_SESSION['infoListe'] = $infoListe;
-				$_SESSION['print'] = 'listeEleve';
-				$_SESSION['section'] = $_POST['section'];
-				// echo '<pre>';print_r($infoEts);
-				header('Location:print_pdf.php');
-			}
-			
+			$classe = (int) $_POST['classe'];
+				if($classe=='null'){
+					$_SESSION['message'] = 'Vous devez choisir une classe.';
+					header('Location:'.$source);
+				}else{
+					$listeEleve = $config->listeEleve($_POST['classe'], 'non_supprime');
+					// $config->upgradeListe($_POST['classe']);
+					$nbValue = count($listeEleve); // Si ça vaut 0, y'a pas d'élèves dans la classe.
+					if($nbValue===0){
+						$_SESSION['message'] = 'Classe sans élèves.';
+						header('Location:'.$source);
+					}else{
+						$section = $config->getSectionClasse($classe);
+						$_SESSION['classe']['information'] = $_SESSION['information'];
+						$_SESSION['classe']['eleve'] = $listeEleve;
+						$_SESSION['classe']['section'] = $section;
+						$_SESSION['classe']['stat'] = $config->listeEleveStat($_POST['classe'], 'non_supprime', $as);
+						$_SESSION['print'] = 'listeEleve';
+						header('Location:print_pdf.php');
+					}
+				}			
 		}
 		/*---------------------------------------------------------
 		------------------------------------------------------------
@@ -1240,25 +1241,24 @@
 		
 		
 		elseif($_POST['to_print']=='VueEffectif'){
-			// D'abord on sélectionne toutes les classes
-			$lsClasse = $config->viewClasse('actif');
-			// echo '<pre>';print_r($lsClasse);
-			for($i=0;$i<count($lsClasse);$i++){
-				$code_classe[] = $lsClasse[$i]['code_classe'];
-				$nom_classe[] = $lsClasse[$i]['nom_classe'];
+			$listeNiveau = $config->listeNiveaux();
+			for($a=0;$a<count($listeNiveau);$a++){
+				$listeClasse = $config->getClasseByNiveau($listeNiveau[$a]['id']);
+				$myClasse[$a] = $listeClasse;
+				for($b=0;$b<count($listeClasse);$b++){
+					$statClasse = $config->listeEleveStat($listeClasse[$b]['id'],'non_supprime', $as);
+					$myStat[$a][$b] = $statClasse;
+				}
+				$statNiveau = $config->statEleveNiveau($listeNiveau[$a]['id'], 'non_supprime', $as);
+				$stat[$a] = $statNiveau;
+				// echo '<pre>'; print_r($statNiveau); echo '</pre>';
 			}
-			// Ensuite on affiche les effectifs en fonction de ces classes
-			for($j=0;$j<count($code_classe);$j++){
-				$liste[$code_classe[$j]] = $config->infoEleveClasse($code_classe[$j],'non_supprime');
-				$name_classe[] = $code_classe[$j];
-			}
-			
-			// $liste = $config->infoEleveClasse($cls,'non_supprime');
-			$_SESSION['liste'] = $liste;
-			$_SESSION['code_classe'] = $code_classe;
-			$_SESSION['nom_classe'] = $nom_classe;
-			$_SESSION['print'] = 'VueEffectif';
-			echo '<pre>';print_r($_SESSION['code_classe']);
+			$_SESSION['classe']['niveau'] = $listeNiveau;
+			$_SESSION['classe']['liste'] = $myClasse;
+			$_SESSION['classe']['effectif'] = $myStat;
+			$_SESSION['classe']['stat'] = $stat;
+			// echo '<pre>'; print_r($myStat); echo '</pre>';
+			$_SESSION['print'] = 'vueEffectif';
 			header('Location:print_pdf.php');
 		}
 		elseif($_POST['to_print']=='BulletinSequentiel'){

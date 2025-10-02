@@ -9,19 +9,19 @@
 		-->Enseignant(AGENT DE SAISIE DES NOTES DES ELEVES) , 
 		*/
 	
-	if($_SESSION['poste']=='admin'){
+	if($_SESSION['user']['userPost']=='admin'){
 		require_once('menu_admin.php');
-	}elseif($_SESSION['poste']=='cell'){
+	}elseif($_SESSION['user']['userPost']=='cell'){
 		require_once('menu_cell.php');
-	}elseif($_SESSION['poste']=='chef'){
+	}elseif($_SESSION['user']['userPost']=='chef'){
 		require_once('menu_chef.php');
-	}elseif($_SESSION['poste']=='censeur'){
+	}elseif($_SESSION['user']['userPost']=='censeur'){
 		require_once('menu_censeur.php');
-	}elseif($_SESSION['poste']=='sg'){
+	}elseif($_SESSION['user']['userPost']=='sg'){
 		require_once('menu_sg.php');
-	}elseif($_SESSION['poste']=='eco'){
+	}elseif($_SESSION['user']['userPost']=='eco'){
 		require_once('menu_eco.php');
-	}elseif($_SESSION['poste']=='prof'){
+	}elseif($_SESSION['user']['userPost']=='prof'){
 		require_once('menu_prof.php');
 	}else{
 		require_once('no_menu.php');

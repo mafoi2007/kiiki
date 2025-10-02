@@ -10,32 +10,12 @@
 	***********************************************************************************/
 	session_start();
 	require_once('inc/pdf.class.php');
-	$pdf = new pdf();
+	$pdf = new pdf('P', 'mm', 'A4');
 	
 	
 	
 	if(isset($_SESSION['print'])){
 		// On charge les informations d'entête de l'établissement
-		$ministere = $_SESSION['ministere'];
-		$ministereAnglais = $_SESSION['ministere_anglais'];
-		$region = $_SESSION['region'];
-		$regionAnglais = $_SESSION['region_anglais'];
-		$pays = $_SESSION['pays'];
-		$paysAnglais = $_SESSION['pays_anglais'];
-		$departement = $_SESSION['departement'];
-		$departementAnglais = $_SESSION['departement_anglais'];
-		$ets = $_SESSION['ets'];
-		$etsAnglais = $_SESSION['ets_anglais'];
-		$devise = $_SESSION['devise'];
-		$deviseAnglais = $_SESSION['devise_anglais'];
-		$contact = $_SESSION['contact'];
-		$as = $_SESSION['as'];
-		$ville = ucwords($_SESSION['arrondissement']);
-		$titreSignataire = ucfirst($_SESSION['titre_signataire']);
-		$titreSignataireAnglais = ucfirst($_SESSION['titre_signataire_anglais']);
-		$signataire = ucfirst($_SESSION['signataire']);
-		$signataireAnglais = ucfirst($_SESSION['signataire_anglais']);
-		$nomChef = $_SESSION['chef_ets'];
 		/**********************************************************************
 		***********************************************************************
 		****************	Impression de la liste des élèves	***************
@@ -43,207 +23,163 @@
 		**********************************************************************/
 		 
 		if($_SESSION['print']=='listeEleve'){
-			/**********************SI LA SECTION EST ANGLOPHONE**************************/
-			if($_SESSION['section']=='en'){
+			$classe = $_SESSION['classe'];
+			$pdf->SetFillColor(155, 150, 149);
+			// La page doit s'afficher en fonction de la section 
+			if($classe['section']=='en'){
 				$pdf->addPage();
-				// On met l'entête du document
-				$pdf->EnteteDocAnglais($ministereAnglais, 
-								$paysAnglais, 
-								$etsAnglais, 
-								$deviseAnglais, 
-								$contact, 
-								$as);
-				// On met le titre du document 
-				$titre = strtoupper("Student List of ");
-				if(!empty($_SESSION['liste'])){ // Si le Nom de la Classe n'est pas vide.
-					$titre .= strtoupper($_SESSION['liste'][0]['nom_classe']);
-				}
+				$pdf->Entete();
+				$titre = 'student list of ';
+				$titre.= $classe['eleve'][0]['nom_classe'];
 				$pdf->Titre($titre);
-				// Informations de la classe
+				
 				$pdf->SetFont('Times','',8);
 				$pdf->Cell(90);
-				$pdf->Cell(14, 7, 'Sex', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Female', 1, 0 , 'C');
-				$pdf->Cell(14, 7, 'Male', 1, 0 , 'C');
-				$pdf->Cell(10, 7, 'Global', 1, 0 , 'C');
+				$pdf->Cell(14, 7, 'Sex', 1, 0 , 'C', true);
+				$pdf->Cell(12, 7, 'Female', 1, 0 , 'C', true);
+				$pdf->Cell(14, 7, 'Male', 1, 0 , 'C', true);
+				$pdf->Cell(10, 7, 'Global', 1, 0 , 'C', true);
 				$pdf->Ln(7);
 				$pdf->SetFont('Times','',8);
 				$pdf->Cell(90);
 				$pdf->Cell(14, 7, 'Repeater', 1, 0 , 'C');
-				$pdf->Cell(12, 7, $_SESSION['infoListe']['filleRed'], 1, 0 , 'C');
-				$pdf->Cell(14, 7, $_SESSION['infoListe']['garconRed'], 1, 0 , 'C');
-				$pdf->Cell(10, 7, $_SESSION['infoListe']['redoublant'], 1, 0 , 'C');
+				$pdf->Cell(12, 7,  $classe['stat']['FR'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['GR'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['R'], 1, 0 , 'C');
 				$pdf->Ln(7);
 				$pdf->SetFont('Times','',8);
 				$pdf->Cell(90);
 				$pdf->Cell(14, 7, 'New', 1, 0 , 'C');
-				$pdf->Cell(12, 7, $_SESSION['infoListe']['filleNv'], 1, 0 , 'C');
-				$pdf->Cell(14, 7, $_SESSION['infoListe']['garconNv'], 1, 0 , 'C');
-				$pdf->Cell(10, 7, $_SESSION['infoListe']['nouveau'], 1, 0 , 'C');
+				$pdf->Cell(12, 7,  $classe['stat']['FN'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['GN'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['N'], 1, 0 , 'C');
 				$pdf->Ln(7);
 				$pdf->SetFont('Times','',8);
 				$pdf->Cell(90);
 				$pdf->Cell(14, 7, 'Global', 1, 0 , 'C');
-				$pdf->Cell(12, 7, $_SESSION['infoListe']['fille'], 1, 0 , 'C');
-				$pdf->Cell(14, 7, $_SESSION['infoListe']['garcon'], 1, 0 , 'C');
-				$pdf->Cell(10, 7, $_SESSION['infoListe']['total'], 1, 0 , 'C');
-				$pdf->Ln(15);
-				$pdf->SetFont('Arial','B',10);
+				$pdf->Cell(12, 7,  $classe['stat']['F'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['G'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['T'], 1, 0 , 'C');
+				$pdf->Ln(10);
+				
+				$pdf->SetFont('Times','B',10);
 				// Je positionne l'entete du tableau
-				$pdf->Cell(10, 6, utf8_decode('N°'), 1, 0 , 'C');
-				$pdf->Cell(28, 6, utf8_decode('National Id'), 1, 0 , 'C');
-				/*$pdf->Cell(20, 6, utf8_decode('Matricule'), 1, 0 , 'C');*/
-				$pdf->Cell(64, 6, utf8_decode('Name and First Name'), 1, 0 , 'C');
-				$pdf->Cell(9, 6, 'Sex', 1, 0 , 'C');
-				$pdf->Cell(13, 6, 'Status', 1, 0 , 'C');
-				$pdf->Cell(65, 6, 'Date and Place of Birth', 1, 0 , 'C');
-				$pdf->SetFont('Arial','',8);
-				$i = 1;
-				
-				// Par boucle je récupère la liste envoyée dans une variable de session
-				for($a=0;$a<count($_SESSION['liste']);$a++){
+				$pdf->Cell(10, 6, $pdf->convert('N°'), 1, 0 , 'C',true);
+				$pdf->Cell(28, 6, $pdf->convert('National Id'), 1, 0 , 'C',true);
+				$pdf->Cell(75, 6, $pdf->convert('Full Name'), 1, 0 , 'C',true);
+				$pdf->Cell(9, 6, $pdf->convert('Sex'), 1, 0 , 'C',true);
+				$pdf->Cell(13, 6, $pdf->convert('Status'), 1, 0 , 'C',true);
+				$pdf->Cell(55, 6, $pdf->convert('Date and place of birth'), 1, 0 , 'C',true);
+				$pdf->SetFont('Times','',10);
+				$pdf->Ln(6);
+				$a = 1;
+				for($i=0;$i<count($classe['eleve']);$i++){
+					$pdf->Cell(10, 6, $a, 1, 0 , 'C');
+					$pdf->Cell(28, 6, $pdf->convert($classe['eleve'][$i]['rne']), 1, 0 , 'C');
+					$pdf->Cell(75, 6, $pdf->convert($classe['eleve'][$i]['nom_complet']), 1, 0 , 'L');
+					$pdf->Cell(9, 6, $pdf->convert($classe['eleve'][$i]['sexe']), 1, 0 , 'C');
+					$pdf->Cell(13, 6, $pdf->convert($classe['eleve'][$i]['statut']), 1, 0 , 'C');
+					$dateNaiss = $classe['eleve'][$i]['date_fr'].' at '.ucwords($classe['eleve'][$i]['lieu_naissance']);
+					$pdf->Cell(55, 6, $pdf->convert($dateNaiss), 1, 0 , 'L');
 					$pdf->Ln(6);
-					$pdf->Cell(10, 6, $i, 1, 0 , 'C');
-					$pdf->Cell(28, 6, $_SESSION['liste'][$a]['rne'], 1, 0 , 'C');
-					/*$pdf->Cell(20, 6, $_SESSION['liste'][$a]['matricule'], 1, 0 , 'C');*/
-					$nom = utf8_decode(strtoupper($_SESSION['liste'][$a]['nom']));
-					$nom .= ' '.utf8_decode(ucwords($_SESSION['liste'][$a]['prenom']));
-					$pdf->Cell(64, 6, $nom, 1, 0 , 'L');
-					$pdf->Cell(9, 6, $_SESSION['liste'][$a]['sexe'], 1, 0 , 'C');
-					$pdf->Cell(13, 6, $_SESSION['liste'][$a]['statut'], 1, 0 , 'C');
-					$date_et_lieu = $_SESSION['liste'][$a]['date_naissance'];
-					$date_et_lieu .= ' at ';
-					$date_et_lieu .= ucwords($_SESSION['liste'][$a]['lieu_naissance']);
-					$pdf->Cell(65, 6, utf8_decode($date_et_lieu), 1, 0 , 'L');
-					$i++;
+					$a++;
 				}
+				$texte = 'Done at '.ucwords($_SESSION['information']['ville']);
+				$texte.= ', on the '.DATE('d  M  Y');
+				$pdf->Cell(110);
+				$pdf->Cell(70,10, $texte,0,0,'C');
+				$pdf->Cell(20);
 				
-				// Le signataire du document 
-				$pdf->Ln(10);
-				$pdf->Cell(100,30, ' ');
-				$arrondissement = $_SESSION['arrondissement'];
-				$signataire = $_SESSION['signataire'];
-				$texteFaitA = utf8_decode('Done at ');
-				$texteFaitA .= ucwords($arrondissement);
-				$texteFaitA .= ', on the ';
-				if(DATE('d')==1){
-					$texteFaitA .= DATE('d').'st Of ';
-				}elseif(DATE('d')==2){
-					$texteFaitA .= DATE('d').'nd Of ';
-				}elseif(DATE('d')==3){
-					$texteFaitA .= DATE('d').'rd Of ';
-				}else{
-					$texteFaitA .= DATE('d').'th Of ';
-				}
-				$texteFaitA .= DATE('M, Y');
-				$pdf->Cell(100,30, $texteFaitA);
-				$pdf->Ln(10);
-				$pdf->Cell(130,30, ' ');
+				$pdf->Ln(5);
+				// $pdf->Cell(130,30, ' ');
 				$pdf->SetFont('Arial','BI',10);
-				$pdf->Cell(100,25, $signataireAnglais.',');
-				// $pdf->setY(-20);
-				$pdf->Footer();
+				// $titre = $classe['information']['titre'];
+				$pdf->Cell(110);
+				$pdf->Cell(70,10, $classe['information']['signataire_en'],0,0,'C');
+				$pdf->Cell(20);
 				
-				$pdf->setAuthor('Nyambi Computer Services');
-				if(!empty($_SESSION['liste'])){
-					$nomFichier = 'StudentList_'.$_SESSION['liste'][0]['code_classe'].'.pdf';
-				}else{
-					$nomFichier = 'EmptyData.pdf';
-				}
-				$pdf->Output($nomFichier, 'I');
+				$fileName='student_list_';
+				$fileName.= strtoupper(str_replace(' ','_',$classe['eleve'][0]['nom_classe']));
+				$fileName.= '.pdf';
 			}
-			/**********************SI LA SECTION EST FRANCOPHONE**************************/
-			elseif($_SESSION['section']=='fr'){
+			elseif($classe['section']=='fr'){
 				$pdf->addPage();
-				// On met l'entête du document
-				$pdf->EnteteDoc($ministere, $pays, $ets, $devise, $contact, $as);
-				// On met le titre du document 
-				$titre = "Liste des élèves de la ";
-				if(!empty($_SESSION['liste'])){ // Si le Nom de la Classe n'est pas vide.
-					$titre .= strtoupper($_SESSION['liste'][0]['nom_classe']);
-				}
+				$pdf->Entete();
+				$titre = 'Liste des eleves de la ';
+				$titre.= $classe['eleve'][0]['nom_classe'];
 				$pdf->Titre($titre);
-				// Informations de la classe
+				
 				$pdf->SetFont('Times','',8);
 				$pdf->Cell(90);
-				$pdf->Cell(14, 7, 'Sexe', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Feminin', 1, 0 , 'C');
-				$pdf->Cell(14, 7, 'Masculin', 1, 0 , 'C');
-				$pdf->Cell(10, 7, 'Total', 1, 0 , 'C');
+				$pdf->Cell(14, 7, 'Sexe', 1, 0 , 'C', true);
+				$pdf->Cell(12, 7, 'Feminin', 1, 0 , 'C', true);
+				$pdf->Cell(14, 7, 'Masculin', 1, 0 , 'C', true);
+				$pdf->Cell(10, 7, 'Total', 1, 0 , 'C', true);
 				$pdf->Ln(7);
 				$pdf->SetFont('Times','',8);
 				$pdf->Cell(90);
 				$pdf->Cell(14, 7, 'Redoublant', 1, 0 , 'C');
-				$pdf->Cell(12, 7, $_SESSION['infoListe']['filleRed'], 1, 0 , 'C');
-				$pdf->Cell(14, 7, $_SESSION['infoListe']['garconRed'], 1, 0 , 'C');
-				$pdf->Cell(10, 7, $_SESSION['infoListe']['redoublant'], 1, 0 , 'C');
+				$pdf->Cell(12, 7,  $classe['stat']['FR'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['GR'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['R'], 1, 0 , 'C');
 				$pdf->Ln(7);
 				$pdf->SetFont('Times','',8);
 				$pdf->Cell(90);
-				$pdf->Cell(14, 7, 'Nouveaux', 1, 0 , 'C');
-				$pdf->Cell(12, 7, $_SESSION['infoListe']['filleNv'], 1, 0 , 'C');
-				$pdf->Cell(14, 7, $_SESSION['infoListe']['garconNv'], 1, 0 , 'C');
-				$pdf->Cell(10, 7, $_SESSION['infoListe']['nouveau'], 1, 0 , 'C');
+				$pdf->Cell(14, 7, 'Nouveau', 1, 0 , 'C');
+				$pdf->Cell(12, 7,  $classe['stat']['FN'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['GN'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['N'], 1, 0 , 'C');
 				$pdf->Ln(7);
 				$pdf->SetFont('Times','',8);
 				$pdf->Cell(90);
 				$pdf->Cell(14, 7, 'Total', 1, 0 , 'C');
-				$pdf->Cell(12, 7, $_SESSION['infoListe']['fille'], 1, 0 , 'C');
-				$pdf->Cell(14, 7, $_SESSION['infoListe']['garcon'], 1, 0 , 'C');
-				$pdf->Cell(10, 7, $_SESSION['infoListe']['total'], 1, 0 , 'C');
-				$pdf->Ln(15);
-				$pdf->SetFont('Arial','B',10);
+				$pdf->Cell(12, 7,  $classe['stat']['F'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['G'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['T'], 1, 0 , 'C');
+				$pdf->Ln(10);
+				
+				$pdf->SetFont('Times','B',10);
 				// Je positionne l'entete du tableau
-				$pdf->Cell(10, 6, utf8_decode('N°'), 1, 0 , 'C');
-				$pdf->Cell(28, 6, utf8_decode('Mat. National'), 1, 0 , 'C');
-				// $pdf->Cell(20, 6, utf8_decode('Matricule'), 1, 0 , 'C');
-				$pdf->Cell(64, 6, utf8_decode('Noms et Prénoms'), 1, 0 , 'C');
-				$pdf->Cell(9, 6, 'Sexe', 1, 0 , 'C');
-				$pdf->Cell(13, 6, 'Statut', 1, 0 , 'C');
-				$pdf->Cell(65, 6, 'Date et Lieu de Naissance', 1, 0 , 'C');
-				$pdf->SetFont('Arial','',8);
-				$i = 1;
-				
-				// Par boucle je récupère la liste envoyée dans une variable de session
-				for($a=0;$a<count($_SESSION['liste']);$a++){
+				$pdf->Cell(10, 6, $pdf->convert('N°'), 1, 0 , 'C',true);
+				$pdf->Cell(28, 6, $pdf->convert('Matricule'), 1, 0 , 'C',true);
+				$pdf->Cell(75, 6, $pdf->convert('Nom Complet'), 1, 0 , 'C',true);
+				$pdf->Cell(9, 6, $pdf->convert('Sexe'), 1, 0 , 'C',true);
+				$pdf->Cell(13, 6, $pdf->convert('Statut'), 1, 0 , 'C',true);
+				$pdf->Cell(55, 6, $pdf->convert('Date et lieu de naissance'), 1, 0 , 'C',true);
+				$pdf->SetFont('Times','',10);
+				$pdf->Ln(6);
+				$a = 1;
+				for($i=0;$i<count($classe['eleve']);$i++){
+					$pdf->Cell(10, 6, $a, 1, 0 , 'C');
+					$pdf->Cell(28, 6, $pdf->convert($classe['eleve'][$i]['rne']), 1, 0 , 'C');
+					$pdf->Cell(75, 6, $pdf->convert($classe['eleve'][$i]['nom_complet']), 1, 0 , 'L');
+					$pdf->Cell(9, 6, $pdf->convert($classe['eleve'][$i]['sexe']), 1, 0 , 'C');
+					$pdf->Cell(13, 6, $pdf->convert($classe['eleve'][$i]['statut']), 1, 0 , 'C');
+					$dateNaiss = $classe['eleve'][$i]['date_fr'].' à '.ucwords($classe['eleve'][$i]['lieu_naissance']);
+					$pdf->Cell(55, 6, $pdf->convert($dateNaiss), 1, 0 , 'L');
 					$pdf->Ln(6);
-					$pdf->Cell(10, 6, $i, 1, 0 , 'C');
-					$pdf->Cell(28, 6, $_SESSION['liste'][$a]['rne'], 1, 0 , 'C');
-					// $pdf->Cell(20, 6, $_SESSION['liste'][$a]['matricule'], 1, 0 , 'C');
-					$nom = utf8_decode(strtoupper($_SESSION['liste'][$a]['nom']));
-					$nom .= ' '.utf8_decode(ucwords($_SESSION['liste'][$a]['prenom']));
-					$pdf->Cell(64, 6, $nom, 1, 0 , 'L');
-					$pdf->Cell(9, 6, $_SESSION['liste'][$a]['sexe'], 1, 0 , 'C');
-					$pdf->Cell(13, 6, $_SESSION['liste'][$a]['statut'], 1, 0 , 'C');
-					$date_et_lieu = $_SESSION['liste'][$a]['date_fr'];
-					$date_et_lieu .= ' à ';
-					$date_et_lieu .= ucwords($_SESSION['liste'][$a]['lieu_naissance']);
-					$pdf->Cell(65, 6, utf8_decode($date_et_lieu), 1, 0 , 'L');
-					$i++;
+					$a++;
 				}
+				$texte = 'Fait a '.ucwords($_SESSION['information']['ville']);
+				$texte.= ', le '.DATE('d / m / Y');
+				$pdf->Cell(110);
+				$pdf->Cell(70,10, $texte,0,0,'C');
+				$pdf->Cell(20);
 				
-				// Le signataire du document 
-				$pdf->Ln(10);
-				$pdf->Cell(100,30, ' ');
-				$arrondissement = $_SESSION['arrondissement'];
-				$signataire = $_SESSION['signataire'];
-				$pdf->Cell(100,30, utf8_decode('Fait à ').ucwords($arrondissement).', le '.DATE('d M Y'));
-				$pdf->Ln(10);
-				$pdf->Cell(130,30, ' ');
+				$pdf->Ln(5);
+				// $pdf->Cell(130,30, ' ');
 				$pdf->SetFont('Arial','BI',10);
-				$pdf->Cell(100,25, $signataire.',');
-				// $pdf->setY(-20);
-				$pdf->Footer();
+				// $titre = $classe['information']['titre'];
+				$pdf->Cell(110);
+				$pdf->Cell(70,10, $classe['information']['signataire_fr'],0,0,'C');
+				$pdf->Cell(20);
 				
-				$pdf->setAuthor('Nyambi Computer Services');
-				if(!empty($_SESSION['liste'])){
-					$nomFichier = 'ListeEleve_'.$_SESSION['liste'][0]['code_classe'].'.pdf';
-				}else{
-					$nomFichier = 'EmptyData.pdf';
-				}
-				$pdf->Output($nomFichier, 'I');
-			}			
-			/*****************		FIN DU PDF DE LA LISTE DES ELEVES ******************/
+				$fileName='liste_Eleve_';
+				$fileName.= strtoupper(str_replace(' ','_',$classe['eleve'][0]['nom_classe']));
+				$fileName.= '.pdf';
+			} 
+			
+			$pdf->Output($fileName, 'I');
 		}
 		
 		
@@ -741,56 +677,64 @@
 		***********************************************************************
 		**********************************************************************/
 		
-		elseif($_SESSION['print']=='VueEffectif'){
+		if($_SESSION['print']=='vueEffectif'){
+			$classe = $_SESSION['classe'];
+			$pdf->SetFillColor(155, 150, 149);
 			$pdf->addPage();
-			// On met l'entête du document
-			$pdf->EnteteDoc($ministere, $pays, $ets, $devise, $contact, $as);
-			// On met le titre du document 
-			$titre = "Vue d'Ensemble des Effectifs ";
-			// $titre .= strtoupper($_SESSION['liste'][0]['nom_classe']);
-			$pdf->Titre($titre);
-			
+			$pdf->Entete();
+			$pdf->Titre("Vue d'ensemble des effectifs");
 			$pdf->SetFont('Times','B',10);
 			$pdf->Cell(50);
-			$pdf->Cell(8, 5, utf8_decode('N°'), 1, 0 , 'C');
-			$pdf->Cell(40, 5, 'Classe', 1, 0 , 'C');
-			$pdf->Cell(15, 5, 'Masculin', 1, 0 , 'C');
-			$pdf->Cell(15, 5, 'Feminin', 1, 0 , 'C');
-			$pdf->Cell(25, 5, 'Total', 1, 0 , 'C');
+			$pdf->Cell(8, 5, utf8_decode('N°'), 1, 0 , 'C',true);
+			$pdf->Cell(48, 5, 'Classe', 1, 0 , 'C',true);
+			$pdf->Cell(18, 5, 'Masculin', 1, 0 , 'C',true);
+			$pdf->Cell(18, 5, 'Feminin', 1, 0 , 'C',true);
+			$pdf->Cell(25, 5, 'Total', 1, 0 , 'C',true);
 			$pdf->Ln(5);
-			
-			$liste = $_SESSION['liste'];
-			$nom_classe = $_SESSION['nom_classe'];
-			$code_classe = $_SESSION['code_classe'];
+
+			// $pdf->SetFont('Times','',10);
 			$a = 1;
-			for($i=0;$i<count($liste);$i++){
+			for($i=0;$i<count($classe['niveau']);$i++){
+				$listeClasse = $classe['liste'];
+				$effectifClasse = $classe['effectif'];
 				$pdf->SetFont('Times','',10);
-				$pdf->Cell(50);
-				$pdf->Cell(8, 5, $a, 1, 0 , 'C');
-				$pdf->Cell(40, 5, utf8_decode(ucwords($nom_classe[$i])), 1, 0 , 'C');
-				$pdf->Cell(15, 5, $liste[$code_classe[$i]]['garcon'], 1, 0 , 'C');
-				$pdf->Cell(15, 5, $liste[$code_classe[$i]]['fille'], 1, 0 , 'C');
+				for($j=0;$j<count($listeClasse[$i]);$j++){
+					$masculinClasse[] = $effectifClasse[$i][$j]['G'];
+					$femininClasse[] = $effectifClasse[$i][$j]['F'];
+					$totalClasse[] = $effectifClasse[$i][$j]['T'];
+					$pdf->Cell(50);
+					$pdf->Cell(8, 5, $a, 1, 0 , 'C');
+					$pdf->Cell(48, 5, $listeClasse[$i][$j]['nom_classe'], 1, 0 , 'L');
+					$pdf->Cell(18, 5, $effectifClasse[$i][$j]['G'], 1, 0 , 'C');
+					$pdf->Cell(18, 5, $effectifClasse[$i][$j]['F'], 1, 0 , 'C');
+					$pdf->SetFont('Times','B',10);
+					$pdf->Cell(25, 5, $effectifClasse[$i][$j]['T'], 1, 0 , 'C');
+					$pdf->SetFont('Times','',10);
+					$pdf->Ln(5);
+					$a++;
+				}
 				$pdf->SetFont('Times','B',10);
-				$pdf->Cell(25, 5, $liste[$code_classe[$i]]['total'], 1, 0 , 'C');
-				$pdf->SetFont('Times','',10);
+				$pdf->Cell(50);
+				$pdf->Cell(56, 5, utf8_decode('Total Niveau '.$classe['niveau'][$i]['nom_niveau']), 1, 0 , 'C',true);
+				$pdf->Cell(18, 5, $classe['stat'][$i]['M'], 1, 0 , 'C',true);
+				$pdf->Cell(18, 5, $classe['stat'][$i]['F'], 1, 0 , 'C',true);
+				$pdf->Cell(25, 5, $classe['stat'][$i]['T'], 1, 0 , 'C',true);
 				$pdf->Ln(5);
-				$a++;
-				$garcon[] = $liste[$code_classe[$i]]['garcon'];
-				$fille[] = $liste[$code_classe[$i]]['fille'];
-				$nbGarcon = array_sum($garcon);
-				$nbFille = array_sum($fille);
-				$nbTotal = $nbGarcon + $nbFille;
+				$masc[] = $classe['stat'][$i]['M'];
+				$fem[] = $classe['stat'][$i]['F'];
+				$tot[] = $classe['stat'][$i]['T'];
 			}
-			$pdf->SetFont('Times','B',12);
+			$pdf->setFont('Times', 'B', 12);
 			$pdf->Cell(50);
-			$pdf->Cell(48, 6, utf8_decode('TOTAL'), 1, 0 , 'C');
-			$pdf->Cell(15, 6, $nbGarcon, 1, 0 , 'C');
-			$pdf->Cell(15, 6, $nbFille, 1, 0 , 'C');
-			$pdf->Cell(25, 6, $nbTotal, 1, 0 , 'C');
-			$pdf->Ln(8);
-			// Le nom du fichier sera VueDensembleDesEffectifs
-			$nomFichier = 'VueDensembleDesEffectifs.pdf';
-			$pdf->Output($nomFichier, 'I');
+			$pdf->Cell(56, 5, utf8_decode('TOTAL '), 1, 0 , 'C',true);
+			$pdf->Cell(18, 5, array_sum($masc), 1, 0 , 'C',true);
+			$pdf->Cell(18, 5, array_sum($fem), 1, 0 , 'C',true);
+			$pdf->Cell(25, 5, array_sum($tot), 1, 0 , 'C',true);
+			$pdf->Ln(5);
+
+
+			$fileName='Vue_Effectif.pdf';
+			$pdf->Output($fileName, 'I');
 		}
 		
 		

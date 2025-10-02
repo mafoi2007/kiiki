@@ -48,6 +48,23 @@
 		}
 		
 		
+		// On ne blague pas avec les clés primaires et etrangères qui sont des Id,
+		// donc des entiers naturels 
+		protected function setUserId($id){
+			$this->_id = (int) $id;
+			if($this->_id==0){
+				$this->_id = NULL;
+			}
+			return $this->_id;
+		}
+		
+		
+		
+		// Les mots de passe utilisent le système de hachage sha1 
+		private function setPassword($pwd){
+			$this->_pwd = sha1($pwd);
+			return $this->_pwd;
+		}
 		
 		
 		
@@ -64,96 +81,201 @@
 		
 		
 		
-		
-		
-		
-		
-		
-		// Connexion de l'utilisateur 
-		public function connectUser($source, $login, $mdp){
-			$this->_login = $this->setLogin($login);
-			$this->_mdp = $this->setPwd($mdp);
-			$sql = "SELECT * 
-					FROM enseignant 
-					WHERE login = '".$this->_login."'
-						AND mdp = '".$this->_mdp."'";
+		// Je veux afficher les différents types utilisateurs 
+		public function userType(){
+			$sql = "SELECT id, code_poste, libelle_poste
+					FROM poste
+					ORDER BY id";
 			$req = $this->_db->query($sql);
-			$reponse = $req->fetch(PDO::FETCH_ASSOC);
-			if($reponse!=false){
-				// On créé des variables de session utilisateur
-				$_SESSION['idUser'] = $reponse['id'];
-				$_SESSION['nomUser'] = $reponse['nom'];
-				$_SESSION['prenomUser'] = $reponse['prenom'];
-				$_SESSION['sexeUser'] = $reponse['sexe'];
-				$_SESSION['poste'] = $reponse['poste'];
-				$_SESSION['login'] = $reponse['login'];
-				$_SESSION['mdp'] = $reponse['mdp'];
-				$_SESSION['etat'] = $reponse['etat'];
-				$_SESSION['image'] = $reponse['image'];
-				
-				// On Inscrit la connexion dans un journal de connexion 
-				$adresse = $_SERVER['REMOTE_ADDR'];
-				$periode = DATE('Y-m-d H:i:s');
-				$journal = $this->_db->prepare('INSERT INTO journal_connexion 
-												SET 
-												utilisateur=:login, 
-												periode_de_connexion = :periode, 
-												adresse_ip = :adresse');
-				$journal->bindValue(':login', $this->_login);
-				$journal->bindValue(':periode', $periode);
-				$journal->bindValue(':adresse', $adresse);
-				$journal->execute();
-				
-				// On charge les informations relatives à l'établissement
-				$sql_2 = "SELECT * FROM information";
-				$req_2 = $this->_db->query($sql_2);
-				$reponse_2 = $req_2->fetch(PDO::FETCH_ASSOC);
-				if($reponse_2!=false){
-					$_SESSION['as'] =$reponse_2['annee_scolaire'];
-					$_SESSION['pays'] = $reponse_2['nom_pays'];
-					$_SESSION['pays_anglais'] = $reponse_2['nom_pays_anglais'];
-					$_SESSION['ministere'] = $reponse_2['nom_ministere'];
-					$_SESSION['ministere_anglais'] = $reponse_2['nom_ministere_anglais'];
-					$_SESSION['region'] = $reponse_2['nom_region'];
-					$_SESSION['region_anglais'] = $reponse_2['nom_region_anglais'];
-					$_SESSION['devise'] = $reponse_2['nom_devise'];
-					$_SESSION['devise_anglais'] = $reponse_2['nom_devise_anglais'];
-					$_SESSION['departement'] = $reponse_2['nom_departement'];
-					$_SESSION['departement_anglais'] = $reponse_2['nom_departement_anglais'];
-					
-					
-					$_SESSION['ets'] = $reponse_2['nom_ets'];
-					$_SESSION['ets_anglais'] = $reponse_2['nom_ets_anglais'];
-					$_SESSION['type_ets'] = $reponse_2['type_ets'];
-					$_SESSION['chef_ets'] = $reponse_2['chef_ets'];
-					$_SESSION['titre_signataire'] = $reponse_2['titre_signataire'];
-					$_SESSION['titre_signataire_anglais'] = $reponse_2['titre_signataire_anglais'];
-					$_SESSION['arrondissement'] = $reponse_2['arrondissement'];
-					$_SESSION['contact'] = $reponse_2['contact'];
-					$_SESSION['app_version'] = $reponse_2['app_version'];
-					$_SESSION['app_name'] = $reponse_2['app_name'];
-					$_SESSION['signataire_anglais'] = $reponse_2['signataire_anglais'];
-				}
-				
-				// Si l'utilisateur est inactif, il n'a pas droit d'accès
-				if($reponse['etat']=='actif'){
-					$_SESSION['message'] = 'Welcome '.strtoupper($reponse['nom']);
-					$_SESSION['message'] .= ' '.ucwords($reponse['prenom']);
-					header('Location:'.$source);
-				}
-				else{
-					$_SESSION['message'] = 'Vous compte a été suspendu.';
-					$_SESSION['message'] .= ' Contactez un Administrateur.';
-					header('Location:'.$source);
-				}
-				
-			}
-			else{
-				$_SESSION['message'] = 'Connexion failed ! ';
-				header('Location:'.$source);
-			}
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
 		}
 		
+		
+		
+		
+		
+		
+		// Je veux pouvoir afficher la liste des enseignants selon leurs postes respectifs
+		public function getUtilisateurType($type){
+			$sql = "SELECT nom, sexe, login, enseignant.id as idEnseignant, 
+							libelle_poste
+					FROM enseignant, poste
+					WHERE poste.id='$type' 
+						AND enseignant.poste = poste.id
+						AND etat = 'actif'
+						ORDER BY nom";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+		
+		
+		
+		
+		function str_contains($haystack, $needle){
+			return $needle !=='' && mb_strpos($haystack,$needle)!== false;
+		}
+		
+		
+		// On veut connaitre le navigateur et le Système d'exploitation utilisé
+		public function getNavigateur(){
+			if($this->str_contains($_SERVER['HTTP_USER_AGENT'], 'Chrome')){
+				$navigateur = 'Chrome';
+			}elseif($this->str_contains($_SERVER['HTTP_USER_AGENT'], 'Firefox')){
+				$navigateur = 'Firefox';
+			}
+			if($this->str_contains($_SERVER['HTTP_USER_AGENT'], 'Windows')){
+				$os = 'Windows';
+			}elseif($this->str_contains($_SERVER['HTTP_USER_AGENT'], 'Android')){
+				$os = 'Android';
+			}
+			$information = array("navigateur"=>$navigateur,
+								"os"=>$os);
+			return $information;
+		}
+		
+		
+		
+		
+		// On charge les informations sur l'établissement au complet. 
+		public function chargerInformation(){
+			$sql = "SELECT annee_scolaire, nom_pays_fr, nom_pays_en, nom_devise_fr, nom_devise_en,
+							nom_ministere_fr, nom_ministere_en,libelle_region_fr, libelle_region_en,
+							libelle_departement_fr,libelle_departement_en,nom_etablissement_fr,
+							nom_etablissement_en,type_ets, chef_ets, signataire_fr, signataire_en,
+							arrondissement, ville, sexe_signataire, contact, email, bp
+					FROM information, region, departement  
+					WHERE region.id = region
+						AND departement.id = departement";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res;
+		}
+		
+		
+		
+		// On transforme le sexe de l'usager en titre : Monsieur ou Madame
+		public function getTitre($sexe){
+			if($sexe=='M'){
+				$this->titre = 'Monsieur ';
+			}elseif($sexe=='F'){
+				$this->titre = 'Madame ';
+			}else{
+				$this->titre = '';
+			}
+			return $this->titre;
+		}
+		
+		
+		// Obtenir l'id de l'année scolaire en cours 
+		public function getCurrentYear(){
+			$sql = "SELECT id
+					FROM annee_scolaire 
+					WHERE statut='actif'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res['id'];
+		}
+		
+		
+		
+		// On vérifie si la classe appartient à la section Francophone ou Anglophone
+		public function getSectionClasse($classe){
+			$this->_classe = $this->setUserId($classe);
+			$sql = "SELECT section 
+					FROM classe 
+					WHERE id='$this->_classe'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			$resultat = $res['section'];
+			return $resultat;
+		}
+		
+		
+		// La fonction qui gère le formulaire de connexion 
+		public function connectUser($source, $login, $mdp){
+			$this->_login = $this->setUserId($login);
+			$this->_mdp = $this->setPassword($mdp);
+			$sql = "SELECT enseignant.id as id, nom, sexe, poste,
+							login, mdp, image, etat, code_poste, libelle_poste, poste
+					FROM enseignant, poste
+					WHERE enseignant.id = '$this->_login'
+						AND mdp='$this->_mdp'
+						AND poste.id = poste";
+			$req = $this->_db->query($sql);
+			$reponse = $req->fetch(PDO::FETCH_ASSOC);
+			if($reponse==false){
+				$_SESSION['message'] = 'Le mot de passe entré est incorrect.';
+				header('Location:'.$source);
+			}else{
+				if($reponse['etat']=='inactif'){
+					$_SESSION['message'] = 'Votre compte a été désactivé.';
+					$_SESSION['message'] .= ' Contactez un administrateur.';
+					header('Location:'.$source);
+				}else{
+					// On commence par inscrire la connexion dans un journal.
+					$adresse = $_SERVER['REMOTE_ADDR'];
+					$periode = DATE('Y-m-d H:i:s');
+					$navigateur = $this->getNavigateur();
+					$journal = $this->_db->prepare('INSERT INTO journal_connexion
+												SET 
+												utilisateur=:login,
+												adresse_ip = :adresse,
+												periode_de_connexion=:periode, 
+												navigateur = :machine, 
+												os = :type');
+					$journal->bindValue(':login', $this->_login);
+					$journal->bindValue(':adresse', $adresse);
+					$journal->bindValue(':periode', $periode);
+					$journal->bindValue(':machine', $navigateur['navigateur']);
+					$journal->bindValue(':type', $navigateur['os']);
+					$journal->execute();
+					// On charge les informations de l'établissement 
+					$information = $this->chargerInformation();
+					$_SESSION['information']['annee_scolaire'] = $information['annee_scolaire'];
+					$_SESSION['information']['pays_fr'] = $information['nom_pays_fr'];
+					$_SESSION['information']['pays_en'] = $information['nom_pays_en'];
+					$_SESSION['information']['devise_fr'] = $information['nom_devise_fr']; 
+					$_SESSION['information']['devise_en'] = $information['nom_devise_en'];
+					$_SESSION['information']['ministere_fr'] = $information['nom_ministere_fr'];
+					$_SESSION['information']['ministere_en'] = $information['nom_ministere_en'];
+					$_SESSION['information']['region_fr'] = $information['libelle_region_fr'];
+					$_SESSION['information']['region_en'] = $information['libelle_region_en'];
+					$_SESSION['information']['departement_fr'] = $information['libelle_departement_fr'];
+					$_SESSION['information']['departement_en'] = $information['libelle_departement_en'];
+					$_SESSION['information']['nom_etablissement_fr'] = $information['nom_etablissement_fr'];
+					$_SESSION['information']['nom_etablissement_en'] = $information['nom_etablissement_en'];
+					$_SESSION['information']['typeEts'] = $information['type_ets'];
+					$_SESSION['information']['chefEts'] = $information['chef_ets'];
+					$_SESSION['information']['signataire_fr'] = $information['signataire_fr'];
+					$_SESSION['information']['signataire_en'] = $information['signataire_en'];
+					$_SESSION['information']['arrondissement'] = $information['arrondissement'];
+					$_SESSION['information']['ville'] = $information['ville'];
+					$_SESSION['information']['sexeSignataire'] = $information['sexe_signataire'];
+					$_SESSION['information']['titreSignataire'] = $this->getTitre($information['sexe_signataire']);
+					$_SESSION['information']['contact'] = $information['contact'];
+					$_SESSION['information']['email'] = $information['email'];
+					$_SESSION['information']['bp'] = $information['bp'];
+					// On crée des variables de session de l'utilisateur
+					$_SESSION['user']['id'] = $reponse['id'];
+					$_SESSION['user']['nom'] = stripslashes($reponse['nom']);
+					$_SESSION['user']['sexe'] = $reponse['sexe'];
+					$_SESSION['user']['titre'] = $this->getTitre($reponse['sexe']);
+					$_SESSION['user']['typeUtilisateur'] = $reponse['poste'];
+					$_SESSION['user']['login'] = $reponse['login'];
+					$_SESSION['user']['password'] = $reponse['mdp'];
+					$_SESSION['user']['image'] = $reponse['image'];
+					$_SESSION['user']['codePoste'] = $reponse['code_poste'];
+					$_SESSION['user']['userPost'] = $reponse['code_poste'];
+					$_SESSION['user']['libellePoste'] = $reponse['libelle_poste'];
+					// La redirection 
+					$_SESSION['connected'] = true;;
+					$_SESSION['message'] = 'Welcome '.$_SESSION['user']['nom'];
+					header('Location:'.$source);
+				}
+			}
+		}
 		
 		
 		
@@ -569,23 +691,56 @@
 		
 		
 		
-		public function listeEleve($classe, $etat) {
-			$sql = "SELECT eleve.id as id, nom, prenom, sexe, rne,  
-							matricule, nom_classe, statut, date_naissance, photo, 
-					DATE_FORMAT(date_naissance, '%d / %m / %Y') as date_fr,"; 
-			$sql .="lieu_naissance, code_classe
+		// La liste des élèves d'une classe 
+		public function listeEleve($classe, $etat){
+			$sql = "SELECT nom_complet, nom, prenom, eleve.sexe as sexe, date_naissance, lieu_naissance,
+							DATE_FORMAT(date_naissance, '%d / %m / %Y') as date_fr,
+							nom_classe, nom_pere, nom_mere, photo, adresse_parent, 
+							matricule, eleve.etat, eleve.statut as statut, 
+							eleve.id as id, rne
 					FROM eleve, classe
-					WHERE eleve.etat='$etat' AND 
-						eleve.classe = '$classe' AND 
-						code_classe = classe 
-					ORDER BY nom";
+					WHERE eleve.etat='$etat'
+						AND classe='$classe'
+						AND classe = classe.id
+						
+					ORDER BY nom_complet";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
 		}
 		
 		
+		// Les statistiques de liste d'une classe donnée 
+		public function listeEleveStat($classe, $etat, $as){
+			$table = 'eleve';
+			$effFilleRed = $this->statSexeStatut($table, $classe, 'F','R');
+			$effFilleNv = $this->statSexeStatut($table, $classe, 'F','N');
+			$effGarRed = $this->statSexeStatut($table, $classe, 'M','R');
+			$effGarNv = $this->statSexeStatut($table, $classe, 'M','N');
+			$stat['FR'] = $effFilleRed;
+			$stat['FN'] = $effFilleNv;
+			$stat['GR'] = $effGarRed;
+			$stat['GN'] = $effGarNv;
+			$stat['F'] = $effFilleRed + $effFilleNv;
+			$stat['G'] = $effGarRed + $effGarNv;
+			$stat['R'] = $effFilleRed + $effGarRed;
+			$stat['N'] = $effFilleNv + $effGarNv;
+			$stat['T'] = $stat['F'] + $stat['G'];
+			return $stat;
+		}
 		
+		
+		private function statSexeStatut($table, $classe, $sexe, $statut){
+			$sql = "SELECT count(*) as nombre
+					FROM $table 
+					WHERE sexe='$sexe'
+						AND statut='$statut'
+						AND classe='$classe'
+						AND etat = 'non_supprime'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res['nombre'];
+		}
 		
 		
 		
@@ -979,25 +1134,93 @@
 		 }
 		 
 		 
-		 
+		 public function upgradeListe($classe){
+			$liste = $this->listeEleve($classe, 'non_supprime');
+			echo '<pre>';print_r($liste); echo '</pre>';
+			for($i=0;$i<count($liste);$i++){
+				$nom = strtolower($liste[$i]['nom']);
+				$prenom = strtolower($liste[$i]['prenom']);
+				$id = $liste[$i]['id'];
+				$nomComplet = strtoupper($nom).' '.ucwords($prenom);
+				echo '<p>'.$nomComplet.'</p>';
+				$update = $this->_db->prepare("UPDATE eleve SET 
+								nom_complet =:nomComplet,
+								nom =:nom,
+								prenom =:prenom
+								WHERE id =:id");
+				$update->bindValue(':nomComplet', $nomComplet);
+				$update->bindValue(':nom','');
+				$update->bindValue(':prenom','');
+				$update->bindValue(':id', $id);
+				
+				$update->execute();
+			}
+		 }
 		 
 		 
 		 
 		 public function viewClasseSection($section, $etat){
 			$sql = "SELECT * 
-						FROM classe 
-						WHERE etat='".$etat."'
-							AND section = '".$section."'
-						ORDER BY code_classe DESC";
+					FROM classe 
+					WHERE etat='".$etat."'
+						AND section = '".$section."'
+					ORDER BY niveau DESC";
 			$req = $this->_db->query($sql);
-			while($res=$req->fetch(PDO::FETCH_ASSOC)) {
+			$res=$req->fetchAll(PDO::FETCH_ASSOC);
+			/*while() {
 				$classe[] = $res;
-			}
-			return $classe;
+			}*/
+			return $res;
 		 }
 		 
 		 
-		 
+		// Les Classes appartenant à un même niveau 
+		public function getClasseByNiveau($niveau){
+			$sql = "SELECT id, section, nom_classe 
+					FROM classe
+					WHERE niveau_classe='$niveau'
+						AND etat_classe='actif'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+		
+		// Les statistiques des élèves par niveau 
+		public function statEleveNiveau($niveau, $etat, $as){
+			$sqlM = "SELECT count(*) as masculin
+					FROM eleve, classe 
+					WHERE niveau_classe = '$niveau'
+						AND classe = classe.id
+						AND eleve.etat = '$etat'
+						AND sexe = 'M'";
+			$reqM = $this->_db->query($sqlM);
+			$resM = $reqM->fetch(PDO::FETCH_ASSOC);
+			$masculin = $resM['masculin'];
+			
+			$sqlF = "SELECT count(*) as feminin
+					FROM eleve, classe 
+					WHERE niveau_classe = '$niveau'
+						AND classe = classe.id
+						AND eleve.etat = '$etat'
+						AND sexe = 'F'";
+			$reqF = $this->_db->query($sqlF);
+			$resF = $reqF->fetch(PDO::FETCH_ASSOC);
+			$feminin = $resF['feminin'];
+
+			$sql = "SELECT count(*) as total
+					FROM eleve, classe 
+					WHERE niveau_classe = '$niveau'
+						AND classe = classe.id
+						AND eleve.etat = '$etat'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			$total = $res['total'];
+			
+			$stat = array('M'=>$masculin,
+							'F'=>$feminin,
+							'T'=>$total);
+			return $stat;
+		}
 		 
 		 /*Les niveaux de l'application */
 		public function listeNiveaux(){

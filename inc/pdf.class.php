@@ -3,7 +3,94 @@
 	class pdf extends FPDF {
 		
 		
+		function convert($texte){
+			$txt = iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $texte);
+			return $txt;
+		}
 		
+		
+		
+		function Entete(){
+			$this->Image('images/logo.jpg', 90, 20, 25);
+			$this->SetFont('Times','',8);
+			$this->Cell(70,7, $this->convert($_SESSION['information']['pays_fr']),0,0,'C');
+			$this->Cell(50,7, $this->convert(''),0,0,'C');
+			$this->Cell(70,7, $this->convert($_SESSION['information']['pays_en']),0,0,'C');
+			
+			$this->Ln(4);
+			
+			$this->Cell(70,7, $this->convert($_SESSION['information']['devise_fr']),0,0,'C');
+			$this->Cell(50,7, $this->convert(''),0,0,'C');
+			$this->Cell(70,7, $this->convert($_SESSION['information']['devise_en']),0,0,'C');
+			$this->Ln(3);
+			
+			$this->Cell(70,7, $this->convert('**************'),0,0,'C');
+			$this->Cell(50,7, $this->convert(''),0,0,'C');
+			$this->Cell(70,7, $this->convert('**************'),0,0,'C');
+			$this->Ln(4);
+			
+			$this->Cell(70,7, strtoupper($this->convert($_SESSION['information']['ministere_fr'])),0,0,'C');
+			$this->Cell(50,7, strtoupper($this->convert('')),0,0,'C');
+			$this->Cell(70,7, strtoupper($this->convert($_SESSION['information']['ministere_en'])),0,0,'C');
+			$this->Ln(4);
+			
+			$this->Cell(70,7, $this->convert('**************'),0,0,'C');
+			$this->Cell(50,7, $this->convert(''),0,0,'C');
+			$this->Cell(70,7, $this->convert('**************'),0,0,'C');
+			$this->Ln(4);
+			
+			$this->Cell(70,7, strtoupper($this->convert($_SESSION['information']['region_fr'])),0,0,'C');
+			$this->Cell(50,7, strtoupper($this->convert('')),0,0,'C');
+			$this->Cell(70,7, strtoupper($this->convert($_SESSION['information']['region_en'])),0,0,'C');
+			$this->Ln(4);
+			
+			$this->Cell(70,7, $this->convert('**************'),0,0,'C');
+			$this->Cell(50,7, $this->convert(''),0,0,'C');
+			$this->Cell(70,7, $this->convert('**************'),0,0,'C');
+			$this->Ln(4);
+			
+			$this->Cell(70,7, strtoupper($this->convert($_SESSION['information']['departement_fr'])),0,0,'C');
+			$this->Cell(50,7, strtoupper($this->convert('')),0,0,'C');
+			$this->Cell(70,7, strtoupper($this->convert($_SESSION['information']['departement_en'])),0,0,'C');
+			$this->Ln(4);
+			
+			$this->Cell(70,7, $this->convert('**************'),0,0,'C');
+			$this->Cell(50,7, $this->convert(''),0,0,'C');
+			$this->Cell(70,7, $this->convert('**************'),0,0,'C');
+			$this->Ln(4);
+			
+			$this->SetFont('Times','B',9);
+			$this->Cell(70,7, strtoupper($this->convert($_SESSION['information']['nom_etablissement_fr'])),0,0,'C');
+			$this->Cell(50,7, $this->convert(''),0,0,'C');
+			$this->Cell(70,7, strtoupper($this->convert($_SESSION['information']['nom_etablissement_en'])),0,0,'C');
+			$this->Ln(4);
+			
+			$this->SetFont('Times','I',8);
+			$contactFr = 'Contact : '.$_SESSION['information']['contact'];
+			$contactEn = 'Contact : '.$_SESSION['information']['contact'];
+			$emailFr = 'Email : '.$_SESSION['information']['email'];
+			$emailEn = 'Email : '.$_SESSION['information']['email'];
+			$bpFr = 'B.P. : '.$_SESSION['information']['bp'].' '.$_SESSION['information']['arrondissement'];
+			$bpEn = 'P.O. Box: '.$_SESSION['information']['bp'].' '.$_SESSION['information']['arrondissement'];
+			$this->Cell(70,7, $this->convert($bpFr.'. '.$contactFr),0,0,'C');
+			$this->Cell(50,7, $this->convert(''),0,0,'C');
+			$this->Cell(70,7, $this->convert($bpEn.'. '.$contactEn),0,0,'C');
+			$this->Ln(4);
+			
+			$this->SetFont('Times','B',8);
+			$asFr = 'Année Scolaire : '.$_SESSION['information']['annee_scolaire'];
+			$asEn = 'School Year : '.$_SESSION['information']['annee_scolaire'];
+			$this->Cell(70,7, $this->convert($asFr),0,0,'C');
+			$this->Cell(50,7, $this->convert(''),0,0,'C');
+			$this->Cell(70,7, $this->convert($asEn),0,0,'C');
+			$this->Ln(10);
+
+		}
+		
+		
+		
+		
+		/*
 		public function EnteteDoc($ministere, $pays, $ets, $devise, 
 									$contact, $anneeScolaire){
 			$this->SetFont('Times','',8);
@@ -21,7 +108,7 @@
 			$this->SetFont('Times','B',8);
 			$this->Cell(10,20, utf8_decode($contact),0,0,'L');
 			$this->Cell(165,20, 'Annee Scolaire : '.$anneeScolaire,0,0,'R');
-		}
+		}*/
 		
 		
 		
@@ -30,7 +117,7 @@
 		
 		
 		
-		
+		/*
 		public function EnteteDocAnglais($ministere, $pays, $ets, $devise, 
 									$contact, $anneeScolaire){
 			
@@ -49,33 +136,9 @@
 			$this->SetFont('Times','B',8);
 			$this->Cell(10,20, utf8_decode($contact),0,0,'L');
 			$this->Cell(165,20, 'School Year : '.$anneeScolaire,0,0,'R');
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			/*$this->SetFont('Times','',8);
-			$this->Cell(10,20, strtoupper(utf8_decode($ministere)),0,0,'L');
-			$this->Cell(175,20, utf8_decode($pays),0,0,'R');
-			// $this->Image('images/homme.png', 100, 8, 20);
-			
-			$this->Ln(6);
-			$this->SetFont('Times','B',12);
-			$this->Cell(10,20, strtoupper(utf8_decode($ets)),0,0,'L');
-			$this->SetFont('Times','',8);
-			$this->Cell(165,20, $devise,0,0,'R');
-			
-			$this->Ln(6);
-			$this->SetFont('Times','B',8);
-			$this->Cell(10,20, $contact);
-			$this->Cell(165,20, 'School Year : '.$anneeScolaire,0,0,'R');*/
-		}
+		}*/
 		
-		
+		/*
 		// POUR LE MODE PAYSAGE (LANDSCAPE)
 		public function EnteteDocL($ministere, $pays, $ets, $devise,
 									$contact, $anneeScolaire){
@@ -94,11 +157,11 @@
 			$this->SetFont('Times','B',8);
 			$this->Cell(10,10, $contact);
 			$this->Cell(250,10, 'Annee Scolaire : '.$anneeScolaire,0,0,'R');
-		}
+		}*/
 		
 		
 		
-		
+		/*
 		public function EnteteDocLAnglais($ministere, $pays, $ets, $devise,
 									$contact, $anneeScolaire){
 			$this->SetFont('Times','',8);
@@ -116,39 +179,22 @@
 			$this->SetFont('Times','B',8);
 			$this->Cell(10,10, $contact);
 			$this->Cell(250,10, 'School Year : '.$anneeScolaire,0,0,'R');
-		}
+		}*/
 		
 		
-		
-		
-		
-		public function Titre($titre){
+		function Titre($titre){
 			// On crée d'abord un espace pour gérer les informations d'entête
-			$this->Ln(20);
+			$this->Ln(9);
 			$this->SetFont('Times', 'B', 18);
 			// Déplacer à droite
-			$this->Cell(40);
+			$this->Cell(10);
 			// Bordure du titre
-			$this->Cell(140, 8, utf8_decode($titre), 0, 0 , 'C');
+			$this->Cell(140, 8, $this->convert(strtoupper($titre)), 0, 0 , 'C');
 			// Retour à la ligne
-			$this->Ln(15);
+			$this->Ln(10);
 		}
 		
 		
-		
-		// POUR LE MODE PAYSAGE (LANDSCAPE)
-		
-		public function TitreL($titre){
-			// On crée d'abord un espace pour gérer les informations d'entête
-			$this->Ln(20);
-			$this->SetFont('Times', 'B', 20);
-			// Déplacer à droite
-			$this->Cell(80);
-			// Bordure du titre
-			$this->Cell(140, 8, utf8_decode($titre), 0, 0 , 'C');
-			// Retour à la ligne
-			$this->Ln(15);
-		}
 		
 		
 		
@@ -182,7 +228,19 @@
 		
 		
 		
-		
+		function Footer(){
+			$this->setFont('Arial', 'I', 6);
+			$texte = $_SESSION['appName'].' '.$_SESSION['appVersion'];
+			$texte .= ', votre partenaire éducatif. Tel : ';
+			$texte .= $_SESSION['appContact'];
+			// $numeroPage = 'Page '.$this->PageNo().' / '.$this->AliasNbPages();
+			$this->Text(90,290, $this->convert($texte));
+			$this->setAuthor('Nyambi Computer Services');
+			$this->setCreator('Nyambi Ngikwa Richard');
+			$dateGeneration = 'Edité le '.DATE('d / m / Y').' à '.DATE('H:i:s');
+			$this->Text(25, 290, $this->convert($dateGeneration));
+		}
+		/*
 		// Pour le mode Portrait
 		public function Footer(){
 			// $this->setY(-50);
@@ -195,7 +253,7 @@
 			$dateImpr .= DATE('d').'/'.DATE('m').'/'.DATE('Y');
 			$dateImpr .= ' à '.DATE('H').':'.DATE('i').':'.DATE('s').'.';
 			$this->Text(165,290, utf8_decode($dateImpr), 0,0,'R');
-		}
+		}*/
 		
 		
 		

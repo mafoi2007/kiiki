@@ -17,17 +17,10 @@
 	define("utilisateur", 'root');
 	define("pass", '');
 	define("database", 'cywibra');
-	$serveur = 'localhost';
-	$utilisateur = 'root';
-	$pass = '';
-	
-	$database = 'cywibra';
-	
-	
-	
-	// mysql_pconnect($serveur,$utilisateur,$pass) or die(mysql_error());
-	
-	// mysql_select_db($database) or die(mysql_error());
+	define("appName", "Noteplus"); 
+	define("appVersion", "2.1");
+	define("appSlogan", "Votre partenaire educatif");
+	define("appContact", 675400828);
 	
 	
 	

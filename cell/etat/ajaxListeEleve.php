@@ -12,7 +12,7 @@
 					$i = 1;
 					for($i=0;$i<count($listeClasses);$i++){
 						echo "<option 
-							value='".$listeClasses[$i]['code_classe']."'>";
+							value='".$listeClasses[$i]['id']."'>";
 						echo $listeClasses[$i]['nom_classe']."</option>\n";
 					}
 				?>

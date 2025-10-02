@@ -13,7 +13,7 @@
 	if(isset($_SESSION['message'])){
 		echo "<script>alert('".$_SESSION['message']."');</script>";
 	}unset($_SESSION['message']);
-	if($_SESSION['poste']=='cell') { 
+	if($_SESSION['user']['userPost']=='cell') { 
 		
 	
 ?>
@@ -24,7 +24,7 @@
 	<link rel="stylesheet" type="text/css" href="../styles/style.css" />
 	<link rel ="shortcut icon" type="image/x-icon" href="../images/homme.png" />
 	<link type="text/javascript" src="../javascript/js.js" />
-	<title>Bienvenue <?php echo $_SESSION['login']; ?></title>
+	<title>Bienvenue <?php echo $_SESSION['user']['nom']; ?></title>
 </head>
 
 <body>
