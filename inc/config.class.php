@@ -492,6 +492,7 @@
 			$this->_matricule = $this->setMatricule($matricule);
 			$this->_nom = $this->setNom($nom);
 			$this->_prenom = $this->setPrenom($prenom);
+			$this->_nomComplet = strtoupper($this->_nom).' '.ucwords($this->_prenom);
 			$this->_sexe = $this->setSexe($sexe);
 			$this->_date_naissance = $date;
 			$this->_lieu_naissance = $this->setNom($lieu);
@@ -502,7 +503,7 @@
 			$this->_etat = 'non_supprime';
 			$this->_num_rand = $num;
 			$this->_adresse_parent = $adresse;
-			$this->_as = $_SESSION['as'];
+			$this->_as = $this->getCurrentYear();
 			
 			// On vérifie l'existence du matricule en base une première fois 
 			$sql_mat = "SELECT * 
@@ -534,8 +535,7 @@
 				elseif(empty($res_std['id'])){
 					$add = $this->_db->prepare('INSERT INTO eleve SET 
 									rne =:rne,
-									nom =:nom,
-									prenom =:prenom,
+									nom_complet =:nomComplet,
 									sexe =:sexe,
 									lieu_naissance =:lieu_naissance,
 									nom_pere =:nom_pere,
@@ -551,8 +551,8 @@
 									');
 					
 					$add->bindValue(':rne', $this->_rne);
-					$add->bindValue(':nom', $this->_nom);
-					$add->bindValue(':prenom', $this->_prenom);
+					$add->bindValue(':nomComplet', $this->_nomComplet);
+					// $add->bindValue(':prenom', $this->_prenom);
 					$add->bindValue(':sexe', $this->_sexe);
 					$add->bindValue(':date_naissance', $this->_date_naissance);
 					$add->bindValue(':lieu_naissance', $this->_lieu_naissance);
@@ -681,8 +681,8 @@
 		public function rechercherEleve($nom){
 			$sql = "SELECT *
 					FROM eleve 
-					WHERE nom LIKE '%$nom%'
-					ORDER BY nom";
+					WHERE nom_complet LIKE '%$nom%'
+					ORDER BY nom_complet";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
@@ -895,19 +895,24 @@
 		
 		
 		
-		public function getEleve($id) {
-			$req = "SELECT eleve.id as id, nom, prenom, sexe, lieu_naissance, matricule, rne, 
-							classe, nom_classe, adresse_parent, statut, eleve.etat as etat, nom_pere,
-							nom_mere, photo, a_s, date_naissance,
-							DATE_FORMAT(date_naissance, '%d  %M  %Y') as date_fr
-					FROM eleve, classe 
-					WHERE eleve.id = '$id'
-						AND classe = code_classe
-					ORDER BY nom";
-			$sql = $this->_db->query($req);
-			$res=$sql->fetch(PDO::FETCH_ASSOC);
-			$eleve = $res;
-			return $eleve;
+		// On affiche tout sur un élève donné 
+		public function getEleve($eleve){
+			$this->_eleve = $this->setUserId($eleve);
+			$sql = "SELECT nom_complet, eleve.sexe as sexe, 
+						eleve.statut, date_naissance,
+						DATE_FORMAT(date_naissance, '%d / %m / %Y') as date_fr,
+						lieu_naissance, classe, nom_classe,
+						nom_pere, nom_mere, photo, rne,
+						adresse_parent, matricule, eleve.etat as etat, 
+						a_s, libelle_annee, eleve.id as id
+						
+					FROM eleve, classe, annee_scolaire 
+					WHERE eleve.id = '$this->_eleve'
+						AND classe = classe.id
+						";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res;
 		}
 		
 		
@@ -1124,13 +1129,15 @@
 		public function viewClasse($etat){
 			$sql = "SELECT * 
 						FROM classe 
-						WHERE etat='".$etat."' 
-						ORDER BY section, niveau, code_classe DESC";
+						WHERE etat_classe='".$etat."' 
+						ORDER BY section, niveau_classe, code_classe DESC";
 			$req = $this->_db->query($sql);
-			while($res=$req->fetch(PDO::FETCH_ASSOC)) {
+			$res=$req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+			/*while() {
 				$classe[] = $res;
 			}
-			return $classe;
+			return $classe;*/
 		 }
 		 
 		 
@@ -1162,9 +1169,9 @@
 		 public function viewClasseSection($section, $etat){
 			$sql = "SELECT * 
 					FROM classe 
-					WHERE etat='".$etat."'
+					WHERE etat_classe='".$etat."'
 						AND section = '".$section."'
-					ORDER BY niveau DESC";
+					ORDER BY niveau_classe DESC";
 			$req = $this->_db->query($sql);
 			$res=$req->fetchAll(PDO::FETCH_ASSOC);
 			/*while() {

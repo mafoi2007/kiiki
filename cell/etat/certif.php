@@ -33,9 +33,9 @@
 									/></td>";
 					
 					echo "<td>";
-					echo strtoupper($recherche[$i]['nom']);
-					echo " ";
-					echo ucwords($recherche[$i]['prenom'])."</td>";
+					echo $recherche[$i]['nom_complet'];
+					
+					echo "</td>";
 
 					echo "
 					<input type='hidden' name='to_print' value='certificatScol' />

@@ -74,7 +74,7 @@
 					$liste = $config->viewClasse('actif');
 						for($nb = 0; $nb <count($liste);$nb++) {
 							echo "<option value=";
-							echo $liste[$nb]['code_classe'];
+							echo $liste[$nb]['id'];
 							echo ">";
 							echo $liste[$nb]['nom_classe'];
 							echo "</option>\n";

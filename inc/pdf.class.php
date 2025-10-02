@@ -90,6 +90,165 @@
 		
 		
 		
+		function certificatScolariteFr($eleve,$information){
+			$this->Titre('certificat de scolarite');
+			// Informations diverses
+			$this->SetFont('Times','BI',14);
+			$annee_scolaire = $eleve['libelle_annee'];
+			$this->Ln(5);
+			$phrase_1 = 'Je soussigné ';
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, utf8_decode($phrase_1), 0, 0 , 'L');
+			$this->SetFont('Times','B',14);
+			$this->Cell(80, 7, strtoupper($information['chefEts']), 0, 0 , 'C');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, 'Principal du ', 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(120, 7, utf8_decode(strtoupper($information['nom_etablissement_fr'])), 0, 0 , 'C');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, utf8_decode("Certifie que l'élève "), 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(80, 7, utf8_decode($eleve['nom_complet']), 0, 0 , 'L');
+			$this->SetFont('Times','',14);
+			$this->Cell(25, 7, 'Matricule : ', 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(25, 7, utf8_decode($eleve['rne']), 0, 0 , 'L');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, utf8_decode('Fils / Fille de : '), 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(120, 7, utf8_decode($eleve['nom_pere']), 0, 0 , 'L');
+			$this->SetFont('Arial','B',10);
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, utf8_decode('Et de : '), 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(120, 7, utf8_decode($eleve['nom_mere']), 0, 0 , 'L');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, utf8_decode(' Né(e) le : '), 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(50, 7, utf8_decode($eleve['date_fr']), 0, 0 , 'C');
+			$this->SetFont('Times','',14);
+			$this->Cell(15, 7, utf8_decode('à : '), 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(50, 7, utf8_decode($eleve['lieu_naissance']), 0, 0 , 'C');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$phrase_2 = "Est inscrit(e) dans mon établissement en classe de :";
+			$this->Cell(110, 7, utf8_decode($phrase_2), 0,0,'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(60, 7, utf8_decode($eleve['nom_classe']), 0,0,'L');
+			// $this->Cell(30, 7, utf8_decode($annee_scolaire), 1,0,'L');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(70, 7, utf8_decode("Pour l'année scolaire: "), 0,0,'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(100, 7, utf8_decode($annee_scolaire),0,0,'L');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$enFoi = utf8_decode("En foi de quoi le présent certificat de scolarité est délivré pour servir et valoir ce que de droit/.");
+			$this->Cell(190, 7, $enFoi, 0,0,'C');
+			$this->SetFont('Times','BI',14);
+			// $this->Cell(100, 7, utf8_decode($eleve['rne']), 1,0,'C');
+			
+			// Le signataire du document 
+			$this->Ln(10);
+			$this->Cell(100,30, ' ');
+			$arrondissement = $information['ville'];
+			$signataire = $information['signataire_fr'];
+			$this->SetFont('Times','',14);
+			$this->Cell(100,30, utf8_decode('Fait à ').ucwords($arrondissement).', le '.DATE('d / m / Y'));
+			$this->Ln(10);
+			$this->Cell(130,30, ' ');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(100,25, $signataire.',');
+		}
+		
+		
+		
+		function certificatScolariteEn($eleve, $information){
+			$this->Titre('certificate of enrollment');
+			// Informations diverses
+			$this->SetFont('Times','BI',14);
+			$annee_scolaire = $eleve['libelle_annee'];
+			$this->Ln(5);
+			$phrase_1 = 'I, undersigned ';
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, utf8_decode($phrase_1), 0, 0 , 'L');
+			$this->SetFont('Times','B',14);
+			$this->Cell(80, 7, strtoupper($information['chefEts']), 0, 0 , 'C');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, 'Principal of ', 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(120, 7, utf8_decode(strtoupper($information['nom_etablissement_en'])), 0, 0 , 'C');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, utf8_decode("hereby certifies that "), 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(80, 7, utf8_decode($eleve['nom_complet']), 0, 0 , 'L');
+			$this->SetFont('Times','',14);
+			$this->Cell(25, 7, 'National Id :', 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(25, 7, utf8_decode($eleve['rne']), 0, 0 , 'L');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, utf8_decode('Son / Daugther of : '), 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(120, 7, utf8_decode($eleve['nom_pere']), 0, 0 , 'L');
+			$this->SetFont('Arial','B',10);
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, utf8_decode('And of : '), 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(120, 7, utf8_decode($eleve['nom_mere']), 0, 0 , 'L');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(50, 7, utf8_decode(' Born on the : '), 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(50, 7, utf8_decode($eleve['date_naissance']), 0, 0 , 'C');
+			$this->SetFont('Times','',14);
+			$this->Cell(15, 7, utf8_decode('at : '), 0, 0 , 'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(50, 7, utf8_decode($eleve['lieu_naissance']), 0, 0 , 'C');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$phrase_2 = "Is effectively in class :";
+			$this->Cell(110, 7, utf8_decode($phrase_2), 0,0,'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(60, 7, utf8_decode($eleve['nom_classe']), 0,0,'L');
+			// $this->Cell(30, 7, utf8_decode($annee_scolaire), 1,0,'L');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$this->Cell(70, 7, utf8_decode("For the school Year: "), 0,0,'L');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(100, 7, utf8_decode($annee_scolaire),0,0,'L');
+			$this->Ln(10);
+			$this->SetFont('Times','',14);
+			$enFoi = utf8_decode("In witness whereof, the present school certificate is issued to serve and attest as may be ");
+			$enFoi2 = utf8_decode("required by law/.");
+			$this->Cell(190, 7, $enFoi, 0,0,'L');
+			$this->Ln(5);
+			$this->Cell(190, 7, $enFoi2, 0,0,'L');
+			$this->SetFont('Times','BI',14);
+			// $this->Cell(100, 7, utf8_decode($eleve['rne']), 1,0,'C');
+			
+			// Le signataire du document 
+			$this->Ln(10);
+			$this->Cell(100,30, ' ');
+			$arrondissement = $information['ville'];
+			$signataire = $information['signataire_en'];
+			$this->SetFont('Times','',14);
+			$this->Cell(100,30, utf8_decode('Done at ').ucwords($arrondissement).', on the '.DATE('d / m / Y'));
+			$this->Ln(10);
+			$this->Cell(130,30, ' ');
+			$this->SetFont('Times','BI',14);
+			$this->Cell(100,25, $signataire.',');
+		}
+		
 		/*
 		public function EnteteDoc($ministere, $pays, $ets, $devise, 
 									$contact, $anneeScolaire){

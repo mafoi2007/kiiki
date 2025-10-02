@@ -961,45 +961,21 @@
 		echo '<pre>'; print_r($_POST); echo '</pre>';
 		$as = $config->getCurrentYear();  // Année Scolaire en Cours
 		
-		/***********************************************
-		Certificat de Scolarité 
-		**********************************************/
+		// On édite le certificat de scolarité 
 		if($_POST['to_print']=='certificatScol'){
-			echo '<pre>';
-				print_r($infoEts);
+			if(!$_POST['eleve']){
+				$_SESSION['message'] = 'Vous devez choisir un élève';
+				header('Location:'.$source);
+			}else{
+				$eleve = $config->getEleve($_POST['eleve']);
+				$section = $config->getSectionclasse($eleve['classe']);
+				$_SESSION['eleve'] = $eleve;
+				$_SESSION['classe']['section'] = $section;
+				$_SESSION['print'] = 'certificatScol';
+				// echo var_dump($eleve);
+				header('Location:print_pdf.php');
+			}
 			
-			$resultat = $config->getEleve($_POST['eleve']);
-			// print_r($_SESSION);
-			$anneeScolaire = $infoEts['annee_scolaire'];
-			$nomChefEts = $infoEts['chef_ets'];
-			$titreChefEts = $infoEts['signataire'];
-			$nomEts = $infoEts['nom_ets'];
-			$nomEleve = strtoupper($resultat['nom']).' '.ucwords($resultat['prenom']);
-			$matriculeEleve = $resultat['matricule'];
-			$rne = $resultat['rne'];
-			$dateNaissance = $resultat['date_fr'];
-			$lieuNaissance = ucwords($resultat['lieu_naissance']);
-			$nomPere = strtoupper($resultat['nom_pere']);
-			$nomMere = strtoupper($resultat['nom_mere']);
-			$classeEleve = strtoupper($resultat['nom_classe']);
-			echo '</pre>';
-			$_SESSION['certificat'] = array(
-												'annee_scolaire'=>$anneeScolaire,
-												'nom_chef_ets'=>$nomChefEts,
-												'titre_chef_ets'=>$titreChefEts,
-												'nom_ets'=>$nomEts,
-												'nom_eleve'=>$nomEleve,
-												'matricule_eleve'=>$matriculeEleve,
-												'rne'=>$rne,
-												'date_naissance'=>$dateNaissance,
-												'lieu_naissance'=>$lieuNaissance,
-												'nom_pere'=>$nomPere,
-												'nom_mere'=>$nomMere,
-												'nom_classe'=>$classeEleve,
-												''=>''
-												);
-			$_SESSION['print'] = 'certificatScol';
-			header('Location:print_pdf.php');
 		}
 		
 		

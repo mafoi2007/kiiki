@@ -337,102 +337,24 @@
 		***************************************************************
 		**************************************************************/
 		elseif($_SESSION['print']=='certificatScol'){
-			$pdf->addPage();
-			// On met l'entête du document
-			$pdf->EnteteDoc($ministere, $pays, $ets, $devise, $contact, $as);
-			// On met le titre du document 
-			$titre = strtoupper("certificat de scolarité");
-			// $titre .= strtoupper($_SESSION['liste'][0]['nom_classe']);
-			$pdf->Titre($titre);
-			
-			
-			// Informations diverses
-			$pdf->SetFont('Times','BI',14);
-			$annee_scolaire = $_SESSION['certificat']['annee_scolaire'];
-			$pdf->Cell(150,10,utf8_decode('Année Scolaire : ').$annee_scolaire,0,0,'C');
-			$pdf->Ln(15);
-			
+			$eleve = $_SESSION['eleve'];
+			$classe = $_SESSION['classe'];
+			$information = $_SESSION['information'];
 			$pdf->SetFillColor(155, 150, 149);
-			// $pdf->SetTextColor(100,45,2);
-			$phrase_1 = 'Je soussigné ';
-			$pdf->SetFont('Times','',14);
-			$pdf->Cell(70, 7, utf8_decode($phrase_1), 0, 0 , 'C');
-			$pdf->SetFont('Times','B',14);
-			$pdf->Cell(70, 7, $_SESSION['certificat']['nom_chef_ets'], 0, 0 , 'C');
-			$pdf->Ln(10);
-			$pdf->SetFont('Times','',14);
-			$pdf->Cell(80, 7, $_SESSION['certificat']['titre_chef_ets'].' du ', 0, 0 , 'C');
-			$pdf->SetFont('Times','BI',14);
-			$pdf->Cell(60, 7, utf8_decode($_SESSION['certificat']['nom_ets']), 0, 0 , 'C');
-			$pdf->Ln(10);
-			$pdf->SetFont('Times','',14);
-			$pdf->Cell(35, 7, 'Atteste que ', 0, 0 , 'C');
-			$pdf->SetFont('Times','BI',14);
-			$pdf->Cell(100, 7, utf8_decode($_SESSION['certificat']['nom_eleve']), 0, 0 , 'C');
-			$pdf->SetFont('Times','',14);
-			$pdf->Cell(25, 7, 'Matricule : ', 0, 0 , 'C');
-			$pdf->SetFont('Times','BI',14);
-			$pdf->Cell(32, 7, utf8_decode($_SESSION['certificat']['matricule_eleve']), 0, 0 , 'C');
-			$pdf->Ln(10);
-			$pdf->SetFont('Times','',14);
-			$pdf->Cell(25, 7, utf8_decode('Né(e) le : '), 0, 0 , 'C');
-			$pdf->SetFont('Times','BI',14);
-			$pdf->Cell(55, 7, utf8_decode($_SESSION['certificat']['date_naissance']), 0, 0 , 'C');
-			$pdf->SetFont('Times','',14);
-			$pdf->Cell(15, 7, utf8_decode('à : '), 0, 0 , 'C');
-			$pdf->SetFont('Times','BI',14);
-			$pdf->Cell(85, 7, utf8_decode($_SESSION['certificat']['lieu_naissance']), 0, 0 , 'C');
-			$pdf->SetFont('Arial','B',10);
-			$pdf->Ln(10);
-			$pdf->SetFont('Times','',14);
-			$pdf->Cell(25, 7, utf8_decode('De : '), 0, 0 , 'C');
-			$pdf->SetFont('Times','BI',14);
-			$pdf->Cell(115, 7, utf8_decode($_SESSION['certificat']['nom_pere']), 0, 0 , 'C');
-			$pdf->Ln(10);
-			$pdf->SetFont('Times','',14);
-			$pdf->Cell(25, 7, utf8_decode(' Et De : '), 0, 0 , 'C');
-			$pdf->SetFont('Times','BI',14);
-			$pdf->Cell(115, 7, utf8_decode($_SESSION['certificat']['nom_mere']), 0, 0 , 'C');
-			$pdf->Ln(10);
-			$pdf->SetFont('Times','',14);
-			$phrase_2 = "Est inscrit comme élève de notre";
-			$phrase_2 .= " établissement durant l'année scolaire ";
-			$pdf->Cell(160, 7, utf8_decode($phrase_2), 0,0,'C');
-			$pdf->SetFont('Times','BI',14);
-			$pdf->Cell(30, 7, utf8_decode($annee_scolaire), 0,0,'C');
-			$pdf->Ln(10);
-			$pdf->SetFont('Times','',14);
-			$pdf->Cell(40, 7, utf8_decode('En classe de : '), 0,0,'C');
-			$pdf->SetFont('Times','BI',14);
-			$pdf->Cell(100, 7, utf8_decode($_SESSION['certificat']['nom_classe']), 0,0,'C');
-			$pdf->Ln(10);
-			$pdf->SetFont('Times','',14);
-			$pdf->Cell(70, 7, utf8_decode('Son Matricule National est : '), 0,0,'C');
-			$pdf->SetFont('Times','BI',14);
-			$pdf->Cell(100, 7, utf8_decode($_SESSION['certificat']['rne']), 0,0,'C');
-			
-			
-			
-			// Le signataire du document 
-			$pdf->Ln(10);
-			$pdf->Cell(100,30, ' ');
-			$arrondissement = $_SESSION['arrondissement'];
-			$signataire = $_SESSION['signataire'];
-			$pdf->SetFont('Times','',14);
-			$pdf->Cell(100,30, utf8_decode('Fait à ').ucwords($arrondissement).', le '.DATE('d M Y'));
-			$pdf->Ln(10);
-			$pdf->Cell(130,30, ' ');
-			$pdf->SetFont('Times','BI',14);
-			$pdf->Cell(100,25, $signataire.',');
-			// $pdf->setY(-20);
-			// $pdf->Footer();
-			
-			$pdf->setAuthor('Nyambi Computer Services');
-			$pdf->setCreator('Cell Info '.$_SESSION['certificat']['nom_ets']);
-			$as = str_replace(' ','_',$_SESSION['certificat']['annee_scolaire']);
-			$nomOut = str_replace(' ','_',$_SESSION['certificat']['nom_eleve']);
-			$nomFichier = 'CERTIFICAT_DE_SCOLARITE_'.$as.'_'.$nomOut.'.pdf';
-			$pdf->Output($nomFichier, 'I');
+			// La page doit s'afficher en fonction de la section 
+			if($classe['section']=='en'){
+				$pdf->addPage();
+				$pdf->Entete();
+				$pdf->certificatScolariteEn($eleve, $information);
+			}
+			elseif($classe['section']=='fr'){
+				$pdf->addPage();
+				$pdf->Entete();
+				$pdf->certificatScolariteFr($eleve, $information);
+			}
+			$fileName = 'Certificat_Scolarite_';
+			$fileName .= str_replace(' ','_', $eleve['nom_complet']);
+			$pdf->Output($fileName, 'I');
 		}
 		
 		
