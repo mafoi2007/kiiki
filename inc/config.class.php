@@ -578,59 +578,120 @@
 		
 		
 		
+		/**
+		 * on vérifie dans un table qu'une information n'existe pas déjà pour éviter les doublons
+		 * @$nom : la valeur du champs
+		 * @$table : La table dans laquelle chercher
+		 * @$champ : le libelle du champs
+		 **/
+		protected function checkInfo($nom, $table, $champ){
+			$sql = "SELECT ".$champ." 
+					FROM `".$table."` 
+					WHERE ".$champ." = '".$nom."'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res;
+		}
 		
 		
 		
 		
 		
-		
-		public function TransfererEleve($source, $matricule, $nom, $prenom, 
-									$sexe, $date, $lieu, $pere, $mere, $classe, 
-									$adresse = '', $statut, $num, $photo){
-			
-			$this->_matricule = $this->setMatricule($matricule);
-			$this->_nom = $this->setNom($nom);
-			$this->_prenom = $this->setPrenom($prenom);
-			$this->_sexe = $this->setSexe($sexe);
-			$this->_date_naissance = $date;
-			$this->_lieu_naissance = $this->setNom($lieu);
-			$this->_nom_pere = $this->setNom($pere);
-			$this->_nom_mere = $this->setNom($mere);
-			$this->_classe = $this->setNom($classe);
-			$this->_statut = $this->setStatut($statut);
-			$this->_etat = 'non_supprime';
-			$this->_num_rand = $num;
-			$this->_adresse_parent = $adresse;
-			$this->_as = $_SESSION['as'];
-			$this->_photo = $photo;
+		public function TransfererEleve($source, $eleve){
+			echo '<pre>'; print_r($eleve); echo '</pre>';
+			$this->_annee = $eleve['annee'];
+			$this->_classe = $this->setUserId($eleve['classe']);
+			$this->_statut = $this->setStatut($eleve['statut']);
+			$this->_eleve = $eleve['eleve'];
+			$table = $this->_annee.'_eleve';
+			for($i=0;$i<count($this->_eleve);$i++){
+				$idEleve = $this->_eleve[$i];
+				$infoEleve = $this->getEleveOld($idEleve, $this->_annee);
+				$rne = $infoEleve['rne'];
+				$nomComplet = $infoEleve['nom_complet'];
+				$sexe = $infoEleve['sexe'];
+				$dateNaissance = $infoEleve['date_naissance'];
+				$lieuNaissance = $infoEleve['lieu_naissance'];
+				$matricule = $infoEleve['matricule'];
+				$classe = $this->_classe;
+				$adresseParent = $infoEleve['adresse_parent'];
+				$statut = $this->_statut;
+				$numRand = $infoEleve['num_rand'];
+				$etat = $infoEleve['etat'];
+				$nomPere = $infoEleve['nom_pere'];
+				$nomMere = $infoEleve['nom_mere'];
+				$photo = $infoEleve['photo'];
+				$as = $this->getCurrentYear();
+				echo $rne;
+				// print_r($infoEleve);
+				echo '<pre>';print_r($infoEleve); echo '</pre>';
+				$verification = $this->checkInfo($nomComplet,'eleve','nom_complet');
+				if($verification==false){
+					$add = $this->_db->prepare("INSERT INTO eleve 
+												SET rne=:rne,
+												nom_complet =:nomComplet,
+												sexe =:sexe,
+												date_naissance=:dateN,
+												lieu_naissance=:lieuN,
+												matricule=:matricule,
+												classe=:classe,
+												adresse_parent=:adresse,
+												statut=:statut,
+												num_rand=:numRand,
+												etat=:etat,
+												nom_pere=:pere,
+												nom_mere=:mere,
+												photo=:photo,
+												a_s=:as");
+					$add->bindValue(':rne', $rne);
+					$add->bindValue(':nomComplet', $nomComplet);
+					$add->bindValue(':sexe', $sexe);
+					$add->bindValue(':dateN', $dateNaissance);
+					$add->bindValue(':lieuN', $lieuNaissance);
+					$add->bindValue(':matricule', $matricule);
+					$add->bindValue(':classe', $classe);
+					$add->bindValue(':adresse', $adresseParent);
+					$add->bindValue(':statut', $statut);
+					$add->bindValue(':numRand', $numRand);
+					$add->bindValue(':etat', $etat);
+					$add->bindValue(':pere', $nomPere);
+					$add->bindValue(':mere', $nomMere);
+					$add->bindValue(':photo', $photo);
+					$add->bindValue(':as', $as);
+					$add->execute();
+					$_SESSION['message'] = ' ';
+					$_SESSION['message'] .= 'Elève(s) transféré(s) avec succès.';
+				}else{
+					$_SESSION['message'] = ' ';
+					$_SESSION['message'] .= 'Certains élèves étaient déjà enregistrés';
+				}
+			} 
+			header('Location:'.$source);
+			/**/
 			
 			// On vérifie l'existence du matricule en base une première fois 
-			$sql_mat = "SELECT * 
-						FROM eleve 
-						WHERE matricule = '".$this->_matricule."'";
-			$req_mat = $this->_db->query($sql_mat);
-			$res_mat = $req_mat->fetch(PDO::FETCH_ASSOC);
+			/*
 			
 			if(!empty($res_mat['id'])){
 				$_SESSION['message'] = "Le Matricule a déjà été utilisé.";
 				header('Location:'.$source);
-			}
-			else/*if(empty($res_mat['id']))*/{
+			}*/
+			// else/*if(empty($res_mat['id']))*/{
 				// On vérifie que le nom n'a pas été déjà enregistré
-				$sql_std = "SELECT * 
+				/*$sql_std = "SELECT * 
 							FROM eleve 
 							WHERE nom = '".$this->_nom."' AND 
 								prenom = '".$this->_prenom."'";
 				$req_std = $this->_db->query($sql_std);
-				$res_std = $req_std->fetch(PDO::FETCH_ASSOC);
+				$res_std = $req_std->fetch(PDO::FETCH_ASSOC);*/
 				
-				if(!empty($res_std['id'])){
+				/*if(!empty($res_std['id'])){
 					$_SESSION['message'] = "Cet élève a déjà été positionné dans une classe.";
 					header('Location:'.$source);
-				}
+				}*/
 				// On peut insérer l'élève sans problème
-				elseif(empty($res_std['id'])){
-					$add = $this->_db->prepare('INSERT INTO eleve SET 
+				// elseif(empty($res_std['id'])){
+					/*$add = $this->_db->prepare('INSERT INTO eleve SET 
 									nom =:nom,
 									prenom =:prenom,
 									sexe =:sexe,
@@ -646,9 +707,9 @@
 									num_rand =:num_rand,
 									a_s =:as,
 									photo =:photo
-									');
+									');*/
 					
-					$add->bindValue(':nom', $this->_nom);
+					/*$add->bindValue(':nom', $this->_nom);
 					$add->bindValue(':prenom', $this->_prenom);
 					$add->bindValue(':sexe', $this->_sexe);
 					$add->bindValue(':date_naissance', $this->_date_naissance);
@@ -664,14 +725,14 @@
 					$add->bindValue(':as', $this->_as);
 					$add->bindValue(':photo', $this->_photo);
 					
-					$add->execute();
+					$add->execute();*/
 					
 					
 					// $_SESSION['message'] = strtoupper($this->_nom);
-					$_SESSION['message'] = 'Elève(s) transféré(s) avec succès.';
-					header('Location:'.$source);
-				}
-			}
+					/*$_SESSION['message'] = 'Elève(s) transféré(s) avec succès.';
+					header('Location:'.$source);*/
+				// }
+			// }
 		}
 		
 		
@@ -753,7 +814,7 @@
 					FROM `$tableEleve`
 					WHERE classe='$classe'
 					AND etat = '$etat'
-					ORDER BY nom";
+					ORDER BY nom_complet";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
@@ -924,19 +985,13 @@
 		
 		public function getEleveOld($id, $annee) {
 			$tableEleve = $annee.'_eleve';
-			$champId = $tableEleve.'.id';
-			$req = "SELECT `$tableEleve`.id as id, nom, prenom, sexe, lieu_naissance, matricule, 
-							classe, nom_classe, adresse_parent, statut, nom_pere,
-							nom_mere, photo, a_s, date_naissance,
-							DATE_FORMAT(date_naissance, '%d  %M  %Y') as date_fr
-					FROM `$tableEleve`, `classe` 
-					WHERE `$tableEleve`.id = '$id'
-						AND classe = code_classe
-					ORDER BY nom";
-			$sql = $this->_db->query($req);
-			$res=$sql->fetch(PDO::FETCH_ASSOC);
-			$eleve = $res;
-			return $eleve;
+			$idChamp = $tableEleve.'.'.$id;
+			$sql = "SELECT * 
+					FROM `".$tableEleve."`
+					WHERE id= ".$id."";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res;
 		}
 		
 		
@@ -992,14 +1047,25 @@
 		
 		
 		/* Mettre à jour les informations d'un élève */
-		public function updEleve($matricule, $rne, $nom, $prenom, $sexe,
+		public function updEleve($update/*$matricule, $rne, $nom, $prenom, $sexe,
 								$dateN, $lieuN, $cls, $statut, 
-								$id, $adr, $nomPere, $nomMere){
+								$id, $adr, $nomPere, $nomMere*/){
+			$rne = $update['rne'];
+			$matricule = $update['matricule'];
+			$nom = $update['nom'];
+			$sexe = $update['sexe'];
+			$dateN = $update['date_naissance'];
+			$lieuN = $update['lieu_naissance'];
+			$cls = $update['classe'];
+			$statut = $update['statut'];
+			$nomPere = $update['nom_pere'];
+			$nomMere  = $update['nom_mere'];
+			$adr = $update['adresse_parent'];
+			$id = $update['idEleve'];
 			$sql = "UPDATE eleve
 					SET matricule='$matricule',
 						rne='$rne',
-						nom='$nom',
-						prenom='$prenom',
+						nom_complet='$nom',
 						sexe='$sexe',
 						date_naissance='$dateN',
 						lieu_naissance='$lieuN',
@@ -1010,14 +1076,22 @@
 						adresse_parent='$adr'
 					WHERE id='$id'";
 			$this->_db->query($sql);
-			// mysql_query($sql) or die(mysql_error());
 			$_SESSION['message'] = 'Elève Mis à jour';
 			
 		}
 		
 		
 		
-		
+		/*public function findEleve($eleve){
+			$sql = "SELECT *
+					FROM eleve 
+					WHERE nom_complet LIKE '%$eleve%' 
+					ORDER BY nom_complet
+					";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}*/
 		
 		
 		
@@ -1059,10 +1133,11 @@
 		
 		public function listeAncienneClasse($annee){
 			$table = $annee.'_eleve';
-			$sql = "SELECT classe, nom_classe, niveau
-					FROM `$table`, classe 
-					WHERE classe = code_classe
-					GROUP BY code_classe";
+			$sql = "SELECT DISTINCT classe, nom_classe, niveau_classe
+					FROM `$table`, classe, niveau_classe
+					WHERE classe = classe.id
+						AND niveau_classe = niveau_classe.id
+					ORDER BY classe.section, code_niveau";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
@@ -1103,9 +1178,9 @@
 				$add = $this->_db->prepare('INSERT INTO classe SET 
 								nom_classe =:nomClasse,
 								code_classe =:codeClasse,
-								niveau =:niveauClasse,
+								niveau_classe =:niveauClasse,
 								section =:sectionClasse,
-								etat =:etatClasse
+								etat_classe =:etatClasse
 								');
 					
 				$add->bindValue(':nomClasse', $this->_nom);
@@ -1122,9 +1197,31 @@
 			}
 		}
 		
+		// On liste les classes au complet et on trie par section
+		public function viewClasseAll($etat){
+			$sql = "SELECT classe.id as id, classe.section as section, nom_classe, code_classe, niveau_classe, 
+							etat_classe, nom_niveau
+						FROM classe , niveau_classe
+						WHERE etat_classe='".$etat."'
+							AND niveau_classe = niveau_classe.id
+						ORDER BY classe.section, niveau_classe, nom_classe";
+			$req = $this->_db->query($sql);
+			$res=$req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		 }
+		
+		public function listeSexe(){
+			$sexe['libelle'] = array('-Choisir Sexe-','Féminin', 'Masculin');
+			$sexe['code'] = array('null','F','M');
+			return $sexe;
+		}
 		
 		
-		
+		public function listeStatut(){
+			$sexe['libelle'] = array('-Choisir Statut-','Nouveau', 'Redoublant');
+			$sexe['code'] = array('null','N','R');
+			return $sexe;
+		}
 		
 		public function viewClasse($etat){
 			$sql = "SELECT * 
@@ -1258,6 +1355,132 @@
 		}
 		
 		
+		// On met à jour l'élève 
+		public function updateEleve($source, $eleve){
+			// echo '<pre>'; print_r($eleve); echo '</pre>';
+			$idEleve = $this->setUserId($eleve['idEleve']);
+			$infoEleve = $this->getEleve($idEleve);
+			// echo '<pre>';print_r($infoEleve);echo '</pre>';
+			
+			$nom = $this->setNom($eleve['nomEleve']);
+			$classe = $this->setUserId($eleve['classeEleve']);
+			$matricule = $eleve['matriculeEleve'];
+			$rne = $eleve['rneEleve'];
+			$sexe = $this->setSexe($eleve['sexeEleve']);
+			$statut = $this->setStatut($eleve['statutEleve']);
+			$dateNaiss = $eleve['dateNaissEleve'];
+			$lieuNaiss = $this->setNom($eleve['lieuNaissEleve']);
+			$nomPere = $this->setNom($eleve['nomPereEleve']);
+			$nomMere = $this->setNom($eleve['nomMereEleve']);
+			$contactParent = $eleve['contactParentEleve'];
+			
+			
+			if(!empty($nom)){
+				if($nom!=$infoEleve['nom_complet']){
+					$champ[] = 'nom_complet';
+					$valeur[] = $nom;
+				}
+			}
+			if(!empty($sexe)){
+				if($sexe!=$infoEleve['sexe']){
+					$champ[] = 'sexe';
+					$valeur[] = $sexe;
+				}
+			}
+			if(!empty($statut)){
+				if($statut!=$infoEleve['statut']){
+					$champ[] = 'statut';
+					$valeur[] = $statut;
+				}
+			}
+			if(!empty($dateNaiss)){
+				if($dateNaiss!=$infoEleve['date_naissance']){
+					$champ[] = 'date_naissance';
+					$valeur[] = $dateNaiss;
+				}
+			}
+			if(!empty($lieuNaiss)){
+				if($lieuNaiss!=$infoEleve['lieu_naissance']){
+					$champ[] = 'lieu_naissance';
+					$valeur[] = $lieuNaiss;
+				}
+			}
+			if(!empty($classe)){
+				if($classe!=$infoEleve['classe']){
+					$champ[] = 'classe';
+					$valeur[] = $classe;
+				}
+			}
+			if(!empty($nomPere)){
+				if($nomPere!=$infoEleve['nom_pere']){
+					$champ[] = 'nom_pere';
+					$valeur[] = $nomPere;
+				}
+			}
+			if(!empty($nomMere)){
+				if($nomMere!=$infoEleve['nom_mere']){
+					$champ[] = 'nom_mere';
+					$valeur[] = $nomMere;
+				}
+			}
+			if(!empty($contactParent)){
+				if($contactParent!=$infoEleve['adresse_parent']){
+					$champ[] = 'adresse_parent';
+					$valeur[] = $contactParent;
+				}
+			}
+			if(!empty($matricule)){
+				if($matricule!=$infoEleve['matricule']){
+					$champ[] = 'matricule';
+					$valeur[] = $matricule;
+				}
+			}
+
+			if(!empty($rne)){
+				if($rne!=$infoEleve['rne']){
+					$champ[] = 'rne';
+					$valeur[] = $rne;
+				}
+			}
+			
+			// Si au moins une modification est effectuée, alors $champ ne sera pas null 
+			if(!empty($champ)){
+				$iteration = count($champ);
+				$sql = "UPDATE eleve SET ";
+				for($i=0;$i<$iteration-1;$i++){
+					$sql .= $champ[$i]." = '".$valeur[$i]."', ";
+				}
+				$valeurFinaleArray = $iteration - 1;
+				$sql .= $champ[$valeurFinaleArray]." = '".$valeur[$valeurFinaleArray]."' ";
+				$sql .= "WHERE id = '".$idEleve."'";
+				$this->_db->query($sql);
+				$_SESSION['message'] = 'Informations Elève Mises à jour.';
+				header('Location:'.$source);
+			}else{
+				$_SESSION['message'] = 'Aucune information n a été modifiée.';
+				header('Location:'.$source);
+			}
+		}
+		
+		
+		// On restaure un élève supprimé
+		public function restaureEleve($source, $eleve){
+			$sql = "UPDATE eleve SET etat= 'non_supprime' WHERE id='$eleve'";
+			$this->_db->query($sql);
+			$_SESSION['message'] = 'Eleve retabli';
+			header('Location:'.$source);
+		}
+		
+		
+		// On supprime un élève 
+		public function deleteEleve($source, $eleve){
+			$sql = "UPDATE eleve SET etat= 'supprime' WHERE id='$eleve'";
+			$this->_db->query($sql);
+			$_SESSION['message'] = 'Eleve supprimé';
+			header('Location:'.$source);
+		}
+		
+		
 		
 		
 		public function viewNomClasse($classe){
@@ -1299,8 +1522,7 @@
 		
 		
 		public function getClasse($id) {
-			$req = "SELECT nom_classe, code_classe, etat, niveau, id 
-							
+			$req = "SELECT nom_classe, code_classe, etat_classe, niveau_classe, id
 					FROM classe 
 					WHERE id = '$id'
 					ORDER BY nom_classe";
@@ -2511,6 +2733,7 @@
 			note, note_saisie, */
 			$sql_new[] = "truncate bull_ann";
 			$sql_new[] = "truncate bull_trim";
+			$sql_new[] = "truncate bull_seq";
 			$sql_new[] = "truncate classe_principale";
 			$sql_new[] = "truncate journal_connexion";
 			$sql_new[] = "truncate note";
@@ -2519,8 +2742,12 @@
 				$this->_db->query($sql_new[$k]);
 			}
 			
-			// On supprime les tables commençant par VIEW_ 
+			// On supprime les tables commençant par VIEW_ et par sequence_
 			
+			
+			// On vide les profs de la table prof_classe 
+			$sql_prof = "UPDATE prof_classe SET id_prof=''";
+			$this->_db->query($sql_prof);
 			
 			// La gestion particulière de la table ELEVE (On renomme la Table et on en crée une nouvelle)
 			$oldName = 'eleve';
@@ -2529,6 +2756,8 @@
 			
 			$tableStructure  = "CREATE TABLE IF NOT EXISTS `eleve` (";
 			$tableStructure .= "`id` int(11) NOT NULL AUTO_INCREMENT primary key,";
+			$tableStructure .= "`rne` int(11) NOT NULL,";
+			$tableStructure .= "`nom_complet` varchar(255) NOT NULL,";
 			$tableStructure .= "`nom` varchar(255) NOT NULL,";
 			$tableStructure .= "`prenom` varchar(255) DEFAULT NULL,";
 			$tableStructure .= "`sexe` varchar(1) NOT NULL,";

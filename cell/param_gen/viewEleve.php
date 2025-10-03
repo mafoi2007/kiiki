@@ -7,7 +7,7 @@
 			?>
 			
 			<form method='post' action='../traitement.php'>
-				<table border='0' width='50%'>
+				<table border='0' width='100%'>
 					<tr>
 						<td>Matricule National : </td>
 						<td><input 
@@ -25,17 +25,12 @@
 					<tr>
 						<td>Nom : </td>
 						<td><input 
+								size='70'
 								type='text' 
 								name='nom' 
-								value='<?php echo $info['nom'];?>' /></td>
+								value='<?php echo utf8_decode($info['nom_complet']);?>' /></td>
 					</tr>
-					<tr>
-						<td>Prénom : </td>
-						<td><input 
-								type='text' 
-								name='prenom' 
-								value='<?php echo $info['prenom'];?>' /></td>
-					</tr>
+					
 					<tr>
 						<td>Sexe : </td>
 						<td>
@@ -75,9 +70,9 @@
 								$cls = $config->viewClasse('actif');
 								for($i=0;$i<count($cls);$i++){
 									echo "<option value='";
-									echo $cls[$i]['code_classe'];
+									echo $cls[$i]['id'];
 									echo "'";
-									if($info['classe']==$cls[$i]['code_classe']){
+									if($info['classe']==$cls[$i]['id']){
 										echo "selected";
 									}
 									echo ">";

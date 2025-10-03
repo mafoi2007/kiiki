@@ -152,10 +152,24 @@
 	
 	
 	if(isset($_POST['PrepaListe'])){
-		echo '<pre>';
+		/*echo '<pre>';
 		print_r($_REQUEST);
-		echo '</pre>';
+		echo '</pre>';*/
 		$eleve = $_REQUEST['eleve'];
+		$info = array('eleve'=>$eleve, 
+					'annee'=>$_POST['tableDepart'],
+					'classe'=>$_POST['classe'],
+					'statut'=>$_POST['statut']);
+		$config->transfererEleve($source, $info);
+		
+		
+		
+		
+		
+		
+		
+		
+		/*$eleve = $_REQUEST['eleve'];
 		$tableDepart = $_REQUEST['tableDepart'];
 		$classeBut = $_REQUEST['classe'];
 		$statut = $_REQUEST['statut'];
@@ -190,7 +204,7 @@
 								$redoublant,
 								$numero,
 								$photo);
-		}
+		}*/
 	}
 	
 	
@@ -211,19 +225,8 @@
 		elseif($choix=='Mettre à jour'){
 			echo '<pre>';
 			print_r($_REQUEST);
-			$config->updEleve($_REQUEST['matricule'],
-							$_REQUEST['rne'],
-							$_REQUEST['nom'],
-							$_REQUEST['prenom'],
-							$_REQUEST['sexe'],
-							$_REQUEST['date_naissance'],
-							$_REQUEST['lieu_naissance'],
-							$_REQUEST['classe'],
-							$_REQUEST['statut'],
-							$_REQUEST['idEleve'],
-							$_REQUEST['adresse_parent'],
-							$_REQUEST['nom_pere'],
-							$_REQUEST['nom_mere']);
+			$update = $_REQUEST;
+			$config->updEleve($update);
 		}
 		elseif($choix=='ReActiver'){
 			$config->RestaurerEleve($_POST['idEleve']);
@@ -232,12 +235,52 @@
 	}
 	
 	
+	// On met à jour un élève 
+	if(isset($_POST['updEleve'])){
+		// echo '<pre>'; print_r($_POST); echo '</pre>';
+		$eleve = $_POST;
+		$var1 = '?action=updateEleve&';
+		$var2 = 'id='.$_POST['idEleve'];
+		$source = str_replace($var1,'',$source);
+		$source = str_replace($var2,'',$source);
+		$config->updateEleve($source, $eleve);
+	}
+	
+	
+	
+	// On supprime un élève 
+	if(isset($_POST['delEleve'])){
+		// echo '<pre>'; print_r($_POST); echo '</pre>';
+		$eleve = $_POST;
+		$var1 = '?action=deleteEleve&';
+		$var2 = 'id='.$eleve['eleve'];
+		$source = str_replace($var1,'',$source);
+		$source = str_replace($var2,'',$source);
+		if($eleve['delEleve']=='non'){
+			$_SESSION['message'] = 'L élève ne sera pas supprimé';
+			header('Location:'.$source);
+		}elseif($eleve['delEleve']=='oui'){
+			$config->deleteEleve($source, $eleve['eleve']);
+		}
+	}
 	
 	
 	
 	
-	
-	
+	if(isset($_POST['restaureEleve'])){
+		echo '<pre>'; print_r($_POST); echo '</pre>';
+		$eleve = $_POST;
+		$var1 = '?action=restaureEleve&';
+		$var2 = 'id='.$eleve['eleve'];
+		$source = str_replace($var1,'',$source);
+		$source = str_replace($var2,'',$source);
+		if($eleve['restaureEleve']=='non'){
+			$_SESSION['message'] = 'L élève ne sera pas retabli';
+			header('Location:'.$source);
+		}elseif($eleve['restaureEleve']=='oui'){
+			$config->restaureEleve($source, $eleve['eleve']);
+		}
+	}
 	
 	
 	if(isset($_REQUEST['majClasse'])){

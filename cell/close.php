@@ -55,6 +55,7 @@
 		require_once('../part/entete.php');
 		// require_once('../part/nav.php');
 		require_once('../part/menu.php');
+		// echo '<pre>'; print_r($_SESSION);
 	?>
 	
 	<div id="body">
@@ -62,8 +63,8 @@
 		<h3 class='alert'>Espace en Construction</h3>
 		<form method='post' action='../traitement.php' target='_blank'>
 			<p>Voulez - vous cloturer l'année scolaire 
-			<font class='alert'><?php echo $_SESSION['as']; ?></font>
-			<input type='hidden' name='endYear' value='<?php echo $_SESSION['as'];?>' />
+			<font class='alert'><?php echo $_SESSION['information']['annee_scolaire']; ?></font>
+			<input type='hidden' name='endYear' value='<?php echo $_SESSION['information']['annee_scolaire'];?>' />
 			et ouvrir l'année scolaire 
 			<select name='newYear'>
 				<?php 
@@ -77,7 +78,7 @@
 				<option selected value=''>---</option>
 			</select>
 			 pour le compte du 
-			 <font class='alert'><?php echo $_SESSION['ets']; ?></font>
+			 <font class='alert'><?php echo $_SESSION['information']['nom_etablissement_fr']; ?></font>
 			 ? 
 			
 			<input type='submit' name='closeYear' value='Oui' />

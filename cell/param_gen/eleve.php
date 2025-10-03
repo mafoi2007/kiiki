@@ -12,21 +12,21 @@ $page .= 'action=';
 	<li>
 		<h3>
 			<a 
-				href='<?php echo $page;?>addEleve#body3' 
+				href='<?php echo $page;?>addEleve#body2' 
 				target = '_blank'>Ajouter un élève
 			</a>
 		</h3></li>
 	<li>
 		<h3>
 			<a 
-				href='<?php echo $page;?>viewEleve#body3' 
+				href='<?php echo $page;?>viewEleve#body2' 
 				target = '_blank'>Visualiser un élève
 			</a>
 		</h3></li>
 	<li>
 		<h3>
 			<a 
-				href='<?php echo $page;?>prepaListe#body3'  
+				href='<?php echo $page;?>prepaListe#body2'  
 				target = '_blank'>Préparer les listes
 			</a>
 		</h3></li>
@@ -40,7 +40,20 @@ if(isset($_GET['action'])){
 	$action = $_GET['action'];
 	if($action=='addEleve'){ 
 		include_once('addEleve.php');
-	}elseif($action=='viewEleve'){
+	}elseif($action=='detailEleve'){
+		include_once('detailEleve.php');
+	}elseif($action=='updateEleve'){
+		include_once('updateEleve.php');
+	}elseif($action=='deleteEleve'){
+		include_once('deleteEleve.php');
+	}elseif($action=='restaureEleve'){
+		include_once('restaureEleve.php');
+	}
+	
+	
+	
+	
+	elseif($action=='viewEleve'){
 		$idEleve = $_GET['eleve'];
 		// echo $idEleve;
 		if(empty($idEleve)){

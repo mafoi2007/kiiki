@@ -17,7 +17,7 @@
 					$niveau = $config->listeNiveauxSection($section);
 					for($a=0;$a<count($niveau);$a++){
 						echo "<option value='";
-						echo $niveau[$a]['code_niveau'];
+						echo $niveau[$a]['id'];
 						echo "'>".$niveau[$a]['nom_niveau']."</option>";
 					}
 					?>
