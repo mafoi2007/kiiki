@@ -410,18 +410,7 @@
 		
 		
 		
-		public function setPoste($poste){
-			if($poste!='prof' or 
-				$poste!='admin' or 
-				$poste!='sg' or 
-				$poste!='censeur'){
-				$this->_poste = $poste;
-			}
-			else{
-				$this->_poste = 'Undefined';
-			}
-			return $this->_poste;
-		}
+		
 		
 		
 		
@@ -598,7 +587,7 @@
 		
 		
 		public function TransfererEleve($source, $eleve){
-			echo '<pre>'; print_r($eleve); echo '</pre>';
+			// echo '<pre>'; print_r($eleve); echo '</pre>';
 			$this->_annee = $eleve['annee'];
 			$this->_classe = $this->setUserId($eleve['classe']);
 			$this->_statut = $this->setStatut($eleve['statut']);
@@ -624,7 +613,7 @@
 				$as = $this->getCurrentYear();
 				echo $rne;
 				// print_r($infoEleve);
-				echo '<pre>';print_r($infoEleve); echo '</pre>';
+				// echo '<pre>';print_r($infoEleve); echo '</pre>';
 				$verification = $this->checkInfo($nomComplet,'eleve','nom_complet');
 				if($verification==false){
 					$add = $this->_db->prepare("INSERT INTO eleve 
@@ -667,72 +656,6 @@
 				}
 			} 
 			header('Location:'.$source);
-			/**/
-			
-			// On vérifie l'existence du matricule en base une première fois 
-			/*
-			
-			if(!empty($res_mat['id'])){
-				$_SESSION['message'] = "Le Matricule a déjà été utilisé.";
-				header('Location:'.$source);
-			}*/
-			// else/*if(empty($res_mat['id']))*/{
-				// On vérifie que le nom n'a pas été déjà enregistré
-				/*$sql_std = "SELECT * 
-							FROM eleve 
-							WHERE nom = '".$this->_nom."' AND 
-								prenom = '".$this->_prenom."'";
-				$req_std = $this->_db->query($sql_std);
-				$res_std = $req_std->fetch(PDO::FETCH_ASSOC);*/
-				
-				/*if(!empty($res_std['id'])){
-					$_SESSION['message'] = "Cet élève a déjà été positionné dans une classe.";
-					header('Location:'.$source);
-				}*/
-				// On peut insérer l'élève sans problème
-				// elseif(empty($res_std['id'])){
-					/*$add = $this->_db->prepare('INSERT INTO eleve SET 
-									nom =:nom,
-									prenom =:prenom,
-									sexe =:sexe,
-									lieu_naissance =:lieu_naissance,
-									nom_pere =:nom_pere,
-									nom_mere =:nom_mere,
-									matricule =:matricule,
-									classe =:classe,
-									date_naissance =:date_naissance,
-									statut =:statut,
-									adresse_parent =:adresse_parent,
-									etat =:etat,
-									num_rand =:num_rand,
-									a_s =:as,
-									photo =:photo
-									');*/
-					
-					/*$add->bindValue(':nom', $this->_nom);
-					$add->bindValue(':prenom', $this->_prenom);
-					$add->bindValue(':sexe', $this->_sexe);
-					$add->bindValue(':date_naissance', $this->_date_naissance);
-					$add->bindValue(':lieu_naissance', $this->_lieu_naissance);
-					$add->bindValue(':nom_pere', $this->_nom_pere);
-					$add->bindValue(':nom_mere', $this->_nom_mere);
-					$add->bindValue(':matricule', $this->_matricule);
-					$add->bindValue(':classe', $this->_classe);
-					$add->bindValue(':adresse_parent', $this->_adresse_parent);
-					$add->bindValue(':statut', $this->_statut);
-					$add->bindValue(':num_rand', $this->_num_rand);
-					$add->bindValue(':etat', $this->_etat);
-					$add->bindValue(':as', $this->_as);
-					$add->bindValue(':photo', $this->_photo);
-					
-					$add->execute();*/
-					
-					
-					// $_SESSION['message'] = strtoupper($this->_nom);
-					/*$_SESSION['message'] = 'Elève(s) transféré(s) avec succès.';
-					header('Location:'.$source);*/
-				// }
-			// }
 		}
 		
 		
@@ -821,7 +744,17 @@
 		}
 		
 		
-		
+		public function rechercherEleveOld($nom, $annee){
+			$table = $annee."_eleve";
+			echo $table;
+			/*$sql = "SELECT *
+					FROM eleve 
+					WHERE nom_complet LIKE '%$nom%'
+					ORDER BY nom_complet";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;*/
+		}
 		
 		
 		public function infoEleveClasse($classe,$etat){
@@ -1816,7 +1749,7 @@
 			$this->_nom = $this->setNom($nom);
 			$this->_prenom = $this->setPrenom($prenom);
 			$this->_sexe = $this->setSexeGest($sexe);
-			$this->_poste = $this->setPoste($poste);
+			$this->_poste = $this->setUserId($poste);
 			$this->_login = $this->setLogin($login);
 			$this->_mdp = $this->setPwd($mdp);
 			
@@ -1892,7 +1825,16 @@
 		}
 		
 		
-		
+		// On recherche un prof
+		public function findProf($nom){
+			$sql = "SELECT enseignant.id as id, nom, sexe, poste, login, etat
+					FROM enseignant
+					WHERE nom LIKE '%$nom%'
+						OR login LIKE '%$nom%'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
 		
 		// Visualiser le Gestionnaire Courant
 		public function viewGestionnaireCourant($id){
@@ -1905,7 +1847,103 @@
 			return $reponse;
 		}
 		
+		// On affiche tout sur un utilisateur donné 
+		public function getUser($utilisateur){
+			$sql = "SELECT enseignant.id as id, nom, prenom, sexe, poste, login, mdp, etat, image,
+							libelle_poste
+					FROM enseignant, poste 
+					WHERE enseignant.id = '$utilisateur' 
+						AND poste.id = poste";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			// if($res['sexe']=='F'){$valeurSexe='Feminin';}
+			// elseif($res['sexe']=='M'){$valeurSexe='Masculin';}
+			// $res['valeurSexe'] = $valeurSexe;
+			return $res;
+		}
 		
+		
+		// On restaure un utilisateur supprimé
+		public function restaureUser($source, $user){
+			$sql = "UPDATE enseignant SET etat = 'actif' WHERE id='$user'";
+			$this->_db->query($sql);
+			$_SESSION['message'] = 'Utilisateur restauré.';
+			header('Location:'.$source);
+		}  
+		
+		
+		// On supprime un utilisateur 
+		public function deleteUser($source, $user){
+			$sql = "UPDATE enseignant SET etat= 'inactif' WHERE id='$user'";
+			$this->_db->query($sql);
+			$_SESSION['message'] = 'Utilisateur supprimé';
+			header('Location:'.$source);
+		}
+		
+		
+		
+		
+		
+		// On met à jour l'utilisateur 
+		public function updateUtilisateur($source, $utilisateur){
+			echo '<pre>'; print_r($utilisateur); echo '</pre>';
+			$userName = $this->setNom($utilisateur['userName']);
+			// $userSexe = $this->setSexe($utilisateur['userSex']);
+			$userSexe = $utilisateur['userSex'];
+			$userPoste = $this->setUserId($utilisateur['userPost']);
+			$userLogin = $this->setLogin($utilisateur['userLogin']);
+			$userId = $this->setUserId($utilisateur['userId']);
+			
+			$infoUtilisateur = $this->getUser($userId);
+			
+			echo '<pre>';print_r($infoUtilisateur);echo '</pre>';
+			if(!empty($userName)){
+				if($userName!=$infoUtilisateur['nom']){
+					$champ[] = 'nom';
+					$valeur[] = $userName;
+				}
+			}
+			
+			if(!empty($userLogin)){
+				if($userLogin!=$infoUtilisateur['login']){
+					$champ[] = 'login';
+					$valeur[] = $userLogin;
+				}
+			}
+			
+			if(!empty($userSexe)){
+				if($userSexe!=$infoUtilisateur['sexe']){
+					$champ[] = 'sexe';
+					$valeur[] = $userSexe;
+				}
+			}
+
+
+			if(!empty($userPoste)){
+				if($userPoste!=$infoUtilisateur['poste']){
+					$champ[] = 'poste';
+					$valeur[] = $userPoste;
+				}
+			}
+
+			
+			if(!empty($champ)){
+				$iteration = count($champ);
+				$sql = "UPDATE enseignant SET ";
+				for($i=0;$i<$iteration-1;$i++){
+					$sql .= $champ[$i]." = '".$valeur[$i]."', ";
+				}
+				$valeurFinaleArray = $iteration - 1;
+				$sql .= $champ[$valeurFinaleArray]." = '".$valeur[$valeurFinaleArray]."' ";
+				$sql .= "WHERE id = '".$userId."'";
+				$this->_db->query($sql);
+				$_SESSION['message'] = 'Informations Utilisateur Mises à jour.';
+				header('Location:'.$source);
+			}else{
+				$_SESSION['message'] = 'Aucune information modifiée.';
+				header('Location:'.$source);
+			}
+		}
 		
 		
 		/*Nommer un enseignant SG, censeur ou Administrateur */
@@ -2316,8 +2354,8 @@
 		public function listeClasseProfClasse(){
 			$sql = "SELECT id_classe, nom_classe
 					FROM prof_classe, classe
-					WHERE id_classe = code_classe
-					GROUP BY id_classe ORDER BY section, niveau, id_classe DESC";
+					WHERE id_classe = classe.id
+					GROUP BY id_classe ORDER BY section, niveau_classe, id_classe DESC";
 			$req = $this->_db->query($sql);
 			while($reponse = $req->fetch(PDO::FETCH_ASSOC)){
 				$resultat[] = $reponse;
@@ -2373,7 +2411,7 @@
 						classe as code_classe
 					FROM enseignant, classe, classe_principale
 					WHERE classe=code_classe AND prof=login
-					ORDER BY niveau DESC";
+					ORDER BY niveau_classe DESC";
 			$req = $this->_db->query($sql);
 			while($res=$req->fetch(PDO::FETCH_ASSOC)){
 				$resultat[] = $res;
@@ -3280,6 +3318,33 @@
 		
 		
 		
-		
+		public function arrangerNom(){
+			$sql = "SELECT * 
+					FROM enseignant
+					ORDER BY poste, nom";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			echo '<pre>'; print_r($res); echo '</pre>';
+			for($i=0;$i<count($res);$i++){
+				$name = strtolower($res[$i]['nom']);
+				$fName = strtolower($res[$i]['prenom']);
+				$login = strtolower($res[$i]['login']);
+				$nomComplet = strtoupper($name).' '.ucwords($fName);
+				$password = $this->setPassword($login);
+				$id = $res[$i]['id'];
+				echo '<p>'.$i.' Nom : <b>'.$nomComplet.'</b> et Login : <b>';
+				echo $login.'</b>. Mot de Passe : <b>'.$password.'</b> avec id = '.$id.'</p>';
+				$requete = $this->_db->prepare("UPDATE enseignant 
+												SET nom_complet_enseignant = :nomComplet,
+													login = :login,
+													mdp = :password 
+												WHERE id = :id");
+				$requete->bindValue('nomComplet', $nomComplet);
+				$requete->bindValue('login', $login);
+				$requete->bindValue('password', $password);
+				$requete->bindValue('id', $id);
+				$requete->execute();
+			}
+		}
 		
 	}

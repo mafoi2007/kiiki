@@ -39,6 +39,9 @@
 		<title><?php echo appName.' '.appVersion; ?>, Connectez-vous</title>
 	</head>
 	<body id='image'>
+		<?php 
+			$config->arrangerNom();
+		?>
 		<form method='post' action='traitement.php' id='connect'>
 			<h4>Connectez-vous à votre espace de gestion</h4>
 			<img src='images/cle.png' alt="connection">
@@ -55,6 +58,5 @@
 					</select>
 			</p>
 			<div id='connector' style = 'display:inline'>
-				
 			</div>
 		</form>

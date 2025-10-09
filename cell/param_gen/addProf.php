@@ -53,7 +53,7 @@
 						$listePoste = $config->listePoste();
 						for($i=0;$i<count($listePoste);$i++){
 							echo "<option value='";
-							echo $listePoste[$i]['code_poste'];
+							echo $listePoste[$i]['id'];
 							echo "'>".$listePoste[$i]['libelle_poste']."</option>";
 						}
 						?>

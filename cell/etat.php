@@ -1,11 +1,7 @@
 <?php
 	session_start();
 	require_once('../inc/connect.inc.php');
-	// require_once('../inc/fonction.inc.php');
 	
-	/*$smarty->assign('poste', $_SESSION['poste']);
-	$smarty->assign('login', $_SESSION['login']);
-	$smarty->display('index.tpl');*/
 	$config = new config($db);
 	
 	$gestionnaire = new gestionnaire($db);

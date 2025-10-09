@@ -161,50 +161,6 @@
 					'classe'=>$_POST['classe'],
 					'statut'=>$_POST['statut']);
 		$config->transfererEleve($source, $info);
-		
-		
-		
-		
-		
-		
-		
-		
-		/*$eleve = $_REQUEST['eleve'];
-		$tableDepart = $_REQUEST['tableDepart'];
-		$classeBut = $_REQUEST['classe'];
-		$statut = $_REQUEST['statut'];
-		for($i=0;$i<count($eleve);$i++){
-			$infoEleve = $config->getEleveOld($eleve[$i], $tableDepart);
-			echo '<pre>'; print_r($infoEleve); echo '</pre>';
-			$matricule = $infoEleve['matricule'];
-			$nom = $infoEleve['nom'];
-			$prenom = $infoEleve['prenom'];
-			$sexe = $infoEleve['sexe'];
-			$dateNaissance = $infoEleve['date_naissance'];
-			$lieuNaissance = $infoEleve['lieu_naissance'];
-			$nomPere = $infoEleve['nom_pere'];
-			$nomMere = $infoEleve['nom_mere'];
-			$classe = $classeBut;
-			$adresse = $infoEleve['adresse_parent'];
-			$redoublant = $statut;
-			$numero = '';
-			$etat = 'non_supprime';
-			$photo = $infoEleve['photo'];
-			$config->TransfererEleve($source,
-								$matricule,
-								$nom,
-								$prenom,
-								$sexe,
-								$dateNaissance,
-								$lieuNaissance,
-								$nomPere,
-								$nomMere,
-								$classe,
-								$adresse,
-								$redoublant,
-								$numero,
-								$photo);
-		}*/
 	}
 	
 	
@@ -473,13 +429,51 @@
 								$_POST['mdp_confirm']);
 	}
 	
+	// On met à jour un utilisateur 
+		if(isset($_POST['upd_utilisateur'])){
+			echo '<pre>'; print_r($_POST); echo '</pre>';
+			$utilisateur = $_POST;
+			$var1 = '?action=update&';
+			$var2 = 'id='.$_POST['userId'];
+			$source = str_replace($var1,'',$source);
+			$source = str_replace($var2,'',$source);
+			$config->updateUtilisateur($source, $utilisateur);
+		}
 	
 	
 	
+	// On supprime un utilisateur 
+		if(isset($_POST['delUser'])){
+			echo '<pre>'; print_r($_POST); echo '</pre>';
+			$utilisateur = $_POST;
+			$var1 = '?action=delete&';
+			$var2 = 'id='.$utilisateur['user'];
+			$source = str_replace($var1,'',$source);
+			$source = str_replace($var2,'',$source);
+			if($utilisateur['delUser']=='non'){
+				$_SESSION['message'] = 'L utilisateur ne sera pas supprimé';
+				header('Location:'.$source);
+			}elseif($utilisateur['delUser']=='oui'){
+				$config->deleteUser($source, $utilisateur['user']);
+			}
+			
+		}
 	
-	
-	
-	
+	// On restaure un utilisateur 
+		if(isset($_POST['restaureUser'])){
+			echo '<pre>'; print_r($_POST); echo '</pre>';
+			$user = $_POST;
+			$var1 = '?action=restaure&';
+			$var2 = 'id='.$user['user'];
+			$source = str_replace($var1,'',$source);
+			$source = str_replace($var2,'',$source); 
+			if($user['restaureUser']=='non'){
+				$_SESSION['message'] = 'L utilisateur ne sera pas restauré.';
+				header('Location:'.$source);
+			}elseif($user['restaureUser']=='oui'){
+				$config->restaureUser($source, $classe['user']);
+			}
+		}
 	
 	if(isset($_REQUEST['majProf'])){
 		$choix = $_REQUEST['majProf'];
@@ -1035,13 +1029,12 @@
 		-------------------------------------------------------------
 		-----------------------------------------------------------*/
 		if($_POST['to_print']=='listeEleve'){
-			$classe = (int) $_POST['classe'];
+			$classe = $_POST['classe'];
 				if($classe=='null'){
 					$_SESSION['message'] = 'Vous devez choisir une classe.';
 					header('Location:'.$source);
 				}else{
-					$listeEleve = $config->listeEleve($_POST['classe'], 'non_supprime');
-					// $config->upgradeListe($_POST['classe']);
+					$listeEleve = $config->listeEleve($_POST['classe'], 'non_supprime', $as );
 					$nbValue = count($listeEleve); // Si ça vaut 0, y'a pas d'élèves dans la classe.
 					if($nbValue===0){
 						$_SESSION['message'] = 'Classe sans élèves.';
@@ -1064,19 +1057,27 @@
 		-------------------------------------------------------------
 		-----------------------------------------------------------*/ 
 		elseif($_POST['to_print']=='ReleveNote'){
-			$object = $_POST['object'];
-			if($object=='null'){
-				$_SESSION['message'] = 'Aucune Classe sélectionnée.';
-				header('Location:'.$_SERVER['HTTP_REFERER']);
-			}
-			else{
-				$liste = $config->listeEleve($object,'non_supprime');
-				$_SESSION['liste'] = $liste;
-				$_SESSION['print'] = 'ReleveNote';
-				$_SESSION['section'] = $_POST['section'];
-				// echo '<pre>';print_r($liste);
-				header('Location:print_pdf.php');
-			}
+			$classe = $_POST['object'];
+				if($classe=='null'){
+					$_SESSION['message'] = 'Vous devez choisir une classe.';
+					header('Location:'.$source);
+				}else{
+					$listeEleve = $config->listeEleve($classe, 'non_supprime', $as );
+					$nbValue = count($listeEleve); // Si ça vaut 0, y'a pas d'élèves dans la classe.
+					// print_r($listeEleve);
+					if($nbValue===0){
+						$_SESSION['message'] = 'Classe sans élèves.';
+						header('Location:'.$source);
+					}else{
+						$section = $config->getSectionClasse($classe);
+						$_SESSION['classe']['information'] = $_SESSION['information'];
+						$_SESSION['classe']['eleve'] = $listeEleve;
+						$_SESSION['classe']['section'] = $section;
+						$_SESSION['classe']['stat'] = $config->listeEleveStat($classe, 'non_supprime', $as);
+						$_SESSION['print'] = 'releveNote';
+						header('Location:print_pdf.php');
+					}
+				}
 		}
 		/*---------------------------------------------------------
 		------------------------------------------------------------

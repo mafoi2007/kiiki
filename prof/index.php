@@ -1,22 +1,15 @@
 <?php
 	session_start();
 	require_once('../inc/connect.inc.php');
-	// require('../inc/fonction.inc.php');
 	$gestionnaire = new gestionnaire($db);
 	$config = new config($db);
 	$note = new note($db);
 	
 	
-	if($_SESSION['message']){
+	if(isset($_SESSION['message'])){
 		echo "<script>alert('".$_SESSION['message']."');</script>";
-	}
-	unset($_SESSION['message']);
-	
-	$poste = $_SESSION['poste'];
-	// $smarty->assign('poste', $_SESSION['poste']);
-	
-	if($_SESSION['poste']=='prof')
-		{
+	}unset($_SESSION['message']);
+	if($_SESSION['user']['userPost']=='prof'){
 		 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -26,7 +19,7 @@
 	<link rel="stylesheet" type="text/css" href="../styles/style.css" />
 	<link rel ="shortcut icon" type="image/x-icon" href="../images/banniere.png" />
 	<link type="text/javascript" src="../javascript/js.js" />
-	<title>Bienvenue <?php echo $_SESSION['login']; ?></title>
+	<title>Bienvenue <?php echo $_SESSION['user']['nom']; ?></title>
 	<script>
 			function goAdd(){
 				var xhr = getXhr()
@@ -217,10 +210,6 @@
 
 <?php
 		}
-	else	// Si on est connecté mais qu'on n'est ni administrateur, ni prof ni sg de l'application, la page ne doit pas s'afficher.
-	/* Ceci a été conçu dans le but d'empêcher que quelqu'un réussisse à se connecter à la BD
-	et pense qu'il a accès à tous les espaces. */
-	
-		{
-		header('Location:../index.php');
+		else{
+			header('Location:../index.php');
 		}

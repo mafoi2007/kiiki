@@ -58,9 +58,9 @@
 								$listePoste = $config->listePoste();
 								for($x=0;$x<count($listePoste);$x++){
 									$value = "<option value='";
-									$value .= $listePoste[$x]['code_poste'];
+									$value .= $listePoste[$x]['id'];
 									$value .= "' ";
-									if($listePoste[$x]['code_poste']==$poste){
+									if($listePoste[$x]['id']==$poste){
 										$value .= "selected";
 									}
 									$value .= ">";

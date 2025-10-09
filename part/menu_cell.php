@@ -122,6 +122,19 @@
 	</div>
 	
 	<div id="sous_menu">
+		<h3><a href="<?php echo $serveur?>cell/archive.php">archives</a></h3>
+		<ul>
+			<li><a href="archive.php?choix=<?php echo sha1('certif');?>#body2">Certificat de scolarité</a></li>
+			<li><a href="archive.php?choix=<?php echo sha1('listeEleve');?>#body2">Liste des élèves</a></li>
+			<li><a href="archive.php?choix=<?php echo sha1('vueEff'); ?>#body2">Vue d'ensemble des effectifs</a></li>
+			<li><a href="archive.php?choix=<?php echo sha1('relNote'); ?>#body2">Relevé de Notes des Enseignants</a></li>
+			<li><a href="archive.php?choix=<?php echo sha1('listePP'); ?>#body2">Liste des Professeurs Principaux</a></li>
+			<li><a href="archive.php?choix=<?php echo sha1('conseil'); ?>#body2">Conseil de classe</a></li>
+		</ul>
+	</div>
+	
+	
+	<div id="sous_menu">
 		<h3><a href="<?php echo $serveur?>cell/close.php">cloturer l'année</a></h3>
 	</div>
 	

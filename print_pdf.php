@@ -206,122 +206,116 @@
 		***********************************************************************
 		**********************************************************************/
 		
-		elseif($_SESSION['print']=='ReleveNote'){
-			/**********************SI LA SECTION EST ANGLOPHONE**************************/
-			if($_SESSION['section']=='en'){
+		elseif($_SESSION['print']=='releveNote'){
+			$classe = $_SESSION['classe'];
+			$pdf->SetFillColor(155, 150, 149);
+			// La page doit s'afficher en fonction de la section 
+			if($classe['section']=='en'){
 				$pdf->addPage();
-				// On met l'entête du document
-				$pdf->EnteteDocAnglais($ministereAnglais, $paysAnglais, 
-										$etsAnglais, $deviseAnglais, $contact, $as);
-				// On met le titre du document 
-				$titre = strtoupper("Mark Sheet of the teacher  ");
-				// $titre .= strtoupper($_SESSION['liste'][0]['nom_classe']);
+				$pdf->Entete();
+				$titre = "reported marks of the teacher ";
+				// $titre.= $classe['eleve'][0]['nom_classe'];
 				$pdf->Titre($titre);
-				// Informations diverses
-				$pdf->SetFont('Times','B',12);
-				if(!empty($_SESSION['liste'])){
-					$classe = utf8_decode(strtoupper($_SESSION['liste'][0]['nom_classe']));
-				}else{
-					$classe = '';
-				}
-				$pdf->Cell(20,10,'Class : '.$classe);
-				$pdf->Ln(10);
-				$pdf->SetFont('Times','',12);
-				$pdf->Cell(80,8,'Subjet : ______________________',0,0,'L');
-				$pdf->Cell(35,8,'Coef : _____',0,0,'L');
-				$pdf->Cell(100,8,'Teacher :__________________________ ',0,0,'L');
 				
-				
-				$pdf->Ln(15);
-				
-				
-				$pdf->SetFont('Arial','B',10);
-				// Je positionne l'entete du tableau
-				$pdf->Cell(10, 7, 'N-', 1, 0 , 'C');
-				$pdf->Cell(21, 7, 'Status', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Sex', 1, 0 , 'C');
-				$pdf->Cell(70, 7, utf8_decode('Name and FirstName'), 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 1', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 2', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 3', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 4', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 5', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 6', 1, 0 , 'C');
-			}
-			
-			
-			
-			
-			/**********************SI LA SECTION EST FRANCOPHONE**************************/
-			elseif($_SESSION['section']=='fr'){
-				$pdf->addPage();
-				// On met l'entête du document
-				$pdf->EnteteDoc($ministere, $pays, $ets, $devise, $contact, $as);
-				// On met le titre du document 
-				$titre = "Releve de Notes de l'enseignant  ";
-				// $titre .= strtoupper($_SESSION['liste'][0]['nom_classe']);
-				$pdf->Titre($titre);
-				// Informations diverses
-				$pdf->SetFont('Times','B',12);
-				if(!empty($_SESSION['liste'])){
-					$classe = utf8_decode(strtoupper($_SESSION['liste'][0]['nom_classe']));
-				}else{
-					$classe = '';
-				}
-				$pdf->Cell(20,10,'Classe : '.$classe);
-				$pdf->Ln(10);
-				$pdf->SetFont('Times','',12);
-				$pdf->Cell(80,8,'Matiere : ______________________',0,0,'L');
-				$pdf->Cell(35,8,'Coef : _____',0,0,'L');
-				$pdf->Cell(100,8,'Enseignant :__________________________ ',0,0,'L');
-				
-				
-				$pdf->Ln(15);
-				
-				
-				$pdf->SetFont('Arial','B',10);
-				// Je positionne l'entete du tableau
-				$pdf->Cell(10, 7, 'N-', 1, 0 , 'C');
-				$pdf->Cell(21, 7, 'Statut', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Sexe', 1, 0 , 'C');
-				$pdf->Cell(70, 7, utf8_decode('Noms et Prénoms'), 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 1', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 2', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 3', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 4', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 5', 1, 0 , 'C');
-				$pdf->Cell(12, 7, 'Seq 6', 1, 0 , 'C');
-			}
-			
-			
-			
-			
-			$pdf->SetFont('Arial','',9);
-			$i = 1;
-			// Par boucle je récupère la liste envoyée dans une variable de session
-			for($a=0;$a<count($_SESSION['liste']);$a++){
+				$pdf->setFont('Times', 'B', 12);
+				$pdf->Cell(75, 7, 'Class : '.$classe['eleve'][0]['nom_classe'], 0,0,'C');
 				$pdf->Ln(7);
-				$pdf->Cell(10, 6, $i, 1, 0 , 'C');
-				$pdf->Cell(21, 6, $_SESSION['liste'][$a]['statut'], 1, 0 , 'C');
-				$pdf->Cell(12, 6, $_SESSION['liste'][$a]['sexe'], 1, 0 , 'C');
-				$nom = utf8_decode(strtoupper($_SESSION['liste'][$a]['nom']));
-				$nom .= ' '.utf8_decode(ucwords($_SESSION['liste'][$a]['prenom']));
-				$pdf->Cell(70, 6, $nom, 1, 0 , 'L');
-				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
-				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
-				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
-				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
-				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
-				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
-				$i++;
+				$pdf->setFont('Times', '', 10);
+				$pdf->Cell(75,7, utf8_decode('Suject : _____________________'),0,0,'C');
+				$pdf->Cell(35,7, utf8_decode('Coef : _______'),0,0,'C');
+				$pdf->Cell(75,7, utf8_decode('Teacher Name : _____________________'),0,0,'C');
+				$pdf->SetFont('Times','B',8);
+				$pdf->Ln(10);
+				
+				// Je positionne l'entete du tableau
+				$pdf->Cell(9, 5, $pdf->convert('N°'), 1, 0 , 'C',true);
+				$pdf->Cell(9, 5, $pdf->convert('Sex'), 1, 0 , 'C',true);
+				$pdf->Cell(13, 5, $pdf->convert('Status'), 1, 0 , 'C',true);
+				$pdf->Cell(75, 5, $pdf->convert('Full Name'), 1, 0 , 'C',true);
+				for($x=1;$x<=6;$x++){
+					$pdf->Cell(15,5, $pdf->convert('Seq '.$x), 1, 0, 'C', true);
+				}
+				$pdf->SetFont('Times','',10);
+				$pdf->Ln(5);
+				$a = 1;
+				for($i=0;$i<count($classe['eleve']);$i++){
+					$pdf->Cell(9, 5, $a, 1, 0 , 'C');
+					$pdf->Cell(9, 5, $pdf->convert($classe['eleve'][$i]['sexe']), 1, 0 , 'C');
+					$pdf->Cell(13, 5, $pdf->convert($classe['eleve'][$i]['statut']), 1, 0 , 'C');
+					$pdf->Cell(75, 5, $pdf->convert($classe['eleve'][$i]['nom_complet']), 1, 0 , 'L');
+					for($j=1;$j<=6;$j++){
+						$pdf->Cell(15,5, '', 1, 0, 'C');
+					}
+					$pdf->Ln(5);
+					$a++;
+				}
+				$pdf->Cell(130,4,'',0,0,'L');
+				$pdf->Ln(6);
+				for($w=1;$w<=6;$w++){
+					$texte = 'Skill evaluated '.$w.' : _________________________________________________________________';
+					$pdf->Cell(130,4, utf8_decode($texte),0,0,'L');
+					$pdf->Ln(6);
+				}
+				$pdf->SetFont('Arial','BI',10);				
+				
+				$fileName='Reported_Marks_';
+				$fileName.= strtoupper(str_replace(' ','_',$classe['eleve'][0]['nom_classe']));
+				$fileName.= '.pdf';
 			}
-			if(!empty($_SESSION['liste'])){
-				$nomFichier = 'ReleveNotes_'.$_SESSION['liste'][0]['code_classe'].'.pdf';
-			}else{
-				$nomFichier = 'emptyData.php';
-			}
+			elseif($classe['section']=='fr'){
+				$pdf->addPage();
+				$pdf->Entete();
+				$titre = "Releve de Notes de l'enseignant ";
+				// $titre.= $classe['eleve'][0]['nom_classe'];
+				$pdf->Titre($titre);
+				
+				$pdf->setFont('Times', 'B', 12);
+				$pdf->Cell(75, 7, 'Classe : '.$classe['eleve'][0]['nom_classe'], 0,0,'C');
+				$pdf->Ln(7);
+				$pdf->setFont('Times', '', 10);
+				$pdf->Cell(75,7, utf8_decode('Matière : _____________________'),0,0,'C');
+				$pdf->Cell(35,7, utf8_decode('Coef : _______'),0,0,'C');
+				$pdf->Cell(75,7, utf8_decode('Enseignant : _____________________'),0,0,'C');
+				$pdf->SetFont('Times','B',8);
+				$pdf->Ln(10);
+				
+				// Je positionne l'entete du tableau
+				$pdf->Cell(9, 5, $pdf->convert('N°'), 1, 0 , 'C',true);
+				$pdf->Cell(9, 5, $pdf->convert('Sexe'), 1, 0 , 'C',true);
+				$pdf->Cell(13, 5, $pdf->convert('Statut'), 1, 0 , 'C',true);
+				$pdf->Cell(75, 5, $pdf->convert('Nom Complet'), 1, 0 , 'C',true);
+				for($x=1;$x<=6;$x++){
+					$pdf->Cell(15,5, $pdf->convert('Séq '.$x), 1, 0, 'C', true);
+				}
+				$pdf->SetFont('Times','',10);
+				$pdf->Ln(5);
+				$a = 1;
+				for($i=0;$i<count($classe['eleve']);$i++){
+					$pdf->Cell(9, 5, $a, 1, 0 , 'C');
+					$pdf->Cell(9, 5, $pdf->convert($classe['eleve'][$i]['sexe']), 1, 0 , 'C');
+					$pdf->Cell(13, 5, $pdf->convert($classe['eleve'][$i]['statut']), 1, 0 , 'C');
+					$pdf->Cell(75, 5, $pdf->convert($classe['eleve'][$i]['nom_complet']), 1, 0 , 'L');
+					for($j=1;$j<=6;$j++){
+						$pdf->Cell(15,5, '', 1, 0, 'C');
+					}
+					$pdf->Ln(5);
+					$a++;
+				}
+				$pdf->Cell(130,4,'',0,0,'L');
+				$pdf->Ln(6);
+				for($w=1;$w<=6;$w++){
+					$texte = 'Compétence évaluée '.$w.' : _________________________________________________________________';
+					$pdf->Cell(130,4, utf8_decode($texte),0,0,'L');
+					$pdf->Ln(6);
+				}
+				$pdf->SetFont('Arial','BI',10);				
+				
+				$fileName='Releve_Note_';
+				$fileName.= strtoupper(str_replace(' ','_',$classe['eleve'][0]['nom_classe']));
+				$fileName.= '.pdf';
+			} 
 			
-			$pdf->Output($nomFichier, 'I');
+			$pdf->Output($fileName, 'I');
 		}
 		
 		
@@ -3118,7 +3112,7 @@
 	
 	
 	
-	
+	unset($_SESSION['classe']);
 	
 	unset($_SESSION['liste']);
 	unset($_SESSION['print']);
