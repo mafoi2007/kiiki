@@ -3,21 +3,44 @@
 	require_once('../inc/connect.inc.php');
 	$note = new Note($db);
 	$config = new Config($db);
+	// print_r($_POST);
+	if(isset($_POST['classe'])){
+		$classe = (int) $_POST['classe'];
+		if($classe==0){
+			$msg = "Vous devez choisir une classe";
+			echo "<h3 class='alert'>".$msg."</h3>";
+		}else{
+			$user = $_SESSION['user']['id'];
+			$listeMatiere = $config->listeMatiereProf($user,$classe); ?>
+			Matière : 
+				<select name='matier' id='matier' onChange='selectMatiereAdd()'>
+					<option value='null' selected>-Choisir Matière-</option>
+					<?php 
+					for($i=0;$i<count($listeMatiere);$i++){
+						$idMat = $listeMatiere[$i]['id_matiere'];
+						$nomMat = $listeMatiere[$i]['nom_matiere'];
+						echo "<option value='".$idMat."'>".$nomMat."</option>";
+					}
+					?>
+				</select>
+				<div id='sequence' style = 'display:inline'>
+				</div>
+<?php 			
+		}
+	}
+	
+	
+	
+	
+	
+	
+	/*
+	
 ?>
 	
-	Matière : <select name='matiere'>
-		<?php 
-		if(isset($_POST['clas'])){
-			$cls = $_POST['clas'];
-			$listeMatiere = $config->listeMatiereProf($_SESSION['login'],$cls);
-			for($j=0;$j<count($listeMatiere);$j++){
-				echo "<option value='";
-				echo $listeMatiere[$j]['id_matiere'];
-				echo "'>".strtoupper($listeMatiere[$j]['nom_matiere'])."</option>";
-			}
-		}
-		?>
-	</select>
+	
+	
+	
 	
 	<select name='sequence'>
 		<?php 
@@ -34,3 +57,4 @@
 		?>
 	</select>
 	<input type='submit' name='info' value='Ok' />
+	*/

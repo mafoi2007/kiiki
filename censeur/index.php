@@ -15,7 +15,7 @@
 	$poste = $_SESSION['poste'];
 	// $smarty->assign('poste', $_SESSION['poste']);
 	
-	if($_SESSION['poste']=='censeur')
+	if($_SESSION['user']['userPost']=='censeur')
 		{
 		 
 ?>

@@ -1,74 +1,38 @@
 <?php 
-	$prof = $_SESSION['login'];
+	$prof = $_SESSION['user']['id'];
 	$listeClasse = $config->listeClasseProf($prof);
-	// echo '<pre>'; print_r($_SESSION); echo '</pre>';
-	// echo '<pre>'; print_r($listeClasse); echo '</pre>';
-?>
+	if(empty($listeClasse)){
+		$msg = "Aucune classe ne vous a encore été attribuée";
+		echo "<h3 class='alert'>".$msg."</h3>";
+	}else{ ?>
+
 <h1 class='alert'>saisie des notes</h1>
-		<form method='post' action=''>
-			Classe : <select name='clas' id='clas' onChange='goAdd()'>
-				<option value='null'>-Classe-</option>
-				<?php 
-					for($i=0;$i<count($listeClasse);$i++){
-						echo "<option value='";
-						echo $listeClasse[$i]['id_classe'];
-						echo "'>".strtoupper($listeClasse[$i]['nom_classe'])."</option>";
-					}
-				?>
-			</select>
-			
-			<div id='matiere' style = 'display:inline'>
-				
-			</div>
-		</form>
-
-
+	<form method='post' action=''>
+		Classe : 
+		<select name='classe' id='classe' onChange='goAdd()'>
+			<option value='null'>-Classe-</option>
+			<?php 
+			for($i=0;$i<count($listeClasse);$i++){
+				$idClasse = $listeClasse[$i]['id_classe'];
+				$nomClasse = $listeClasse[$i]['nom_classe'];
+				echo "<option value='".$idClasse."'>".$nomClasse."</option>";
+			}
+			?>
+		</select>
+		<div id='matiere' style = 'display:inline'>
+		</div>
+	</form>
 <?php 
-
-	if(isset($_POST['info'])){
-		// echo '<pre>'; print_r($_POST);
-		$classe = $_POST['clas'];
-		$matiere = $_POST['matiere'];
-		$sequence = $_POST['sequence'];
-		/*D'abord, on s'assure que la matière est enregistrée dans la classe
-		et que le prof a le droit de remplir lesidtes notes. */
-		$verification = $config->verifMatiereClasseProf($prof,$classe,$matiere);
-		// print_r($verification);
-		if(!is_array($verification)){
-			// echo 'Verification est vide';
-			$_SESSION['message'] = "Matière non présente dans la classe";
-			header('Location : '.$_SERVER['PHP_SELF']);
-		}else{
-			// On verifie ensuite que la Séquence est activée et valide.
-			if($sequence==1 or $sequence==2 or $sequence==3 or $sequence==4 or $sequence==5 or $sequence==6){
-				$listeNote = $note->viewNote($classe, $sequence, $matiere);
-				// echo '<pre>'; print_r($listeNote); echo '</pre>';
-				if(empty($listeNote)){
-					require_once('formVideNt.php');
-				}else{
-					require_once('formFillNt.php');
-				}
-				
-			}else {  // Sinon On Affiche un message d'erreur 
-				$_SESSION['message'] = "Aucune Séquence Valide Choisie.";
-				header('Location : '.$_SERVER['PHP_SELF']);
-			}
-			
-			
-			
-			if(strlen($sequence)>1){
-				
-				
-			}else{
-				/*A présent, si les notes avaient été saisies, on les pré-remplit.
-				Sinon on propose de les saisir tout simplement. */
-				
-				if(empty($listeNote)){
-					
-				}else{
-					
-				}
-			}
+		if(isset($_POST['info'])){
+			$classe = (int) $_POST['classe'];
+			$matiere = (int) $_POST['matier'];
+			$sequence = (int) $_POST['sequence'];
+			$nomClasse = $config->getClasse($classe);
+			$nomMatiere = $config->getMatiere($matiere);
+			$nomSequence = $config->getSequenceCourante($sequence);
+			$as = $config->getCurrentYear();
+			$listeEleve = $config->listeEleve($nomClasse['id'], 'non_supprime', $as);
+			require_once('../forms/ajouterNote.form.php');
 		}
+	
 	}
-?>

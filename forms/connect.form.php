@@ -40,7 +40,7 @@
 	</head>
 	<body id='image'>
 		<?php 
-			$config->arrangerNom();
+			// $config->arrangerNom(); Ne pas Décommenter s'il vous plait. Très dangereux
 		?>
 		<form method='post' action='traitement.php' id='connect'>
 			<h4>Connectez-vous à votre espace de gestion</h4>

@@ -1,6 +1,7 @@
 ﻿<?php
 	$page = $config->pageEnCours();
 	$base = $serveur.$_SESSION['user']['userPost'];
+	// echo '<pre>'; print_r($_SESSION); echo '</pre>';
 ?>
 <header>
 	<div id='titre'>
@@ -12,7 +13,7 @@
 		</h3>
 	</div>
 	<div id='utilisateur'>
-		<h3>Nom : <?php echo $_SESSION['user']['nom']; ?></h3>
+		<h3>Nom : <?php echo $_SESSION['user']['nom_complet_enseignant']; ?></h3>
 		<h3>Poste : <?php echo $_SESSION['user']['libellePoste']; ?></h3>
 	</div>
 	<nav>

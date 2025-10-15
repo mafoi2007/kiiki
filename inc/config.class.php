@@ -98,13 +98,13 @@
 		
 		// Je veux pouvoir afficher la liste des enseignants selon leurs postes respectifs
 		public function getUtilisateurType($type){
-			$sql = "SELECT nom, sexe, login, enseignant.id as idEnseignant, 
+			$sql = "SELECT nom, nom_complet_enseignant, sexe, login, enseignant.id as idEnseignant, 
 							libelle_poste
 					FROM enseignant, poste
 					WHERE poste.id='$type' 
 						AND enseignant.poste = poste.id
 						AND etat = 'actif'
-						ORDER BY nom";
+						ORDER BY nom_complet_enseignant";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
@@ -197,7 +197,7 @@
 		public function connectUser($source, $login, $mdp){
 			$this->_login = $this->setUserId($login);
 			$this->_mdp = $this->setPassword($mdp);
-			$sql = "SELECT enseignant.id as id, nom, sexe, poste,
+			$sql = "SELECT enseignant.id as id, nom, sexe, poste, nom_complet_enseignant,
 							login, mdp, image, etat, code_poste, libelle_poste, poste
 					FROM enseignant, poste
 					WHERE enseignant.id = '$this->_login'
@@ -260,6 +260,7 @@
 					// On crée des variables de session de l'utilisateur
 					$_SESSION['user']['id'] = $reponse['id'];
 					$_SESSION['user']['nom'] = stripslashes($reponse['nom']);
+					$_SESSION['user']['nom_complet_enseignant'] = stripslashes($reponse['nom_complet_enseignant']);
 					$_SESSION['user']['sexe'] = $reponse['sexe'];
 					$_SESSION['user']['titre'] = $this->getTitre($reponse['sexe']);
 					$_SESSION['user']['typeUtilisateur'] = $reponse['poste'];
@@ -271,7 +272,7 @@
 					$_SESSION['user']['libellePoste'] = $reponse['libelle_poste'];
 					// La redirection 
 					$_SESSION['connected'] = true;;
-					$_SESSION['message'] = 'Welcome '.$_SESSION['user']['nom'];
+					$_SESSION['message'] = 'Welcome '.$_SESSION['user']['nom_complet_enseignant'];
 					header('Location:'.$source);
 				}
 			}
@@ -308,7 +309,7 @@
 				$nom = "azerty"; 
 			}
 			else {
-				$nom = htmlspecialchars($nom);
+				$nom = addslashes(utf8_encode($nom));
 			}
 			return $nom;
 		}
@@ -336,7 +337,7 @@
 				$prenom = " "; 
 			}
 			else {
-				$prenom = htmlspecialchars($prenom);
+				$prenom = addslashes(utf8_encode($prenom));
 			}
 			return $prenom;
 		}
@@ -421,7 +422,7 @@
 				$this->_login = (string)$login;
 			}
 			else{
-				$this->_login = $login;
+				$this->_login = addslashes(utf8_encode($login));
 			}
 			return $this->_login;
 		}
@@ -696,7 +697,12 @@
 		
 		// Les statistiques de liste d'une classe donnée 
 		public function listeEleveStat($classe, $etat, $as){
-			$table = 'eleve';
+			/*if($as==$this->getCurrentYear()){
+				$table = 'eleve';
+			}else{
+				$table = $as.'_eleve';
+			}*/	
+			$table = 'eleve';;
 			$effFilleRed = $this->statSexeStatut($table, $classe, 'F','R');
 			$effFilleNv = $this->statSexeStatut($table, $classe, 'F','N');
 			$effGarRed = $this->statSexeStatut($table, $classe, 'M','R');
@@ -731,8 +737,40 @@
 		
 		// La liste des élèves d'une classe d'année scolaire précédente
 		public function listeEleveOld($classe, $etat, $annee) {
-			$tableEleve = $annee.'_eleve';
+			$tableEleve = $annee."_eleve";
+			$champId = "`".$tableEleve.".rne`";
 			
+			$sql = "SELECT rne, nom_complet, nom, prenom, sexe, date_naissance, 
+							lieu_naissance, matricule, classe, adresse_parent, 
+							statut, num_rand, etat, nom_pere, nom_mere, 
+							photo, a_s, nom_classe, ".$tableEleve."_eleve.id as id,  
+							DATE_FORMAT(date_naissance, '%d / %m / %Y') as date_fr
+					FROM `$tableEleve`, classe
+					WHERE classe='$classe'
+						AND classe.id = classe
+						AND etat = '$etat'
+					ORDER BY nom_complet";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+		
+		
+		
+		
+		
+		// La liste globale des élèves d'une année scolaire écoulée 
+		// La liste des élèves d'une classe d'année scolaire précédente
+		public function listeEleveOldYear($annee){
+			$table = $annee.'_eleve';
+			$sql = "SELECT *
+					FROM `$table` 
+					WHERE etat='non_supprime'
+					ORDER BY nom_complet";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+			/*$tableEleve = $annee.'_eleve';
 			$sql = "SELECT *
 					FROM `$tableEleve`
 					WHERE classe='$classe'
@@ -740,8 +778,11 @@
 					ORDER BY nom_complet";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
-			return $res;
+			return $res;*/
 		}
+		
+		
+		
 		
 		
 		public function rechercherEleveOld($nom, $annee){
@@ -1137,7 +1178,7 @@
 						FROM classe , niveau_classe
 						WHERE etat_classe='".$etat."'
 							AND niveau_classe = niveau_classe.id
-						ORDER BY classe.section, niveau_classe, nom_classe";
+						ORDER BY classe.section, nom_niveau, nom_classe";
 			$req = $this->_db->query($sql);
 			$res=$req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
@@ -1197,11 +1238,13 @@
 		 
 		 
 		 public function viewClasseSection($section, $etat){
-			$sql = "SELECT * 
-					FROM classe 
+			$sql = "SELECT classe.id as id, nom_classe, code_classe, classe.section as section,
+							etat_classe, niveau_classe, nom_niveau
+					FROM classe, niveau_classe
 					WHERE etat_classe='".$etat."'
-						AND section = '".$section."'
-					ORDER BY niveau_classe DESC";
+						AND classe.section = '".$section."'
+						AND classe.niveau_classe = niveau_classe.id
+					ORDER BY nom_niveau, nom_classe";
 			$req = $this->_db->query($sql);
 			$res=$req->fetchAll(PDO::FETCH_ASSOC);
 			/*while() {
@@ -1263,7 +1306,7 @@
 		public function listeNiveaux(){
 			$sql = "SELECT *
 					FROM niveau_classe
-					";
+					ORDER BY section, nom_niveau DESC";
 			$req = $this->_db->query($sql);
 			$res=$req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
@@ -1436,11 +1479,13 @@
 		
 		
 		public function rechercherClasse($nom){
-			$sql = "SELECT *
+			$sql = "SELECT classe.id as id, nom_classe, code_classe, 
+							classe.section as section,
+							etat_classe
 					FROM classe 
 					WHERE nom_classe LIKE '%$nom%'
 						OR code_classe LIKE '%$nom%'
-					ORDER BY code_classe DESC";
+					ORDER BY nom_classe";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
@@ -1455,9 +1500,12 @@
 		
 		
 		public function getClasse($id) {
-			$req = "SELECT nom_classe, code_classe, etat_classe, niveau_classe, id
-					FROM classe 
-					WHERE id = '$id'
+			$this->_id = $this->setUserId($id);
+			$req = "SELECT classe.id as id, nom_classe, code_classe, 
+							classe.section as section, etat_classe, niveau_classe, nom_niveau 
+					FROM classe, niveau_classe
+					WHERE classe.id = '$this->_id'
+						AND niveau_classe = niveau_classe.id
 					ORDER BY nom_classe";
 			$sql = $this->_db->query($req);
 			$res=$sql->fetch(PDO::FETCH_ASSOC);
@@ -1475,15 +1523,26 @@
 		
 		
 		/* Mettre à jour les informations d'une classe */
-		public function updClasse($source, $id, $nomClasse, $codeClasse, $etat, $niveau){
-			$sql = "UPDATE classe
-					SET 
-						nom_classe='$nomClasse',
-						code_classe='$codeClasse',
-						etat='$etat',
-						niveau='$niveau'
-					WHERE id='$id'";
-			$this->_db->query($sql);
+		public function updClasse($source, $information){
+			echo '<pre>'; print_r($information); echo '</pre>';
+			$className = $this->setNom($information['nomClasse']);
+			$classCode = $this->setCode($information['codeClasse']);
+			$classSection = $this->setSection($information['section']);
+			$classLevel = $this->setUserId($information['niveau']);
+			$classId = $this->setUserId($information['idClasse']);
+			
+			$requete = $this->_db->prepare("UPDATE classe SET 
+											nom_classe =:nom,
+											code_classe =:code,
+											section =:section,
+											niveau_classe =:niveau
+											WHERE id=:id");
+			$requete->bindValue(':nom',$className);
+			$requete->bindValue(':code',$classCode);
+			$requete->bindValue(':section',$classSection);
+			$requete->bindValue(':niveau',$classLevel);
+			$requete->bindValue(':id',$classId);
+			$requete->execute();
 			$_SESSION['message'] = 'Classe Mise à jour';
 			header('Location:'.$source);
 		}
@@ -1498,10 +1557,12 @@
 		
 		/*Supprimer la classe */
 		public function supprimerClasse($source, $classe) {
-			$sql = "UPDATE classe
-					SET etat='inactif'
-					WHERE id='$classe'";
-			$this->_db->query($sql);
+			$this->_classe = $this->setUserId($classe);
+			$requete = $this->_db->prepare("UPDATE classe SET
+											etat_classe='inactif'
+											WHERE id=:id");
+			$requete->bindValue(':id', $this->_classe);
+			$requete->execute();
 			$_SESSION['message'] = 'Classe Supprimée';
 			header('Location:'.$source);
 		}
@@ -1517,10 +1578,12 @@
 		
 		/*Réactiver ou Restaurer une classe supprimée */
 		public function RestaurerClasse($source, $classe) {
-			$sql = "UPDATE classe
-					SET etat='actif'
-					WHERE id='$classe'";
-			$this->_db->query($sql);
+			$this->_classe = $this->setUserId($classe);
+			$requete = $this->_db->prepare("UPDATE classe SET
+											etat_classe='actif'
+											WHERE id=:id");
+			$requete->bindValue(':id', $this->_classe);
+			$requete->execute();
 			$_SESSION['message'] = 'Classe Restaurée';
 			header('Location:'.$source);
 		}
@@ -1745,23 +1808,16 @@
 		*****************************************************************/
 		
 		public function ajouterGestionnaire($source, $nom, $prenom, $sexe, 
-											$poste, $login, $mdp, $mdp2) {
+											$poste, $login) {
 			$this->_nom = $this->setNom($nom);
 			$this->_prenom = $this->setPrenom($prenom);
+			$this->_nomComplet = strtoupper($this->_nom).' '.ucwords($this->_prenom);
 			$this->_sexe = $this->setSexeGest($sexe);
 			$this->_poste = $this->setUserId($poste);
 			$this->_login = $this->setLogin($login);
-			$this->_mdp = $this->setPwd($mdp);
-			
-			// les mots de passe doivent correspondre
-			if($this->_mdp !=sha1($mdp2)){
-			$_SESSION['message'] = "La confirmation entrée ne correpond pas ";
-			$_SESSION['message'] .= "au mot de passe initial.";
-			header('Location:'.$source);
-			}
-			
+			$this->_mdp = $this->setPassword($login);
 			// Le login est-il déjà utilisé ?
-			$sql = "SELECT * FROM enseignant WHERE login = '$login'";
+			$sql = "SELECT * FROM enseignant WHERE login = '$this->_login'";
 			$req = $this->_db->query($sql);
 			$reponse = $req->fetch(PDO::FETCH_ASSOC);
 			if($reponse!=false){
@@ -1769,14 +1825,15 @@
 				header('Location:'.$source);
 			}
 			else{
-				$insert = $this->_db->prepare('INSERT INTO enseignant SET 
-							nom=:nom, 
-							prenom=:prenom, 
+				$insert = $this->_db->prepare("INSERT INTO enseignant SET 
+							nom=:nom,							
+							prenom=:prenom,
+							nom_complet_enseignant =:nomComplet,
 							sexe=:sexe, 
 							poste=:poste, 
 							login=:login, 
 							mdp=:mdp, 
-							etat=:etat ');
+							etat=:etat ");
 				$insert->bindValue(':nom', $this->_nom);
 				$insert->bindValue(':prenom', $this->_prenom);
 				$insert->bindValue(':sexe', $this->_sexe);
@@ -1784,9 +1841,10 @@
 				$insert->bindValue(':login', $this->_login);
 				$insert->bindValue(':mdp', $this->_mdp);
 				$insert->bindValue(':etat', 'actif');
+				$insert->bindValue(':nomComplet', $this->_nomComplet);
 				$insert->execute();
 				
-				$_SESSION['message'] = "Enseignant enregistré";
+				$_SESSION['message'] = "Utilisateur ajouté. Son mot de passe correspond à son login.";
 				header('Location:'.$source);
 			}
 		}
@@ -1797,12 +1855,13 @@
 		
 		public function viewGestionnaireAll($etat){
 			$this->_etat = $etat;
-			$sql = "SELECT enseignant.id as id, nom, prenom, sexe, poste, login, etat, 
-							image, libelle_poste
+			$sql = "SELECT enseignant.id as id, nom_complet_enseignant, nom, 
+							prenom, sexe, poste, login, etat, image, 
+							libelle_poste
 					FROM enseignant, poste 
 					WHERE etat='$this->_etat'
-						AND code_poste = poste
-					ORDER BY nom";
+						AND poste.id = poste
+					ORDER BY libelle_poste, nom_complet_enseignant";
 			$req = $this->_db->query($sql);
 			while($reponse = $req->fetch(PDO::FETCH_ASSOC)){
 				$resultat[] = $reponse;
@@ -1827,7 +1886,7 @@
 		
 		// On recherche un prof
 		public function findProf($nom){
-			$sql = "SELECT enseignant.id as id, nom, sexe, poste, login, etat
+			$sql = "SELECT enseignant.id as id, nom, nom_complet_enseignant, sexe, poste, login, etat
 					FROM enseignant
 					WHERE nom LIKE '%$nom%'
 						OR login LIKE '%$nom%'";
@@ -1849,7 +1908,7 @@
 		
 		// On affiche tout sur un utilisateur donné 
 		public function getUser($utilisateur){
-			$sql = "SELECT enseignant.id as id, nom, prenom, sexe, poste, login, mdp, etat, image,
+			$sql = "SELECT enseignant.id as id, nom_complet_enseignant, nom, prenom, sexe, poste, login, mdp, etat, image,
 							libelle_poste
 					FROM enseignant, poste 
 					WHERE enseignant.id = '$utilisateur' 
@@ -1888,6 +1947,7 @@
 		public function updateUtilisateur($source, $utilisateur){
 			echo '<pre>'; print_r($utilisateur); echo '</pre>';
 			$userName = $this->setNom($utilisateur['userName']);
+			$userFName = $this->setNom($utilisateur['userfName']);
 			// $userSexe = $this->setSexe($utilisateur['userSex']);
 			$userSexe = $utilisateur['userSex'];
 			$userPoste = $this->setUserId($utilisateur['userPost']);
@@ -1901,6 +1961,12 @@
 				if($userName!=$infoUtilisateur['nom']){
 					$champ[] = 'nom';
 					$valeur[] = $userName;
+				}
+			}
+			if(!empty($userFName)){
+				if($userFName!=$infoUtilisateur['prenom']){
+					$champ[] = 'prenom';
+					$valeur[] = $userFName;
 				}
 			}
 			
@@ -1937,6 +2003,15 @@
 				$sql .= $champ[$valeurFinaleArray]." = '".$valeur[$valeurFinaleArray]."' ";
 				$sql .= "WHERE id = '".$userId."'";
 				$this->_db->query($sql);
+				// Le cas particulier du champ nom_complet_enseignant 
+				$newValue = $this->getUser($userId);
+				$nomComplet = strtoupper($newValue['nom'])." ".ucwords($newValue['prenom']);
+				$requete = $this->_db->prepare("UPDATE enseignant SET 
+												nom_complet_enseignant = :nomComplet
+												WHERE id=:id");
+				$requete->bindValue('nomComplet', $nomComplet);
+				$requete->bindValue('id', $userId);
+				$requete->execute();
 				$_SESSION['message'] = 'Informations Utilisateur Mises à jour.';
 				header('Location:'.$source);
 			}else{
@@ -2158,7 +2233,12 @@
 			
 		}
 		
-		
+		public function getSequenceCourante($id){
+			$sql = "SELECT * FROM periode WHERE id = '$id'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res;
+		}
 		
 		
 		public function createDateAbsence($source, $sequence, $open, $close) {
@@ -2187,7 +2267,26 @@
 			}
 		}
 		
-		
+		public function verifNoteSaisie($classe, $matiere, $periode){
+			$this->_classe = $this->setUserId($classe);
+			$this->_matiere = $this->setUserId($matiere);
+			$this->_periode = $this->setUserId($periode);
+			$sql = "SELECT id_classe, id_enseignant, id_matiere, id_periode, nom_classe, nom_complet_enseignant, nom_matiere,
+							competence,
+							DATE_FORMAT(date_saisie, '%d / %m / %Y') as date_fr,
+							DATE_FORMAT(date_saisie, '%Hh %imin %sSec') as heure_fr
+					FROM note_saisie, classe, enseignant, matiere 
+					WHERE id_classe='$this->_classe'
+						AND id_matiere = '$this->_matiere' 
+						AND id_periode = '$this->_periode'
+						AND classe.id = id_classe
+						AND enseignant.id = id_enseignant
+						AND matiere.id = id_matiere
+						";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res;
+		}
 		
 		
 		public function viewDateAbsence(){
@@ -2276,11 +2375,28 @@
 		
 		
 		
-		public function addProfClasse($source, 
-										$matiere = array(), 
-										$prof = array(), 
-										$classe) {
-			$this->_matiere = $matiere;
+		public function addProfClasse($source, $data){
+			// echo '<pre>';print_r($data); echo '</pre>';
+			$matiere = $data['matiere'];
+			$prof = $data['prof'];
+			$classe = $data['classe'];
+			foreach($prof as $cle=>$valeur){
+				if($valeur!=null){
+					// echo $cle.'<br />';
+					$this->_matiere = $this->setUserId($matiere[$cle]);
+					$this->_enseignant = $this->setUserId($valeur);
+					// echo $this->_matiere.' a pour prof '.$this->_enseignant.'<br />';
+					$sql = $this->_db->prepare("UPDATE prof_classe SET 
+													id_prof=:prof
+												WHERE id=:id");
+					$sql->bindValue('prof', $this->_enseignant);
+					$sql->bindValue('id', $this->_matiere);
+					$sql->execute();
+					$_SESSION['message'] = "Enseignant(s) ajouté(s)";
+					header('Location:'.$source);
+				}
+			}
+			/*$this->_matiere = $matiere;
 			$this->_prof = $prof;
 			$this->_classe = $classe;
 			foreach($this->_prof as $cle=>$valeur) {
@@ -2295,7 +2411,7 @@
 					$_SESSION['message'] = "Enseignant(s) ajouté(s)";
 					header('Location:'.$source);
 				}
-			}
+			}*/
 		}
 		
 		
@@ -2352,15 +2468,14 @@
 		
 		// Liste des Classes issues de la Table prof_classe
 		public function listeClasseProfClasse(){
-			$sql = "SELECT id_classe, nom_classe
+			$sql = "SELECT DISTINCT id_classe, nom_classe
 					FROM prof_classe, classe
 					WHERE id_classe = classe.id
-					GROUP BY id_classe ORDER BY section, niveau_classe, id_classe DESC";
+					ORDER BY section
+					";					
 			$req = $this->_db->query($sql);
-			while($reponse = $req->fetch(PDO::FETCH_ASSOC)){
-				$resultat[] = $reponse;
-			}
-			return $resultat;
+			$reponse = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $reponse;
 		}
 		
 		
@@ -2368,17 +2483,16 @@
 		
 		/*Les matières inscrites dans une classe */
 		public function listeMatiereClasse($classe) {
-			$this->classe = $classe;
-			$sql = "SELECT prof_classe.id as id, id_matiere, nom_matiere, coef, groupe
+			$this->_classe = $this->setUserId($classe);
+			$sql = "SELECT prof_classe.id as id, id_matiere, 
+							nom_matiere, coef, groupe
 					FROM prof_classe, matiere
-					WHERE id_classe='$this->classe'
-						AND id_matiere=code_matiere
+					WHERE id_classe='$this->_classe'
+						AND id_matiere=matiere.id
 					ORDER BY nom_matiere";
 			$req = $this->_db->query($sql);
-			while($res=$req->fetch(PDO::FETCH_ASSOC)){
-				$resultat[] = $res;
-			}
-			return $resultat;
+			$res=$req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
 		}
 		
 		
@@ -2458,28 +2572,28 @@
 		
 		// Les classes dans lesquelles un enseignant intervient   
 		public function listeClasseProf($enseignant){
-			$sql = "SELECT id_classe, nom_classe	
-					FROM prof_classe,classe
-					WHERE id_prof='$enseignant'
-						AND code_classe=id_classe
-					GROUP BY id_classe
-					";
+			$this->_enseignant = $this->setUserId($enseignant);
+			$sql = "SELECT id_classe, nom_classe 
+					FROM prof_classe, classe
+					WHERE id_prof = '$this->_enseignant'
+						AND classe.id = id_classe
+					GROUP BY id_classe";
 			$req = $this->_db->query($sql);
-			while($res = $req->fetch(PDO::FETCH_ASSOC)){
-				$reponse[] = $res;
-			}
-			return $reponse;
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
 		}
 		
 		
 		
 		// Les matières dans lesquelles un enseignant intervient dans une classe
 		public function listeMatiereProf($enseignant, $classe){
+			$this->_enseignant = $this->setUserId($enseignant);
+			$this->_classe = $this->setUserId($classe);
 			$sql = "SELECT id_classe, id_matiere, nom_matiere
 					FROM prof_classe, matiere
-					WHERE id_prof='$enseignant'
-						AND id_classe='$classe'
-						AND id_matiere=code_matiere
+					WHERE id_prof='$this->_enseignant'
+						AND id_classe='$this->_classe'
+						AND id_matiere=matiere.id
 						ORDER BY nom_matiere
 					";
 			$req = $this->_db->query($sql);
@@ -3345,6 +3459,413 @@
 				$requete->bindValue('id', $id);
 				$requete->execute();
 			}
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		//  
+		/**
+		 * On ajoute les notes à la base de donnéees
+		 * @param string  $source qui est le HTTP_REFERER
+		 * @param array $note qui contient toutes les notes saisies
+		 * @return void car c'est une procédure.
+		 */
+		public function ajouterNote($source, $note){
+			// echo '<pre>'; print_r($note); echo '</pre>';
+			// echo '<pre>'; print_r($_SESSION); echo '</pre>';
+			$classe = $this->setUserId($note['classe']);
+			$matiere = $this->setUserId($note['matiere']);
+			$enseignant = $_SESSION['user']['id'];
+			$sequence = $this->setUserId($note['sequence']);
+			$competence = $this->setCompetence($note['competence']);
+			$eleve = $note['eleve'];
+			$notes = $note['note'];
+			for($i=0;$i<count($eleve);$i++){
+				$this->_eleve = $this->setUserId($eleve[$i]);
+				$this->_note = $this->setNote($notes[$i]);
+				// echo "<p>".$this->_eleve." a obtenu ".$this->_note.".</p>";
+				$insertion = $this->_db->prepare("INSERT INTO note
+													SET 
+													id_eleve =:eleve,
+													id_matiere =:matiere,
+													id_classe =:classe,
+													id_periode =:periode,
+													note =:note"); 
+				$insertion->bindValue(':eleve', $this->_eleve);
+				$insertion->bindValue(':matiere', $matiere);
+				$insertion->bindValue(':classe', $classe);
+				$insertion->bindValue(':periode', $sequence);
+				$insertion->bindValue(':note', $this->_note);
+				$insertion->execute();
+			}
+			$this->journalSaisieNote($classe, $matiere, $sequence, $enseignant, $competence);
+			$_SESSION['message'] = 'Les notes ont été enregistrées.';
+			header('Location:'.$source);
+		}
+		
+		
+		
+		
+		
+		
+		// On configure l'enregistrement de la compétence 
+		public function setCompetence($nom){
+			// On convertit d'abord les A 
+			$this->nom = $this->replaceA($nom);
+			// On convertit ensuite les E 
+			$this->nom =$this->replaceE($this->nom);
+			// On convertit les I 
+			$this->nom =$this->replaceI($this->nom);
+			$this->nom =$this->replaceC($this->nom);
+			$this->nom = addslashes($this->nom);
+			return $this->nom;
+		}
+		
+		
+		
+		
+		
+		protected function replaceA($text){
+			$txt = str_replace('à','a',$text);
+			return $txt;
+		}
+		
+		
+		protected function replaceE($text){
+			$txt = str_replace('é','e',$text);
+			$txt = str_replace('è','e',$txt);
+			$txt = str_replace('ê','e',$txt);
+			return $txt;
+		}
+		
+		
+		protected function replaceI($text){
+			$txt = str_replace('î','i',$text);
+			$txt = str_replace('ï','i',$txt);
+			return $txt;
+		}
+		
+		
+		protected function replaceApos($text){
+			$txt = str_replace("'","",$text);
+			return $txt;
+		}
+
+
+
+		protected function replaceC($text){
+			$txt = str_replace("ç","c",$text);
+			return $txt;
+		}
+		
+		
+		private function setNote($note){
+			$this->_note = str_replace(',', '.', $note);
+			if($this->_note < 0){
+				$this->_note = NULL;
+			}elseif($this->_note > 20){
+				$this->_note = NULL;
+			}else{
+				$this->_note = (float) $this->_note;
+			}
+			return $this->_note;
+		}
+		
+		
+		
+		private function journalSaisieNote($classe, $matiere, $periode, $enseignant, $competence){
+			$date = DATE('Y-m-d H:i:s');
+			$navig = $this->getNavigateur();
+			$navigateur = $navig['navigateur'];
+			$os = $navig['os'];
+			$ip = $_SERVER['REMOTE_ADDR'];			
+			$journal = $this->_db->prepare('INSERT INTO note_saisie 
+											SET 
+											id_classe=:classe,
+											id_enseignant =:enseignant,
+											id_matiere=:matiere,
+											id_periode=:periode,
+											add_by =:enseignant,
+											competence =:competence,
+											date_saisie=:date,
+											navigateur =:navigateur,
+											ip=:ip,
+											os=:os');
+			$journal->bindValue(':classe', $classe);
+			$journal->bindValue(':enseignant', $enseignant);
+			$journal->bindValue(':matiere', $matiere);
+			$journal->bindValue(':periode', $periode);
+			$journal->bindValue(':competence', $competence);
+			$journal->bindValue(':date', $date);
+			$journal->bindValue(':navigateur', $navigateur);
+			$journal->bindValue(':ip', $ip);
+			$journal->bindValue(':os', $os);
+			$journal->execute();
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		/**
+		 * Les Classes dans lesquelles un enseignant intervient et a déjà saisi ses notes.
+		 * @param int $enseignant qui est le seul paramètre 
+		 * @return array $res qui renvoit la liste des classes
+		 */
+		public function listClassSaisieProf($enseignant){
+			$this->_enseignant = $this->setUserId($enseignant);
+			$sql = "SELECT id_classe, id_enseignant, nom_classe, nom
+					FROM note_saisie, classe, enseignant
+					WHERE id_enseignant = '$this->_enseignant'
+						AND classe.id = id_classe
+						AND enseignant.id = id_enseignant
+					GROUP BY id_classe
+					ORDER BY section, niveau_classe, nom_classe";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+		
+		
+		
+		
+		/**
+		 * Les matières que l'enseignant tient dans une classe et pour lesquelles il a déjà saisi les notes
+		 * @param int $enseignant
+		 * @param int $classe
+		 * @return array $matiere
+		 */
+		public function getMatiereSaisieProf($enseignant, $classe){
+			$this->_enseignant = $this->setUserId($enseignant);
+			$this->_classe = $this->setUserId($classe);
+			$sql = "SELECT id_matiere, nom_matiere
+					FROM note_saisie, matiere
+					WHERE id_enseignant = '$this->_enseignant'
+						AND id_classe = $this->_classe
+						AND id_matiere = matiere.id";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+		
+		
+		
+		
+		/**
+		 * On liste les notes saisies dans une classe pour une matière au cours d'une séquence
+		 * @param int $classe 
+		 * @param int $matiere
+		 * @param int $sequence
+		 * @return array $note
+		 */
+		public function listeNote($classe, $matiere, $sequence){
+			$this->_classe = $this->setUserId($classe);
+			$this->_matiere = $this->setUserId($matiere);
+			$this->_sequence = $this->setUserId($sequence);
+			$sql = "SELECT id_eleve, id_matiere, id_classe, id_periode, note, observation
+					FROM note 
+					WHERE id_classe = '$this->_classe'
+						AND id_matiere = '$this->_matiere'
+						AND id_periode = '$this->_sequence'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+		
+		
+		
+		
+		/**
+		 * On modifie les notes saisies dans une classe pour une séquence précise
+		 * @param string $source qui est la page de provenance de la requête 
+		 * @param array $note qui contient : la classe, la matière, la séquence et les notes modifiées
+		 * @return void car c'est nue procédure 
+		*/ 
+		public function modifierNote($source, $note){
+			// echo '<pre>'; print_r($note); echo '</pre>';
+			$this->_classe = $this->setUserId($note['classe']);
+			$this->_matiere = $this->setUserId($note['matiere']);
+			$this->_sequence = $this->setUserId($note['sequence']);
+			$this->_competence = $this->setCompetence($note['competence']);
+			$eleve = $note['eleve'];
+			$notes = $note['note'];
+			$annuler = $note['annuler'];
+			$this->_date = DATE('Y-m-d H:i:s');
+
+			for($i=0;$i<count($eleve);$i++){
+				$this->_eleve = $this->setUserId($eleve[$i]);
+				if(!empty($notes[$i])){
+					$countValue[] = $notes[$i]; 
+					$this->_note = $this->setNote($notes[$i]);
+					echo "<p> L'élève ".$this->_eleve." obtient ".$this->_note.".</p>";
+					$update = $this->_db->prepare("UPDATE note
+													SET note =:note
+													WHERE id_eleve=:eleve
+														AND id_matiere=:matiere
+														AND id_classe=:classe
+														AND id_periode=:sequence");
+					$update->execute(array('note'=>$this->_note,
+											'eleve'=>$this->_eleve,
+											'matiere'=>$this->_matiere,
+											'classe'=>$this->_classe,
+											'sequence'=>$this->_sequence));
+					$this->journalUpdateNote($this->_classe, $this->_matiere, $this->_sequence,$this->_competence);
+				}
+			}
+
+			if(!empty($annuler)){
+				for($k=0;$k<count($annuler);$k++){
+					$this->_student = $this->setUserId($annuler[$k]);
+					$myNote = $this->setNote(-1); // On veut annuler ;-)
+					$reset = $this->_db->prepare("UPDATE note
+												SET note =:note
+												WHERE id_eleve=:eleve
+													AND id_matiere =:matiere
+													AND id_classe=:classe
+													AND id_periode=:sequence");
+					$reset->execute(array('note'=>$myNote,
+											'eleve'=>$this->_student,
+											'matiere'=>$this->_matiere,
+											'classe'=>$this->_classe,
+											'sequence'=>$this->_sequence));
+				}
+			}else{}
+
+			if(isset($countValue)){
+				$phrase = count($countValue)." notes ont été modifiées ";
+			}else{
+				$phrase = " aucune note modifiée ";
+			}
+			if(isset($k)){
+				$phrase .= " et ".$k." notes annulées";
+			}else{
+				$phrase .= " et pas de notes annulée.";
+			}
+			$_SESSION['message'] = $phrase;
+			header('Location:'.$source);
+		}
+		
+		
+		
+		private function journalUpdateNote($classe, $matiere, $sequence, $competence){
+			$date = DATE('Y-m-d H:i:s');
+			$upd = $this->_db->prepare("UPDATE note_saisie
+										SET date_modification=:modif,
+											competence =:compet
+										WHERE id_classe=:classe
+											AND id_matiere=:matiere
+											ANd id_periode=:sequence");
+			$upd->execute(array('modif'=>$date,
+								'classe'=>$classe,
+								'matiere'=>$matiere,
+								'sequence'=>$sequence,
+								'compet'=>$competence));
+		}
+		
+		
+		/*On supprime les notes séquentielles*/
+		public function supprimerNote($source, $data) {
+			$this->_classe = $this->setUserId($data['classe']);
+			$this->_matiere = $this->setUserId($data['matiere']);
+			$this->_sequence = $this->setUserId($data['sequence']);
+			
+			$deleteData = $this->_db->prepare("DELETE FROM note 
+												WHERE 
+												id_classe =:classe AND
+												id_matiere =:matiere AND
+												id_periode =:sequence");
+			$deleteJournal = $this->_db->prepare("DELETE FROM note_saisie 
+												WHERE 
+												id_classe =:classe AND 
+												id_matiere =:matiere AND 
+												id_periode =:sequence");
+			$deleteData->bindValue(':classe',$this->_classe);
+			$deleteData->bindValue(':matiere',$this->_matiere);
+			$deleteData->bindValue(':sequence',$this->_sequence);
+			
+			$deleteJournal->bindValue(':classe',$this->_classe);
+			$deleteJournal->bindValue(':matiere',$this->_matiere);
+			$deleteJournal->bindValue(':sequence',$this->_sequence);
+			$deleteData->execute();
+			$deleteJournal->execute();
+			$_SESSION['message'] = "notes Supprimées";
+			header('Location:'.$source);
+		}
+		
+		
+		
+		
+		
+		
+		// Affiche l'appreciation d'une note
+		public function showAppreciation($note){
+			// On doit gérer les cas des élèves non classés
+			if($note==0){
+				$res['nom_appreciation'] = 'Non Classé';
+				$res['nom_appreciation_anglais'] = 'Not Evaluated';
+				$res['couleur'] = 'Black';
+				$res['cote'] = '-';
+			}
+			else{
+				$sql = "SELECT nom_appreciation, nom_appreciation_anglais, couleur, cote
+						FROM appreciation
+						WHERE interv_ouvert <= ".$note." 
+							AND interv_fermet>".$note;
+				$req = $this->_db->query($sql);
+				$res = $req->fetch(PDO::FETCH_ASSOC);
+			}
+			return $res;
 		}
 		
 	}

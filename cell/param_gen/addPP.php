@@ -10,8 +10,9 @@
 			</tr>
 			<?php 
 			$listeClasse = $config->listeClasseProfClasse();
+			echo '<pre>'; print_r($listeClasse);
 			$a = 1;
-			for($i=0;$i<count($listeClasse);$i++){
+			/*for($i=0;$i<count($listeClasse);$i++){
 				echo "<tr>
 					<td align='center'>".$a."</td>
 					<td>".$listeClasse[$i]['nom_classe'];
@@ -33,7 +34,7 @@
 					</td>
 				</tr>";
 				$a++;
-			}
+			}*/
 			
 			?>
 			<tr>

@@ -18,27 +18,27 @@
                 </tr>
                 <tr>
                     <th>Nom </th>
-                    <th><input type='text' size='40' value="<?php echo $detailProf['nom']; ?>" disabled /></th>
+                    <th><input type='text' size='40' value="<?php echo stripslashes($detailProf['nom']); ?>" disabled /></th>
                     <th>
                         <input 
                             type='text'
                             size='40'
                             name='userName'
                             id='userName'
-                            value="<?php echo $detailProf['nom']; ?>"
+                            value="<?php echo stripslashes($detailProf['nom']); ?>"
                             required />
                     </th>
                 </tr>
 				<tr>
                     <th>prenom </th>
-                    <th><input type='text' size='40' value="<?php echo $detailProf['prenom']; ?>" disabled /></th>
+                    <th><input type='text' size='40' value="<?php echo stripslashes($detailProf['prenom']); ?>" disabled /></th>
                     <th>
                         <input 
                             type='text'
                             size='40'
                             name='userfName'
                             id='userfName'
-                            value="<?php echo $detailProf['prenom']; ?>"
+                            value="<?php echo stripslashes($detailProf['prenom']); ?>"
                             required />
                     </th>
                 </tr>
@@ -90,18 +90,24 @@
                 </tr>
                 <tr>
                     <th>Login </th>
-                    <th><input type='text' value="<?php echo $detailProf['login']; ?>" disabled /></th>
+                    <th><input type='text' value="<?php echo stripslashes($detailProf['login']); ?>" disabled /></th>
                     <th>
                         <input 
                             type='text'
                             name='userLogin'
                             id='userLogin'
-                            value="<?php echo $detailProf['login']; ?>"
+                            value="<?php echo stripslashes($detailProf['login']); ?>"
                             required />
                     </th>
                 </tr>
                 <tr>                    
-                    <th>
+                    <th colspan='3'>
+						Nom Complet Enregistré : 
+							<input 
+								type='text' 
+								value="<?php echo stripslashes($detailProf['nom_complet_enseignant']); ?>" 
+								size='40'
+								disabled />
                         <input 
                             type='hidden' 
                             name='userId' 

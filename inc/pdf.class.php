@@ -125,7 +125,7 @@
 			$this->SetFont('Times','',14);
 			$this->Cell(50, 7, utf8_decode('Et de : '), 0, 0 , 'L');
 			$this->SetFont('Times','BI',14);
-			$this->Cell(120, 7, utf8_decode($eleve['nom_mere']), 0, 0 , 'L');
+			$this->Cell(120, 7, $this->convert($eleve['nom_mere']), 0, 0 , 'L');
 			$this->Ln(10);
 			$this->SetFont('Times','',14);
 			$this->Cell(50, 7, utf8_decode(' Né(e) le : '), 0, 0 , 'L');

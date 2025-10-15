@@ -1,9 +1,9 @@
 <h1 id='body3'>Affecter un enseignant à une classe</h1>
 	<?php $listeClasse = $config->listeClasseProfClasse(); 
 	/*echo '<pre>';print_r($listeClasse); echo '</pre>';*/?>
-	<form method='post' action=''>
+	<form method='post' action='../traitement.php'>
 		<p>Classe : 
-			<select name='classe'>
+			<select name='classe' id='classe' onChange='listClasseAddTeacher()'>
 				<?php 
 					$listeClasse = $config->listeClasseProfClasse();
 					for($i=0;$i<count($listeClasse);$i++){
@@ -14,8 +14,9 @@
 				?>
 				<option value='null' selected>-Choix de la classe-</option>
 			</select>
-			<input type ='submit' name='choixClasse' value='Valider' />
 		</p>
+		<div id='resultat'>
+		</div>
 	</form>
 	<?php 
 		if(isset($_POST['choixClasse'])){ 

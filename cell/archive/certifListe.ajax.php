@@ -9,21 +9,23 @@
 		if($annee=='null'){
 			echo "<h3 class='alert'>Vous devez selectionner une année scolaire.</h3>";
 		}else{
-			$table = $annee.'_eleve';
+			$listeEleve = $config->listeEleveOldYear($annee);
+			// echo '<pre>'; print_r($listeEleve); echo '</pre>';
 		?>
-			Entrer le nom ou une partie du nom :
-				<input 
-					type='text' 
-					name='eleve' 
-					id='eleve'
-					placeholder='tapez la recherche'					
-					onKeyup='findEleve()' />
-				<input 
-					type='hidden'
-					name='annee'
-					id='annee'
-					value='<?php echo $table; ?>' />
-				
+			Nom de l'élève : 
+			<select 
+				name = 'eleve' 
+				id = 'eleve' 
+				OnChange='findEleve()'>
+				<option value='null' selected>-Choisir Eleve-</option>
+				<?php 
+				for($i=0;$i<count($listeEleve);$i++){
+					$idEleve = $listeEleve[$i]['id'];
+					$nomEleve = $listeEleve[$i]['nom_complet'];
+					echo "<option value='".$idEleve."'>".$nomEleve."</option>";
+				}
+				?>
+			</select>
 			<div id='resultat' style = 'display:inline'>
 			</div>
 <?php 

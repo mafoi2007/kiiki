@@ -18,7 +18,7 @@
 					for($i=0;$i<count($typeUtilisateur);$i++){
 						echo "<option value='";
 						echo $typeUtilisateur[$i]['idEnseignant'];
-						echo "'>".stripslashes($typeUtilisateur[$i]['nom'])."</option>";
+						echo "'>".stripslashes($typeUtilisateur[$i]['nom_complet_enseignant'])."</option>";
 					}
 					?>
 					

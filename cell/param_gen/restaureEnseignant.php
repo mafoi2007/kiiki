@@ -1,4 +1,4 @@
-<div id='body2'>
+<div id='body3'>
     <h1 class='alert'>restaurer un utilisateur</h1>
     <?php 
     if(isset($_GET['id'])){

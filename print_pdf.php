@@ -187,6 +187,167 @@
 		
 		
 		
+		if($_SESSION['print']=='listeEleveOld'){
+			$classe = $_SESSION['classe'];
+			$pdf->SetFillColor(155, 150, 149);
+			// La page doit s'afficher en fonction de la section 
+			if($classe['section']=='en'){
+				$pdf->addPage();
+				$pdf->Entete();
+				$titre = 'student list of ';
+				$titre.= $classe['eleve'][0]['nom_classe'];
+				$pdf->Titre($titre);
+				
+				$pdf->SetFont('Times','',8);
+				$pdf->Cell(90);
+				$pdf->Cell(14, 7, 'Sex', 1, 0 , 'C', true);
+				$pdf->Cell(12, 7, 'Female', 1, 0 , 'C', true);
+				$pdf->Cell(14, 7, 'Male', 1, 0 , 'C', true);
+				$pdf->Cell(10, 7, 'Global', 1, 0 , 'C', true);
+				$pdf->Ln(7);
+				$pdf->SetFont('Times','',8);
+				$pdf->Cell(90);
+				$pdf->Cell(14, 7, 'Repeater', 1, 0 , 'C');
+				$pdf->Cell(12, 7,  $classe['stat']['FR'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['GR'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['R'], 1, 0 , 'C');
+				$pdf->Ln(7);
+				$pdf->SetFont('Times','',8);
+				$pdf->Cell(90);
+				$pdf->Cell(14, 7, 'New', 1, 0 , 'C');
+				$pdf->Cell(12, 7,  $classe['stat']['FN'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['GN'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['N'], 1, 0 , 'C');
+				$pdf->Ln(7);
+				$pdf->SetFont('Times','',8);
+				$pdf->Cell(90);
+				$pdf->Cell(14, 7, 'Global', 1, 0 , 'C');
+				$pdf->Cell(12, 7,  $classe['stat']['F'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['G'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['T'], 1, 0 , 'C');
+				$pdf->Ln(10);
+				
+				$pdf->SetFont('Times','B',10);
+				// Je positionne l'entete du tableau
+				$pdf->Cell(10, 6, $pdf->convert('N°'), 1, 0 , 'C',true);
+				$pdf->Cell(28, 6, $pdf->convert('National Id'), 1, 0 , 'C',true);
+				$pdf->Cell(75, 6, $pdf->convert('Full Name'), 1, 0 , 'C',true);
+				$pdf->Cell(9, 6, $pdf->convert('Sex'), 1, 0 , 'C',true);
+				$pdf->Cell(13, 6, $pdf->convert('Status'), 1, 0 , 'C',true);
+				$pdf->Cell(55, 6, $pdf->convert('Date and place of birth'), 1, 0 , 'C',true);
+				$pdf->SetFont('Times','',10);
+				$pdf->Ln(6);
+				$a = 1;
+				for($i=0;$i<count($classe['eleve']);$i++){
+					$pdf->Cell(10, 6, $a, 1, 0 , 'C');
+					$pdf->Cell(28, 6, $pdf->convert($classe['eleve'][$i]['rne']), 1, 0 , 'C');
+					$pdf->Cell(75, 6, $pdf->convert($classe['eleve'][$i]['nom_complet']), 1, 0 , 'L');
+					$pdf->Cell(9, 6, $pdf->convert($classe['eleve'][$i]['sexe']), 1, 0 , 'C');
+					$pdf->Cell(13, 6, $pdf->convert($classe['eleve'][$i]['statut']), 1, 0 , 'C');
+					$dateNaiss = $classe['eleve'][$i]['date_fr'].' at '.ucwords($classe['eleve'][$i]['lieu_naissance']);
+					$pdf->Cell(55, 6, $pdf->convert($dateNaiss), 1, 0 , 'L');
+					$pdf->Ln(6);
+					$a++;
+				}
+				$texte = 'Done at '.ucwords($_SESSION['information']['ville']);
+				$texte.= ', on the '.DATE('d  M  Y');
+				$pdf->Cell(110);
+				$pdf->Cell(70,10, $texte,0,0,'C');
+				$pdf->Cell(20);
+				
+				$pdf->Ln(5);
+				// $pdf->Cell(130,30, ' ');
+				$pdf->SetFont('Arial','BI',10);
+				// $titre = $classe['information']['titre'];
+				$pdf->Cell(110);
+				$pdf->Cell(70,10, $classe['information']['signataire_en'],0,0,'C');
+				$pdf->Cell(20);
+				
+				$fileName='student_list_';
+				$fileName.= strtoupper(str_replace(' ','_',$classe['eleve'][0]['nom_classe']));
+				$fileName.= '.pdf';
+			}
+			elseif($classe['section']=='fr'){
+				$pdf->addPage();
+				$pdf->Entete();
+				$titre = 'Liste des eleves de la ';
+				$titre.= $classe['eleve'][0]['nom_classe'];
+				$pdf->Titre($titre);
+				
+				$pdf->SetFont('Times','',8);
+				$pdf->Cell(90);
+				$pdf->Cell(14, 7, 'Sexe', 1, 0 , 'C', true);
+				$pdf->Cell(12, 7, 'Feminin', 1, 0 , 'C', true);
+				$pdf->Cell(14, 7, 'Masculin', 1, 0 , 'C', true);
+				$pdf->Cell(10, 7, 'Total', 1, 0 , 'C', true);
+				$pdf->Ln(7);
+				$pdf->SetFont('Times','',8);
+				$pdf->Cell(90);
+				$pdf->Cell(14, 7, 'Redoublant', 1, 0 , 'C');
+				$pdf->Cell(12, 7,  $classe['stat']['FR'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['GR'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['R'], 1, 0 , 'C');
+				$pdf->Ln(7);
+				$pdf->SetFont('Times','',8);
+				$pdf->Cell(90);
+				$pdf->Cell(14, 7, 'Nouveau', 1, 0 , 'C');
+				$pdf->Cell(12, 7,  $classe['stat']['FN'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['GN'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['N'], 1, 0 , 'C');
+				$pdf->Ln(7);
+				$pdf->SetFont('Times','',8);
+				$pdf->Cell(90);
+				$pdf->Cell(14, 7, 'Total', 1, 0 , 'C');
+				$pdf->Cell(12, 7,  $classe['stat']['F'], 1, 0 , 'C');
+				$pdf->Cell(14, 7,  $classe['stat']['G'], 1, 0 , 'C');
+				$pdf->Cell(10, 7,  $classe['stat']['T'], 1, 0 , 'C');
+				$pdf->Ln(10);
+				
+				$pdf->SetFont('Times','B',10);
+				// Je positionne l'entete du tableau
+				$pdf->Cell(10, 6, $pdf->convert('N°'), 1, 0 , 'C',true);
+				$pdf->Cell(28, 6, $pdf->convert('Matricule'), 1, 0 , 'C',true);
+				$pdf->Cell(75, 6, $pdf->convert('Nom Complet'), 1, 0 , 'C',true);
+				$pdf->Cell(9, 6, $pdf->convert('Sexe'), 1, 0 , 'C',true);
+				$pdf->Cell(13, 6, $pdf->convert('Statut'), 1, 0 , 'C',true);
+				$pdf->Cell(55, 6, $pdf->convert('Date et lieu de naissance'), 1, 0 , 'C',true);
+				$pdf->SetFont('Times','',10);
+				$pdf->Ln(6);
+				$a = 1;
+				for($i=0;$i<count($classe['eleve']);$i++){
+					$pdf->Cell(10, 6, $a, 1, 0 , 'C');
+					$pdf->Cell(28, 6, $pdf->convert($classe['eleve'][$i]['rne']), 1, 0 , 'C');
+					$pdf->Cell(75, 6, $pdf->convert($classe['eleve'][$i]['nom_complet']), 1, 0 , 'L');
+					$pdf->Cell(9, 6, $pdf->convert($classe['eleve'][$i]['sexe']), 1, 0 , 'C');
+					$pdf->Cell(13, 6, $pdf->convert($classe['eleve'][$i]['statut']), 1, 0 , 'C');
+					$dateNaiss = $classe['eleve'][$i]['date_fr'].' à '.ucwords($classe['eleve'][$i]['lieu_naissance']);
+					$pdf->Cell(55, 6, $pdf->convert($dateNaiss), 1, 0 , 'L');
+					$pdf->Ln(6);
+					$a++;
+				}
+				$texte = 'Fait a '.ucwords($_SESSION['information']['ville']);
+				$texte.= ', le '.DATE('d / m / Y');
+				$pdf->Cell(110);
+				$pdf->Cell(70,10, $texte,0,0,'C');
+				$pdf->Cell(20);
+				
+				$pdf->Ln(5);
+				// $pdf->Cell(130,30, ' ');
+				$pdf->SetFont('Arial','BI',10);
+				// $titre = $classe['information']['titre'];
+				$pdf->Cell(110);
+				$pdf->Cell(70,10, $classe['information']['signataire_fr'],0,0,'C');
+				$pdf->Cell(20);
+				
+				$fileName='liste_Eleve_';
+				$fileName.= strtoupper(str_replace(' ','_',$classe['eleve'][0]['nom_classe']));
+				$fileName.= '.pdf';
+			} 
+			
+			$pdf->Output($fileName, 'I');
+		}
+		
+		
 		
 		
 		
@@ -354,6 +515,26 @@
 		
 		
 		
+		elseif($_SESSION['print']=='certificatScolOld'){
+			$eleve = $_SESSION['eleve'];
+			$classe = $_SESSION['classe'];
+			$information = $_SESSION['information'];
+			$pdf->SetFillColor(155, 150, 149);
+			// La page doit s'afficher en fonction de la section 
+			if($classe['section']=='en'){
+				$pdf->addPage();
+				$pdf->Entete();
+				$pdf->certificatScolariteEn($eleve, $information);
+			}
+			elseif($classe['section']=='fr'){
+				$pdf->addPage();
+				$pdf->Entete();
+				$pdf->certificatScolariteFr($eleve, $information);
+			}
+			$fileName = 'Certificat_Scolarite_';
+			$fileName .= str_replace(' ','_', $eleve['nom_complet']);
+			$pdf->Output($fileName, 'I');
+		}
 		
 		
 		

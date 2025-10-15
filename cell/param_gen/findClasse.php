@@ -1,9 +1,15 @@
 <h1 id='body3'>Rechercher une classe</h1>
-	<form method='post' action=''>
+	<form method='post' action='../traitement.php'>
 		<p>Entrer le nom ou une partie du nom de la classe: 
-		<input type='text' name='nomClasse' placeholder='tapez la recherche' />
-		<input type='submit' name='findNameClasse' value='Rechercher' />
+		<input 
+			type='text' 
+			name='nomClasse'			
+			id='nomClasse'			
+			placeholder='tapez la recherche' 
+			onKeyUp='listClasse()'/>
 		</p>
+		<div id='resultat'>
+		</div>
 	</form>
 	
 	<?php 

@@ -7,9 +7,14 @@
             echo "<h3 class='alert'>L'utilisateur sollicité n'existe pas.</h3>";
         }else{ ?>
         <table border='1' width='75%'>
+			<tr>
+				<th colspan='5'>
+					Détail sur l'utilisateur
+				</th>
+			</tr>
             <tr>
                 <th>Nom de l'utilisateur</th>
-                <th class='bien'><?php echo $detailProf['nom']; ?></th>
+                <th class='bien'><?php echo stripslashes($detailProf['nom_complet_enseignant']); ?></th>
             </tr>
             <tr>
                 <th>Titre</th>
@@ -21,9 +26,8 @@
             </tr>
             <tr>
                 <th>Login</th>
-                <th class='bien'><?php echo $detailProf['login']; ?></th>
+                <th class='bien'><?php echo stripslashes($detailProf['login']); ?></th>
             </tr>
-            <caption>Détail sur l'utilisateur</caption>
         </table>
 <?php         }
         // echo '<pre>';print_r(detailProf); echo '</pre>';

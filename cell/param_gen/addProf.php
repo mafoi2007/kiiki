@@ -78,35 +78,7 @@
 						value="<?php if(isset($_POST['login'])){echo $_POST['login'];}?>" />
 				</td>
 			</tr>
-			<tr>
-				<td>
-					<p>Mot de passe :
-				</td>
-				<td>
-					<input 
-						type="password" 
-						name="mdp" 
-						id="mdp" 
-						size="30" 
-						maxlength="30" 
-						placeholder="Votre mot de passe" 
-						value="<?php if(isset($_POST['mdp'])){echo $_POST['mdp'];}?>" />
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<p>Rétapez mot de passe :
-				</td>
-				<td>
-					<input 
-						type="password" 
-						name="mdp_confirm" 
-						id="mdp_confirm" 
-						size="30" 
-						maxlength="30" 
-						placeholder="Rétapez votre mot de passe" />
-				</td>
-			</tr>
+			
 			<tr>
 				<td>
 					<p><input 

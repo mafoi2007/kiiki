@@ -22,7 +22,7 @@
 		$update = $page.'updateEnseignant&amp;id=';
 		$delete = $page.'deleteEnseignant&amp;id=';
 		$restaure = $page.'restaureEnseignant&amp;id=';
-		echo $page;
+		// echo $page;
         if(empty($listeProf)){
             echo "<tr>
                     <th colspan='9' class='alert'>Aucun enseignant correspondant.</th>
@@ -32,7 +32,7 @@
             for($i=0;$i<count($listeProf); $i++){ ?>
         <tr>
             <td><?php echo $a; ?></td>
-            <td><?php echo $listeProf[$i]['nom']; ?></td>
+            <td><?php echo stripslashes($listeProf[$i]['nom_complet_enseignant']); ?></td>
             <td><a href="<?php echo $detail.$listeProf[$i]['id']; ?>#body3">Détails</a></td>
             
             <td><a href="<?php echo $update.$listeProf[$i]['id']; ?>#body3">Modifier</a></td>
@@ -42,7 +42,7 @@
     <?php
             }
             elseif($listeProf[$i]['etat']=='inactif'){ ?>
-            <td><a href="<?php echo $restaure.$listeProf[$i]['id']; ?>#body3">Restaurer</a></td>
+            <td class='alert' align='center'><i class='alert'><a href="<?php echo $restaure.$listeProf[$i]['id']; ?>#body3">Restaurer</a></i></td>
             <?php }
             ?>
             

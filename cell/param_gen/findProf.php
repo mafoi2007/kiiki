@@ -20,18 +20,6 @@
 
 
 
-
-
-
-
-
-<h1>Rechercher un enseignant</h1>
-	<form method='post' action=''>
-		<p>Entrer le nom ou une partie du nom : 
-		<input type='text' name='nomEnseignant' placeholder='tapez la recherche' />
-		<input type='submit' name='findName' value='Rechercher' />
-		</p>
-	</form>
 	
 	<?php 
 		if(isset($_POST['findName'])){

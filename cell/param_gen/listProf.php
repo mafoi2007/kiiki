@@ -16,7 +16,7 @@
 					echo"<td> ";
 					echo strtoupper($liste[$a]['nom'])." ".ucwords($liste[$a]['prenom'])." </td>";
 					echo"<td> ".$liste[$a]['login']." </td>";
-					echo "<td> ".$liste[$a]['libelle_poste']." </td>";
+					echo "<td> ".utf8_decode($liste[$a]['libelle_poste'])." </td>";
 				echo"</tr>";
 				$i++;
 			}

@@ -240,27 +240,31 @@
 	
 	
 	if(isset($_REQUEST['majClasse'])){
-		$choix = $_REQUEST['majClasse'];
-		echo $choix;
+		// echo '<pre>'; print_r($_POST); echo '</pre>';
+		$choix = $_POST['majClasse'];
+		// echo $choix;
 		// On veut supprimer la classe 
 		if($choix=='Supprimer'){
-			echo '<pre>';
-			print_r($_REQUEST);
 			$config->supprimerClasse($source, $_REQUEST['idClasse']);
-		}
-		elseif($choix=='Mettre à jour'){
-			$config->updClasse($source, 
-							$_REQUEST['idClasse'],
-							$_REQUEST['nom_classe'],
-							$_REQUEST['code_classe'],
-							'actif',
-							$_REQUEST['niveau']);
-		}
-		elseif($choix=='ReActiver'){
-			echo '<pre>';
-			print_r($_REQUEST);
+		}elseif($choix=='ReActiver'){
 			$config->RestaurerClasse($source, $_REQUEST['idClasse']);
+		}elseif($choix=='Mettre à jour'){
+			$data['nomClasse'] = $_POST['nom_classe'];
+			$data['codeClasse'] = $_POST['code_classe'];
+			$data['section'] = $_POST['section'];
+			$data['niveau'] = $_POST['niveau'];
+			$data['idClasse'] = $_POST['idClasse'];
+			$config->updClasse($source, $data);
 		}
+		// elseif(){
+			// $config->updClasse($source, 
+							// $_REQUEST['idClasse'],
+							// $_REQUEST['nom_classe'],
+							// $_REQUEST['code_classe'],
+							// 'actif',
+							// $_REQUEST['niveau']);
+		// }
+		
 	}
 	
 	
@@ -371,16 +375,14 @@
 	
 	
 	
-	
+	// On ajoute un enseignant à la classe
 	if(isset($_REQUEST['updmatiereclasse'])){
 		$source = $_SERVER['HTTP_REFERER'];
-		echo '<pre>';
-		print_r($_REQUEST);
-		
-		$config->addProfClasse($source, 
-								$_POST['matiere'],
-								$_POST['prof'],
-								$_POST['cls']);
+		// echo '<pre>';print_r($_POST);echo '</pre>';
+		$data['classe'] = $_POST['classe'];
+		$data['matiere'] = $_POST['matiere'];
+		$data['prof'] = $_POST['prof'];
+		$config->addProfClasse($source, $data); 
 	}
 	
 	
@@ -424,9 +426,7 @@
 								$_POST['prenom'],
 								$_POST['sexe'],
 								$_POST['poste'],
-								$_POST['login'],
-								$_POST['mdp'],
-								$_POST['mdp_confirm']);
+								$_POST['login']);
 	}
 	
 	// On met à jour un utilisateur 
@@ -463,7 +463,7 @@
 		if(isset($_POST['restaureUser'])){
 			echo '<pre>'; print_r($_POST); echo '</pre>';
 			$user = $_POST;
-			$var1 = '?action=restaure&';
+			$var1 = '?action=restaureEnseignant&';
 			$var2 = 'id='.$user['user'];
 			$source = str_replace($var1,'',$source);
 			$source = str_replace($var2,'',$source); 
@@ -471,7 +471,7 @@
 				$_SESSION['message'] = 'L utilisateur ne sera pas restauré.';
 				header('Location:'.$source);
 			}elseif($user['restaureUser']=='oui'){
-				$config->restaureUser($source, $classe['user']);
+				$config->restaureUser($source, $user['user']);
 			}
 		}
 	
@@ -665,7 +665,31 @@
 	
 	
 	/*On veut enregistrer les notes saisies*/
-	if(isset($_REQUEST['addnt'])){
+	// On veut enregistrer ses notes 
+	if(isset($_POST['saveNote'])){
+		// echo '<pre>'; print_r($_POST); echo '</pre>';
+		$notes = $_POST;
+		if(!$_POST['eleve']){
+			$_SESSION['message'] = "Aucun enregistrmeent effectué";
+			header('Location:'.$source);
+		}
+		// Avant d'enregistrer, on s'assure que depuis un autre onglet, la tâche n'avait pas déjà été validée.
+		$verification = $config->verifNoteSaisie($_POST['classe'],
+												$_POST['matiere'], 
+												$_POST['sequence']);
+		if($verification==false){
+			$config->ajouterNote($source, $notes);
+		}else{
+            $_SESSION['message'] = "Les Notes de cette matière ont été saisies le ";
+            $_SESSION['message'] .= $verification['date_fr'];
+            $_SESSION['message'] .= " à ";
+            $_SESSION['message'] .= $verification['heure_fr'];
+            $_SESSION['message'] .= ". Reportez-vous au menu Modifier des Notes ";
+            $_SESSION['message'] .= "pour des éventuels changements de notes.";
+			header('Location:'.$source);
+		}
+	}
+	/*if(isset($_REQUEST['addnt'])){
 		$source = $_SERVER['HTTP_REFERER'];
 		echo '<pre>';
 		print_r($_REQUEST);
@@ -677,12 +701,17 @@
 							$_POST['note'],
 							$_POST['competence']
 							);
-	}
+	}*/
 	
 	
 	
 	/*On veut modifier les notes saisies */
-	if(isset($_REQUEST['updnt'])){
+	// On veut mettre à jour ses notes 
+	if(isset($_POST['updateNote'])){
+		$notes = $_POST;
+		$config->modifierNote($source, $notes);
+	}
+	/*if(isset($_REQUEST['updnt'])){
 		$source = $_SERVER['HTTP_REFERER'];
 		$matiere = $_POST['matiere'];
 		$sequence = $_POST['periode'];
@@ -693,22 +722,32 @@
 		$newNote = $_POST['newNote'];
 		/*echo '<pre>';
 		print_r($_REQUEST);*/
-		$note->modifierNote($source, $classe, $matiere, $sequence, 
+		/*$note->modifierNote($source, $classe, $matiere, $sequence, 
 							$competence, $eleve, $oldNote, $newNote);
-	}
+	}*/
 	
 	
 	
 	
 	/* On veut supprimer les notes de la Séquence pour la classe et la matière */
-	if(isset($_REQUEST['delnt'])){
-		echo '<pre>';
-		print_r($_REQUEST);
-		echo '</pre>';
-		$note->supprimerNote($source,
+	if(isset($_REQUEST['deleteNote'])){
+		// echo '<pre>';
+		// print_r($_REQUEST);
+		// echo '</pre>';
+		$reponse = $_POST['deleteNote'];
+		if($reponse=='Non'){
+			$_SESSION['message'] = 'Aucune note ne sera supprimée';
+			header('Location:'.$source);
+		}elseif($reponse=='Oui'){
+			$data['classe'] = $_POST['classe'];
+			$data['matiere'] = $_POST['matiere'];
+			$data['sequence'] = $_POST['sequence'];
+			$config->supprimerNote($source, $data);
+		}
+		/*$note->supprimerNote($source,
 								$_POST['clas'],
 								$_POST['sequence'],
-								$_POST['matiere']);
+								$_POST['matiere']);*/
 	}
 	
 	
@@ -998,7 +1037,12 @@
 		echo '<pre>'; print_r($_POST); echo '</pre>';
 		$as = $config->getCurrentYear();  // Année Scolaire en Cours
 		
-		// On édite le certificat de scolarité 
+		/*---------------------------------------------------------
+		-----------------------------------------------------------
+							CERTIFICAT DE SCOLARITE
+		------------------------------------------------------------
+		-----------------------------------------------------------*/
+		/* Pour l'année scolaire en cours */
 		if($_POST['to_print']=='certificatScol'){
 			if(!$_POST['eleve']){
 				$_SESSION['message'] = 'Vous devez choisir un élève';
@@ -1008,11 +1052,29 @@
 				$section = $config->getSectionclasse($eleve['classe']);
 				$_SESSION['eleve'] = $eleve;
 				$_SESSION['classe']['section'] = $section;
-				$_SESSION['print'] = 'certificatScol';
+				$_SESSION['print'] = $print;
 				// echo var_dump($eleve);
 				header('Location:print_pdf.php');
 			}
 			
+		}
+		
+		
+		/* Pour une ancienne année scolaire */
+		if($_POST['to_print']=='certificatScolOld'){
+			$eleve = $config->getEleveOld($_POST['eleve'],$_POST['oldYear']);
+			$section = $config->getSectionClasse($eleve['classe']);
+			$classe = $config->getClasse($eleve['classe']);
+			// echo '<pre>';print_r($classe);
+			
+			$_SESSION['eleve'] = $eleve;
+			$_SESSION['eleve']['libelle_annee'] = $eleve['a_s'];
+			$_SESSION['eleve']['date_fr'] = $eleve['date_naissance'];
+			$_SESSION['eleve']['nom_classe'] = $classe['nom_classe'];
+			$_SESSION['classe']['section'] = $section;
+			$_SESSION['print'] = $print;
+			// print_r($_SESSION['eleve']);
+			header('Location:print_pdf.php');
 		}
 		
 		
@@ -1028,6 +1090,7 @@
 		On veut imprimer la liste des élèves
 		-------------------------------------------------------------
 		-----------------------------------------------------------*/
+		/* Pour l'année scolaire en cours */
 		if($_POST['to_print']=='listeEleve'){
 			$classe = $_POST['classe'];
 				if($classe=='null'){
@@ -1050,6 +1113,38 @@
 					}
 				}			
 		}
+		
+		
+		
+		/* Pour une ancienne année scolaire */
+		if($_POST['to_print']=='listeEleveOld'){
+			$listeEleve = $config->listeEleveOld($_POST['classe'],'non_supprime',$_POST['oldYear']);
+			$section = $config->getSectionClasse($_POST['classe']);
+			
+			$_SESSION['classe']['stat'] = $config->listeEleveStat($_POST['classe'], 'non_supprime', $as);
+			$_SESSION['classe']['eleve'] = $listeEleve;
+			$_SESSION['classe']['section'] = $section;
+			$_SESSION['classe']['information'] = $_SESSION['information'];
+			// echo '<pre>'; print_r($listeEleve); echo '</pre>';
+			
+			$_SESSION['print'] = $print;
+			header('Location:print_pdf.php');
+			/*$classe = $_POST['classe'];
+				if($classe=='null'){
+					$_SESSION['message'] = 'Vous devez choisir une classe.';
+					header('Location:'.$source);
+				}else{
+					$listeEleve = $config->listeEleve($_POST['classe'], 'non_supprime', $as );
+					$nbValue = count($listeEleve); // Si ça vaut 0, y'a pas d'élèves dans la classe.
+					
+				}*/			
+		}
+		
+		
+		
+		
+		
+		
 		/*---------------------------------------------------------
 		------------------------------------------------------------
 		-----------------------------------------------------------
