@@ -16,7 +16,7 @@
 			$pg .= '&action=updDate&';
 			for($a=0;$a<count($periodeSequentielle);$a++) {
 				echo "<tr>\n";
-					echo "<td>".$periodeSequentielle[$a]['nom_periode']."</td>\n";
+					echo "<td>".utf8_decode($periodeSequentielle[$a]['nom_periode'])."</td>\n";
 					echo "<td>".$periodeSequentielle[$a]['ouverture']."</td>\n";
 					echo "<td>".$periodeSequentielle[$a]['fermeture']."</td>\n";
 					echo "<td><a href='".$pg."periode=".$periodeSequentielle[$a]['id']."#body3' target='_blank'>Modifier</a></td>\n";

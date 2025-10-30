@@ -357,19 +357,7 @@
 		
 		
 		
-		// On vérifie toutes les classes qui ont reçu des notes dans une séquence
-		public function verifNoteSaisieClasse(){
-			$sql = "SELECT note_saisie.id as id, 
-							classe as id_classe, nom_classe, 
-							matiere as id_matiere, nom_matiere, sequence
-					FROM note_saisie, classe, matiere 
-					WHERE classe=code_classe
-						AND code_matiere=matiere
-						GROUP BY classe ORDER BY niveau, classe";
-			$req = $this->_db->query($sql);
-			$res = $req->fetchAll(PDO::FETCH_ASSOC);
-			return $res;
-		}
+		
 		
 		
 		
@@ -397,17 +385,7 @@
 		
 		
 		
-		// On verifie les séquences saisies pour une classe donnée 
-		public function verifNoteSaisieSequenceReel($classe){
-			$sql = "SELECT DISTINCT sequence							
-					FROM  note_saisie
-					WHERE classe='$classe'
-					ORDER BY sequence
-					";
-			$req = $this->_db->query($sql);
-			$res = $req->fetchAll(PDO::FETCH_ASSOC);
-			return $res;
-		}
+		
 		
 		
 		

@@ -193,6 +193,15 @@
 		}
 		
 		
+		
+		public function getGroupe(){
+			$sql = "SELECT * FROM groupe ORDER BY nom_groupe";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res; 
+		}
+		
+		
 		// La fonction qui gère le formulaire de connexion 
 		public function connectUser($source, $login, $mdp){
 			$this->_login = $this->setUserId($login);
@@ -664,9 +673,10 @@
 		
 		
 		public function rechercherEleve($nom){
-			$sql = "SELECT *
-					FROM eleve 
+			$sql = "SELECT eleve.id as id, nom_complet, a_s, libelle_annee, etat
+					FROM eleve, annee_scolaire
 					WHERE nom_complet LIKE '%$nom%'
+						AND annee_scolaire.id = a_s
 					ORDER BY nom_complet";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
@@ -737,18 +747,12 @@
 		
 		// La liste des élèves d'une classe d'année scolaire précédente
 		public function listeEleveOld($classe, $etat, $annee) {
-			$tableEleve = $annee."_eleve";
-			$champId = "`".$tableEleve.".rne`";
-			
-			$sql = "SELECT rne, nom_complet, nom, prenom, sexe, date_naissance, 
-							lieu_naissance, matricule, classe, adresse_parent, 
-							statut, num_rand, etat, nom_pere, nom_mere, 
-							photo, a_s, nom_classe, ".$tableEleve."_eleve.id as id,  
-							DATE_FORMAT(date_naissance, '%d / %m / %Y') as date_fr
-					FROM `$tableEleve`, classe
-					WHERE classe='$classe'
-						AND classe.id = classe
-						AND etat = '$etat'
+			$this->_classe = $this->setUserId($classe);
+			$table = $annee.'_eleve';
+			$sql = "SELECT *
+					FROM `$table`
+					WHERE etat = '$etat'
+						AND classe = '$this->_classe'
 					ORDER BY nom_complet";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
@@ -770,15 +774,6 @@
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
-			/*$tableEleve = $annee.'_eleve';
-			$sql = "SELECT *
-					FROM `$tableEleve`
-					WHERE classe='$classe'
-					AND etat = '$etat'
-					ORDER BY nom_complet";
-			$req = $this->_db->query($sql);
-			$res = $req->fetchAll(PDO::FETCH_ASSOC);
-			return $res;*/
 		}
 		
 		
@@ -1808,7 +1803,7 @@
 		*****************************************************************/
 		
 		public function ajouterGestionnaire($source, $nom, $prenom, $sexe, 
-											$poste, $login) {
+											$poste, $login, $contact) {
 			$this->_nom = $this->setNom($nom);
 			$this->_prenom = $this->setPrenom($prenom);
 			$this->_nomComplet = strtoupper($this->_nom).' '.ucwords($this->_prenom);
@@ -1816,6 +1811,7 @@
 			$this->_poste = $this->setUserId($poste);
 			$this->_login = $this->setLogin($login);
 			$this->_mdp = $this->setPassword($login);
+			$this->_contact = $contact;
 			// Le login est-il déjà utilisé ?
 			$sql = "SELECT * FROM enseignant WHERE login = '$this->_login'";
 			$req = $this->_db->query($sql);
@@ -1832,7 +1828,8 @@
 							sexe=:sexe, 
 							poste=:poste, 
 							login=:login, 
-							mdp=:mdp, 
+							mdp=:mdp,
+							contact =:contact,
 							etat=:etat ");
 				$insert->bindValue(':nom', $this->_nom);
 				$insert->bindValue(':prenom', $this->_prenom);
@@ -1841,6 +1838,7 @@
 				$insert->bindValue(':login', $this->_login);
 				$insert->bindValue(':mdp', $this->_mdp);
 				$insert->bindValue(':etat', 'actif');
+				$insert->bindValue(':contact', $this->_contact);
 				$insert->bindValue(':nomComplet', $this->_nomComplet);
 				$insert->execute();
 				
@@ -1909,7 +1907,7 @@
 		// On affiche tout sur un utilisateur donné 
 		public function getUser($utilisateur){
 			$sql = "SELECT enseignant.id as id, nom_complet_enseignant, nom, prenom, sexe, poste, login, mdp, etat, image,
-							libelle_poste
+							libelle_poste, contact
 					FROM enseignant, poste 
 					WHERE enseignant.id = '$utilisateur' 
 						AND poste.id = poste";
@@ -1953,6 +1951,7 @@
 			$userPoste = $this->setUserId($utilisateur['userPost']);
 			$userLogin = $this->setLogin($utilisateur['userLogin']);
 			$userId = $this->setUserId($utilisateur['userId']);
+			$userContact = $utilisateur['userContact'];
 			
 			$infoUtilisateur = $this->getUser($userId);
 			
@@ -1989,6 +1988,14 @@
 				if($userPoste!=$infoUtilisateur['poste']){
 					$champ[] = 'poste';
 					$valeur[] = $userPoste;
+				}
+			}
+			
+			
+			if(!empty($userContact)){
+				if($userContact!=$infoUtilisateur['contact']){
+					$champ[] = 'contact';
+					$valeur[] = $userContact;
 				}
 			}
 
@@ -2241,31 +2248,68 @@
 		}
 		
 		
-		public function createDateAbsence($source, $sequence, $open, $close) {
-			$this->_sequence = (int) $sequence;
-			$this->_open = $open;
-			$this->_close = $close;
-			echo $this->_open.'<br />';
-			echo $this->_close.'<br />';
-			/*La Date d'ouverture doit être strictement inférieure à la date de cloture */
-			if($this->_open > $this->_close){
-				$_SESSION['message'] = 'Erreur : La Date de debut est supérieure à la date de cloture.';
-				header('Location:'.$source);
-			}else{
-				if($this->_open == $this->_close){
-					$_SESSION['message'] = 'Erreur : La Date de debut est égale à la date de cloture.';
-					header('Location:'.$source);
+		public function createDateAbsence($source, $sequence, $open, $close){
+			$_SESSION['message'] = '';
+			for($i=0;$i<count($open);$i++){
+				if(!empty($open[$i])){
+					$this->_open = $open[$i];
+					$this->_close = $close[$i];
+					$this->_periode = $sequence[$i];
+					// La date d'ouverture doit être supérieure à la date de fermeture 
+					if($this->_open >= $this->_close){
+						$_SESSION['message'] .= '-Certaines dates sont invalides.-';
+					}else{
+						$verif = $this->checkInfo($sequence[$i],'date_absences', 'id_periode');
+						if($verif==false){
+							$add = $this->_db->prepare("INSERT INTO date_absences SET 
+														open_date=:open,
+														close_date=:close,
+														id_periode=:periode");
+							$add->bindValue(':open',$this->_open);
+							$add->bindValue(':close',$this->_close);
+							$add->bindValue(':periode',$this->_periode);
+							$add->execute();
+							$_SESSION['message'] .= '-Valeur(s) insérées.-'; 
+						}else{
+							$update = $this->_db->prepare("UPDATE date_absences 
+														SET 
+														open_date=:open,
+														close_date=:close 
+														WHERE id_periode=:periode");
+							$update->bindValue(':open',$this->_open);
+							$update->bindValue(':close',$this->_close);
+							$update->bindValue(':periode',$this->_periode);
+							$update->execute();
+							$_SESSION['message'] .= '-Valeur(s) mise(s) à jour.-';
+						}
+					}
 				}else{
-					/*D'abord, on verifie que les données existent et on fait un update. Sinon on fait ADD */
-					$sql = "INSERT INTO date_absences(id_periode, open_date, close_date)
-							VALUES('$this->_sequence','$this->_open','$this->_close')";
-					$req = $this->_db->query($sql);
-					$_SESSION['message'] = 'Dates pour les absences définies.';
-					header('Location:'.$source);
+					$_SESSION['message'] .= '-Certaines dates ne sont pas saisies.-';
 				}
-				
 			}
+			header('Location:'.$source);
 		}
+		
+		
+		public function updateDateAbsence($source, $info){
+			// echo '<pre>'; print_r($info); echo '</pre>';
+			// On vérifie que la date d'ouverture est inf ou égal a la fermeture 
+			if($info['debut'] >= $info['fin']){
+				$_SESSION['message'] = 'Certaines dates sont invalides';
+			}else{
+				$update = $this->_db->prepare("UPDATE date_absences SET 
+												open_date=:open,
+												close_date=:close
+												WHERE id_periode=:periode");
+				$update->bindValue(':open',$info['debut']);
+				$update->bindValue(':close',$info['fin']);
+				$update->bindValue(':periode',$info['sequence']);
+				$update->execute();
+				$_SESSION['message'] = 'Modifications effectuées';
+			}
+			header('Location:'.$source);
+		}
+		
 		
 		public function verifNoteSaisie($classe, $matiere, $periode){
 			$this->_classe = $this->setUserId($classe);
@@ -2471,7 +2515,7 @@
 			$sql = "SELECT DISTINCT id_classe, nom_classe
 					FROM prof_classe, classe
 					WHERE id_classe = classe.id
-					ORDER BY section
+					ORDER BY section, nom_classe
 					";					
 			$req = $this->_db->query($sql);
 			$reponse = $req->fetchAll(PDO::FETCH_ASSOC);
@@ -2485,7 +2529,7 @@
 		public function listeMatiereClasse($classe) {
 			$this->_classe = $this->setUserId($classe);
 			$sql = "SELECT prof_classe.id as id, id_matiere, 
-							nom_matiere, coef, groupe
+							nom_matiere, coef, groupe, code_matiere
 					FROM prof_classe, matiere
 					WHERE id_classe='$this->_classe'
 						AND id_matiere=matiere.id
@@ -2505,12 +2549,12 @@
 		public function conseilDeClasse($classe) {
 			$this->_classe = $this->setNom($classe);
 			$sql = "SELECT	id_prof, id_classe, id_matiere, coef, groupe,
-							nom_matiere, nom_classe, nom, prenom
+							nom_matiere, nom_classe, nom, prenom, nom_complet_enseignant
 					FROM prof_classe, matiere, classe, enseignant
 					WHERE id_classe='".$this->_classe."'
-							AND id_matiere=code_matiere
-							AND id_classe=code_classe
-							AND id_prof=login
+							AND id_matiere=matiere.id
+							AND id_classe=classe.id
+							AND id_prof=enseignant.id
 					ORDER BY nom_matiere";
 			$req = $this->_db->query($sql);
 			$res=$req->fetchAll(PDO::FETCH_ASSOC);
@@ -3292,52 +3336,58 @@
 		**************************************************************************/
 		
 		// Insérer une absence d'un élève 
-		public function addAbsence($source, $eleve, $date, $heure){
-			if($heure==0){
-				$_SESSION['message'] = 'Les Heures doivent être supérieures à Zero.';
-				header('Location:'.$source);
-			}else{
-				if($heure>8){
-					$_SESSION['message'] = 'Une journée contient au maximum 8 heures.';
-					header('Location:'.$source);
-				}else{
-					// On ne doit pas ajouter 2 fois les heures à un même élève pour une même journée
-					$sql_verif = "SELECT * 
-									FROM absence
-									WHERE id_eleve='$eleve'
-										AND date_absence='$date'";
-					$req_verif = $this->_db->query($sql_verif);
-					$res_verif = $req_verif->fetchAll(PDO::FETCH_ASSOC);
-					if(!empty($res_verif)){
-						$_SESSION['message'] = 'Cet élève a déjà des heures pour cette date.';
-						header('location:'.$source);
-					}else{
-						$sql = "INSERT INTO absence(id_eleve, date_absence, nombre_heure, justification)
-								VALUES('$eleve','$date','$heure','ANJ')";
-						$req = $this->_db->query($sql);
-						$_SESSION['message'] = $heure.' Heures ajoutées au '.$date;
-						header('Location:'.$source);
-					}
+		public function addAbsence($source, $info){
+			// echo '<pre>'; print_r($info); echo '</pre>';
+			$eleve = $info['eleve'];
+			$absence = $info['absence'];
+			$dateAbsence = $info['dateAbsence'];
+			for($i=0;$i<count($absence);$i++){
+				if(!empty($absence[$i])){
+					$this->_eleve = $eleve[$i];
+					$this->_date = $dateAbsence;
+					$this->_nbHeure = $absence[$i];
+					$requete = $this->_db->prepare("INSERT INTO absence SET 
+											id_eleve =:eleve,
+											date_absence =:date,
+											nombre_heure =:heure");
+					$requete->bindValue(':eleve', $this->_eleve);
+					$requete->bindValue(':date', $this->_date);
+					$requete->bindValue(':heure', $this->_nbHeure);
+					$requete->execute();
+					$_SESSION['message'] = 'Absences insérées';
 				}
 			}
+			header('Location:'.$source);
 		}
 		
 		
 		
 		
+		public function listeEleveAbsence(){
+			$sql = "SELECT DISTINCT nom_complet, absence.id as id, id_eleve 
+					FROM absence, eleve 
+					WHERE id_eleve = eleve.id
+					GROUP BY nom_complet 
+					ORDER BY nom_complet";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
 		
 		
 		
 		
 		// Visualiser les absences d'un élève en particulier
 		public function viewAbsenceEleve($eleve){
+			$this->_eleve = $this->setUserId($eleve);
 			$sql = "SELECT id_eleve, date_absence, nombre_heure, justification,
 							nom, prenom, classe, nom_classe, absence.id as id,
-							DATE_FORMAT(date_absence, '%d / %m / %Y') as date_abs
+							DATE_FORMAT(date_absence, '%d / %m / %Y') as date_abs,
+							nom_complet
 					FROM absence, eleve, classe
-					WHERE id_eleve = '$eleve'
+					WHERE id_eleve = '$this->_eleve'
 						AND eleve.id = id_eleve
-						AND classe = code_classe";
+						AND classe = classe.id";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
@@ -3424,10 +3474,33 @@
 		
 		// On Justifie les Absences d'un élève
 		public function updateAbsenceEleve($source, $id){
-			$sql = "UPDATE absence SET justification='AJ' WHERE id='$id'";
-			$req = $this->_db->query($sql);
-			$_SESSION['message'] = 'Absence(s) Justifiée(s).';
+			$justif = $id['just'];
+			for($i=0;$i<count($justif);$i++){
+				if(!empty($justif[$i])){
+					$ligne = $id['ligne'][$i];
+					$justification = $justif[$i];
+					// On additionne à la précédente justification existante
+					$returnValue = $this->ligneJustifiee($ligne);
+					$addition = (int) $returnValue + (int) $justification;
+					
+					$req = $this->_db->prepare("UPDATE absence SET 
+										justification =:just 
+										WHERE id=:id");
+					$req->bindValue(':just',$addition);
+					$req->bindValue(':id',$ligne);
+					$req->execute();
+					$_SESSION['message'] = 'Absence(s) justifée(s)';
+				}
+			}
 			header('Location:'.$source);
+		}
+		
+		
+		private function ligneJustifiee($ligne){
+			$sql = "SELECT justification FROM absence WHERE id='$ligne'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res['justification'];
 		}
 		
 		
@@ -3726,6 +3799,30 @@
 		
 		
 		
+		
+		
+		/**
+		 * On liste les notes saisies dans une classe pour une matière au cours d'une séquence
+		 * @param int $classe 
+		 * @param int $sequence
+		 * @return array $note
+		 */
+		public function listeNoteSequence($classe, $sequence){
+			$this->_classe = $this->setUserId($classe);
+			$this->_matiere = $this->setUserId($matiere);
+			$this->_sequence = $this->setUserId($sequence);
+			$sql = "SELECT id_eleve, id_matiere, id_classe, id_periode, note, observation
+					FROM note 
+					WHERE id_classe = '$this->_classe'
+						AND id_periode = '$this->_sequence'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+		
+		
+		
+		
 		/**
 		 * On modifie les notes saisies dans une classe pour une séquence précise
 		 * @param string $source qui est la page de provenance de la requête 
@@ -3852,13 +3949,13 @@
 		public function showAppreciation($note){
 			// On doit gérer les cas des élèves non classés
 			if($note==0){
-				$res['nom_appreciation'] = 'Non Classé';
-				$res['nom_appreciation_anglais'] = 'Not Evaluated';
+				$res['nom_appreciation_fr'] = 'Non Classé';
+				$res['nom_appreciation_en'] = 'Not Evaluated';
 				$res['couleur'] = 'Black';
 				$res['cote'] = '-';
 			}
 			else{
-				$sql = "SELECT nom_appreciation, nom_appreciation_anglais, couleur, cote
+				$sql = "SELECT nom_appreciation_fr, nom_appreciation_en, cote
 						FROM appreciation
 						WHERE interv_ouvert <= ".$note." 
 							AND interv_fermet>".$note;
@@ -3866,6 +3963,100 @@
 				$res = $req->fetch(PDO::FETCH_ASSOC);
 			}
 			return $res;
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		// On vérifie toutes les classes qui ont reçu des notes dans une séquence
+		public function verifNoteSaisieClasse(){
+			$sql = "SELECT id_classe, nom_classe
+					FROM note_saisie, classe
+					WHERE classe.id = id_classe
+					GROUP BY id_classe";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+		
+		
+		
+		
+		
+		// On verifie les séquences saisies pour une classe donnée 
+		public function verifNoteSaisieSequenceReel($classe){
+			$sql = "SELECT DISTINCT id_periode							
+					FROM  note_saisie
+					WHERE id_classe='$classe'
+					ORDER BY id_periode
+					";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+		
+		
+		
+		
+		
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		/*Fonction à utilisser uniquezment pour les mises à jour */
+		public function update(){
+			/*$req = 'drop table note';
+			$req2 = 'drop table note_saisie';
+			
+			$this->_db->query($req);
+			$this->_db->query($req2);
+			$requeteNote = "CREATE TABLE note(
+								id int(11) auto_increment primary key,
+								id_eleve int(11),
+								id_matiere int(11),
+								id_classe int(11),
+								id_periode int(11),
+								note decimal(4,2),
+								observation varchar(255))";
+			$requeteNoteSaisie = "CREATE TABLE note_saisie(
+									id int(11) auto_increment primary key,
+									id_classe int(11),
+									id_enseignant int(11),
+									id_matiere int(11),
+									id_periode int(11),
+									add_by int(11),
+									competence TEXT,
+									date_saisie DATETIME,
+									date_modification DATETIME,
+									navigateur varchar(255),
+									ip varchar(255),
+									os varchar(255))";
+			$this->_db->query($requeteNote);
+			$this->_db->query($requeteNoteSaisie);*/
+			
+			/*$req = "ALTER TABLE enseignant ADD contact VARCHAR(100)";
+			$this->_db->query($req);*/
+			
 		}
 		
 	}

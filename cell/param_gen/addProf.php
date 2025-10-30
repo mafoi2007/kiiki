@@ -78,7 +78,21 @@
 						value="<?php if(isset($_POST['login'])){echo $_POST['login'];}?>" />
 				</td>
 			</tr>
-			
+			<tr>
+				<td>
+					<p>Contact du gestionnaire :
+				</td>
+				<td>
+					<input 
+						name="contact" 
+						id="contact" 
+						type="text" 
+						size="40" 
+						placeholder='Numero de téléphone' 
+						maxlength="40" 
+					 />
+				</td>
+			</tr>
 			<tr>
 				<td>
 					<p><input 

@@ -41,7 +41,7 @@
 						$appr = $config->showAppreciation($listeNote[$x]['note']);
 						echo '<td>'.$listeNote[$x]['note'].'</td>
 						<td>'.$appr['cote'].'</td>
-						<td>'.$appr['nom_appreciation'].'</td>';
+						<td>'.$appr['nom_appreciation_fr'].'</td>';
 					}
 				}
 				?>

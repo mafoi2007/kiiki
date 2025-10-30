@@ -28,7 +28,7 @@
 					echo "<td><input type='radio' name='eleve' value='".$recherche[$i]['id']."' /></td>";
 					echo "<td><input 
 									type='text' 
-									value='".$recherche[$i]['a_s']."'
+									value='".$recherche[$i]['libelle_annee']."'
 									disabled
 									/></td>";
 					

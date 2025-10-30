@@ -1,9 +1,11 @@
 <h1 class='bien'>Vue globale des notes séquentielles</h1>
 		<form method='post' action='../traitement.php' target ='_blank'>
-			Classe : <select name='clas' id='clas' onChange='goView()'>
+		<?php $regions = $config->verifNoteSaisieClasse(); /*print_r($regions);*/?>
+			Classe : 
+			<select name='classe' id='classe' onChange='goView()'>
 				<option value='null'>-Classe-</option>
 				<?php 
-					$regions = $note->verifNoteSaisieClasse();
+					
 					for($i=0;$i<count($regions);$i++){
 						echo "<option value='";
 						echo $regions[$i]['id_classe'];
@@ -11,12 +13,6 @@
 					}
 				?>
 			</select>
-			
-			Séquence : <div id='sequence' style = 'display:inline'>
-				<select name='sequence'>
-					<option value='null'>-choisir une séquence-</option>
-				</select>
+			<div id='sequence' style = 'display:inline'>
 			</div>
-			<input type='hidden' name='to_print' value='VisualiserNoteSequentielle' />
-			<input type='submit' name='print' value='Valider' />
 		</form>

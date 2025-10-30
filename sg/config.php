@@ -6,11 +6,12 @@
 	$gestionnaire = new gestionnaire($db);
 	$note = new note($db);
 	$eleve = new Eleve($db);
+	// echo '<pre>'; print_r($_SESSION);
 	if($_SESSION['message']){
 		echo "<script>alert('".$_SESSION['message']."');</script>";
 	}
 	unset($_SESSION['message']);
-	if($_SESSION['poste']=='sg')
+	if($_SESSION['user']['userPost']=='sg')
 		{
 	
 ?>
@@ -27,9 +28,9 @@
 			href="../images/homme.png" />
 	<link type="text/javascript" 
 			src="../javascript/js.js" />
-	<title><?php echo $_SESSION['sexeUser'].' '.$_SESSION['nomUser'];?> : Traitements Trimestriels</title>
+	<title><?php echo $_SESSION['user']['nom_complet_enseignant'];?> : Discipline</title>
 	<script>
-			function goView(){
+			function showDateAdd(){
 				var xhr = getXhr()
 				// On définit ce qu'on va faire quand on aura la reponse 
 				xhr.onreadystatechange = function(){
@@ -37,18 +38,18 @@
 					if(xhr.readyState==4 && xhr.status==200){
 						leselect = xhr.responseText;
 						// On se sert de l'innerHTML pour rajouter les options à la liste
-						document.getElementById('eleve').innerHTML = leselect;
+						document.getElementById('date').innerHTML = leselect;
 					}
 				}
 				// Ici on va voir comment faire du POST
-				xhr.open("POST", "config/ajaxViewAbs.php", true);
+				xhr.open("POST", "addAbs.ajax.php", true);
 				// Ne pas oublier xa pour le POST 
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 			
 			
@@ -61,18 +62,18 @@
 					if(xhr.readyState==4 && xhr.status==200){
 						leselect = xhr.responseText;
 						// On se sert de l'innerHTML pour rajouter les options à la liste
-						document.getElementById('eleve').innerHTML = leselect;
+						document.getElementById('view').innerHTML = leselect;
 					}
 				}
 				// Ici on va voir comment faire du POST
-				xhr.open("POST", "config/ajaxJustAbs.php", true);
+				xhr.open("POST", "JustAbs.ajax.php", true);
 				// Ne pas oublier xa pour le POST 
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('eleve');
+				eleve = sel.options[sel.selectedIndex].value;
+				xhr.send("eleve="+eleve);
 			}
 			
 			
@@ -216,25 +217,7 @@
 	?>
 	
 	<div id="body">
-		<h1>discipline</h1>
-		<ul>
-			<?php /*<li><h3><a 
-				href="config.php?choix=<?php echo sha1('etatRempl'); ?>#body2">
-				Etat de remplissage</a></h3></li> */ ?>
-			<li><h3><a 
-				href="config.php?choix=<?php echo sha1('addAbs'); ?>#body2">
-				Saisie des Absences</a></h3></li>
-			
-			<li><h3><a 
-				href="config.php?choix=<?php echo sha1('justAbs'); ?>#body2">
-				Justification d'Absence</a></h3></li>
-			<li><h3><a 
-				href="config.php?choix=<?php echo sha1('viewAbs'); ?>#body2">
-				Consultation Absences</a></h3></li>
-			<li><h3><a 
-				href="config.php?choix=<?php echo sha1('delAbs'); ?>#body2">
-				Supprimer Absences</a></h3></li>
-		</ul>
+		<h1 class='bien'>discipline</h1>
 	</div>
 	
 	
@@ -242,13 +225,13 @@
 	<?php
 		if(isset($_GET['choix'])){ // ON A FAIT UN CHOIX 
 			if($_GET['choix']==sha1('addAbs')){
-				include_once('config/addAbs.php');
+				include_once('addAbs.php');
 			}elseif($_GET['choix']==sha1('justAbs')){
-				include_once('config/justAbs.php');
+				include_once('justAbs.php');
 			}elseif($_GET['choix']==sha1('viewAbs')){
-				include_once('config/viewAbs.php');
+				include_once('viewAbs.php');
 			}elseif($_GET['choix']==sha1('delAbs')){
-				include_once('config/delAbs.php');
+				include_once('delAbs.php');
 			}else{
 				echo "<h3 class='alert'>L'application ne prend pas en charge 
 				votre choix.</h3>";

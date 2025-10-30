@@ -4,6 +4,8 @@
 	$verifConn = include_once('inc/init.php');
 	$config = new config($db);
 	
+	$config->update();
+	
 	if(isset($_SESSION['message'])){
 		echo "<script>alert('".$_SESSION['message']."');</script>";
 	}unset($_SESSION['message']);

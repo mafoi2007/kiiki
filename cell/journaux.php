@@ -1,11 +1,7 @@
 <?php
 	session_start();
 	require_once('../inc/connect.inc.php');
-	// require_once('../inc/fonction.inc.php');
 	
-	/*$smarty->assign('poste', $_SESSION['poste']);
-	$smarty->assign('login', $_SESSION['login']);
-	$smarty->display('index.tpl');*/
 	$config = new config($db);
 	$note = new Note($db);
 	$gestionnaire = new gestionnaire($db);
@@ -26,7 +22,7 @@
 	<link type="text/javascript" src="../javascript/js.js" />
 	<title>Journal des Connexions</title>
 	<script>
-			function go(){
+			function journalAll(){
 				var xhr = getXhr()
 				// On définit ce qu'on va faire quand on aura la reponse 
 				xhr.onreadystatechange = function(){
@@ -34,18 +30,18 @@
 					if(xhr.readyState==4 && xhr.status==200){
 						leselect = xhr.responseText;
 						// On se sert de l'innerHTML pour rajouter les options à la liste
-						document.getElementById('departement').innerHTML = leselect;
+						document.getElementById('resultat').innerHTML = leselect;
 					}
 				}
 				// Ici on va voir comment faire du POST
-				xhr.open("POST", "ajaxJournaux.php", true);
+				xhr.open("POST", "journaux/allJournal.ajax.php", true);
 				// Ne pas oublier xa pour le POST 
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Region par exemple
-				sel = document.getElementById('region');
-				region = sel.options[sel.selectedIndex].value;
-				xhr.send("region="+region);
+				sel = document.getElementById('enseignant');
+				enseignant = sel.options[sel.selectedIndex].value;
+				xhr.send("enseignant="+enseignant);
 			}
 	</script>
 </head>

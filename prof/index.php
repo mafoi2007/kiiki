@@ -17,7 +17,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="../styles/style.css" />
-	<link rel ="shortcut icon" type="image/x-icon" href="../images/banniere.png" />
+	<link rel ="shortcut icon" type="image/x-icon" href="../images/logo.jpg" />
 	<link type="text/javascript" src="../javascript/js.js" />
 	<title>Bienvenue <?php echo $_SESSION['user']['nom_complet_enseignant']; ?></title>
 	<script>

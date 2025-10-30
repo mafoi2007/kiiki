@@ -10,6 +10,7 @@
 		echo "<script>alert('".$_SESSION['message']."');</script>";
 	}
 	unset($_SESSION['message']);
+	// print_r($_SESSION['user']);
 	if($_SESSION['user']['userPost']=='cell')
 		{
 	
@@ -24,10 +25,10 @@
 			href="../styles/style.css" />
 	<link rel ="shortcut icon" 
 			type="image/x-icon" 
-			href="../images/homme.png" />
+			href="../images/logo.jpg" />
 	<link type="text/javascript" 
 			src="../javascript/js.js" />
-	<title><?php echo $_SESSION['nomUser'].' '.$_SESSION['prenomUser'];?> : Gestion des Notes</title>
+	<title><?php echo $_SESSION['user']['nom_complet_enseignant'];?> : Gestion des Notes</title>
 	<script>
 			function goView(){
 				var xhr = getXhr()
@@ -46,9 +47,9 @@
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 			
 			
@@ -70,9 +71,9 @@
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 			
 			

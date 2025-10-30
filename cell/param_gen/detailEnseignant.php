@@ -28,6 +28,10 @@
                 <th>Login</th>
                 <th class='bien'><?php echo stripslashes($detailProf['login']); ?></th>
             </tr>
+			<tr>
+                <th>Contact</th>
+                <th class='bien'><?php echo stripslashes($detailProf['contact']); ?></th>
+            </tr>
         </table>
 <?php         }
         // echo '<pre>';print_r(detailProf); echo '</pre>';

@@ -22,7 +22,7 @@
 			$this->Ln(4);
 			
 			$this->Cell(90,10, $this->convert($_SESSION['information']['devise_fr']),0,0,'C');
-			$this->Cell(80,10, $this->convert('ee'),0,0,'C');
+			$this->Cell(80,10, $this->convert(''),0,0,'C');
 			$this->Cell(90,10, $this->convert($_SESSION['information']['devise_en']),0,0,'C');
 			$this->Ln(3);
 			

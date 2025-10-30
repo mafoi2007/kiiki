@@ -1,9 +1,10 @@
 <h1 class='bien'>saisie des notes</h1>
 		<form method='post' action='' target ='_blank'>
-			Classe : <select name='clas' id='clas' onChange='goAdd()'>
+			Classe : <select name='classe' id='classe' onChange='goAdd()'>
 				<option value='null'>-Classe-</option>
 				<?php 
-					$regions = $config->listeClasseProfClasse();
+					$classe = $config->listeClasseProfClasse();
+					
 					for($i=0;$i<count($regions);$i++){
 						echo "<option value='";
 						echo $regions[$i]['id_classe'];

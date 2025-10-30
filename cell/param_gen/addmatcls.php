@@ -1,17 +1,22 @@
+<?php 
+	$classe = $config->viewClasse('actif'); 
+	$matiere = $config->listeMatiereAll('actif');
+	// echo '<pre>'; print_r($matiere); echo '</pre>';
+?>
 <h1 id='body3'>Insérer une matière dans la classe</h1>
 	
 	<form method='post' action='../traitement.php'>
 		<p>Classe : 
 			<select name='classe'>
 				<?php 
-					$classe = $config->viewClasse('actif');
+					
 					if(count($classe)==0){
 						echo "<option value='null'>-Aucune classe enregistrée-</option>";
 					}
 					else{
 						for($i=0;$i<count($classe);$i++){
 							echo "<option value='";
-							echo $classe[$i]['code_classe'];
+							echo $classe[$i]['id'];
 							echo "'>";
 							echo ucwords($classe[$i]['nom_classe']);
 							echo "</option>";
@@ -24,14 +29,14 @@
 		<p>Matière : 
 			<select name='matiere'>
 				<?php 
-					$matiere = $config->listeMatiereAll('actif');
+					
 					if(count($matiere)==0){
 						echo "<option value='null'>-Aucune matière enregistrée-</option>";
 					}
 					else{
 						for($i=0;$i<count($matiere);$i++){
 							echo "<option value='";
-							echo $matiere[$i]['code_matiere'];
+							echo $matiere[$i]['id'];
 							echo "'>";
 							echo ucwords($matiere[$i]['nom_matiere']);
 							echo "</option>";

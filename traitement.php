@@ -426,7 +426,8 @@
 								$_POST['prenom'],
 								$_POST['sexe'],
 								$_POST['poste'],
-								$_POST['login']);
+								$_POST['login'],
+								$_POST['contact']);
 	}
 	
 	// On met à jour un utilisateur 
@@ -590,12 +591,18 @@
 		$dates = $_REQUEST['periode'];
 		$opDate = $_REQUEST['openD'];
 		$clDate = $_REQUEST['closeD'];
-		for($i=0;$i<count($dates);$i++){
-			$config->createDateAbsence($source, $dates[$i], $opDate[$i], $clDate[$i]);
-		}
+		$source = str_replace('&action=createDate','#body2',$source);
+		$config->createDateAbsence($source, $dates, $opDate, $clDate);
 	}
 	
 	
+	
+	if(isset($_POST['updDate'])){
+		$info['sequence'] = $_POST['sequence'];
+		$info['debut'] = $_POST['open'];
+		$info['fin'] = $_POST['close'];
+		$config->updateDateAbsence($source, $info);
+	}
 	
 	
 	
@@ -630,8 +637,8 @@
 	
 	if(isset($_REQUEST['addmatclss'])){
 		$source = $_SERVER['HTTP_REFERER'];
-		echo '<pre>';
-		print_r($_REQUEST);
+		// echo '<pre>';
+		// print_r($_REQUEST);
 		$classe = $_REQUEST['classe'];
 		$listeMatiere = $_REQUEST['matiere'];
 		$listeCoef = $_REQUEST['coef'];
@@ -1120,24 +1127,17 @@
 		if($_POST['to_print']=='listeEleveOld'){
 			$listeEleve = $config->listeEleveOld($_POST['classe'],'non_supprime',$_POST['oldYear']);
 			$section = $config->getSectionClasse($_POST['classe']);
+			$infoClasse = $config->getClasse($_POST['classe']);
 			
 			$_SESSION['classe']['stat'] = $config->listeEleveStat($_POST['classe'], 'non_supprime', $as);
+			$_SESSION['classe']['classe'] = $infoClasse;
 			$_SESSION['classe']['eleve'] = $listeEleve;
 			$_SESSION['classe']['section'] = $section;
 			$_SESSION['classe']['information'] = $_SESSION['information'];
 			// echo '<pre>'; print_r($listeEleve); echo '</pre>';
 			
 			$_SESSION['print'] = $print;
-			header('Location:print_pdf.php');
-			/*$classe = $_POST['classe'];
-				if($classe=='null'){
-					$_SESSION['message'] = 'Vous devez choisir une classe.';
-					header('Location:'.$source);
-				}else{
-					$listeEleve = $config->listeEleve($_POST['classe'], 'non_supprime', $as );
-					$nbValue = count($listeEleve); // Si ça vaut 0, y'a pas d'élèves dans la classe.
-					
-				}*/			
+			header('Location:print_pdf.php');		
 		}
 		
 		
@@ -1216,10 +1216,28 @@
 		// 
 		elseif($_POST['to_print']=='VisualiserNoteSequentielle'){
 			// On veut visualiser les notes séquentielles 
-			// echo '<pre>'; print_r($_POST); echo '</pre>';
-			$classe = $_POST['clas'];
-			$sequence = $_POST['sequence'];
-			if($classe=='null' or $sequence=='null'){
+			echo '<pre>'; print_r($_POST); echo '</pre>';
+			$listeMatiere = $config->listeMatiereClasse($_POST['classe']);
+			$classe = $config->getClasse($_POST['classe']);
+			$listeEleve = $config->listeEleve($_POST['classe'], 'non_supprime');
+			echo '<pre>';print_r($listeMatiere); echo '</pre>';
+			for($i=0;$i<count($listeMatiere);$i++){
+				$matiere = $listeMatiere[$i]['id_matiere'];
+				echo $matiere;
+				$notes[] = $config->listeNote($_POST['classe'], $matiere, $_POST['sequence']);
+			}
+			// echo '<pre>';print_r($notes); echo '</pre>';
+			
+			
+			$_SESSION['matiere'] = $listeMatiere;
+			$_SESSION['classe'] = $classe;
+			$_SESSION['eleve'] = $listeEleve;
+			$_SESSION['note'] = $notes;
+			$_SESSION['print'] ='VisualiserNoteSequentielle';
+			header('Location:print_pdf_landscape.php');
+			// $classe = $_POST['classe'];
+			// $sequence = $_POST['sequence'];
+			/*if($classe=='null' or $sequence=='null'){
 				$_SESSION['message'] = 'Aucune Valeur transmise.';
 				header('Location:'.$source);
 			}else{
@@ -1246,7 +1264,7 @@
 				$_SESSION['print'] ='VisualiserNoteSequentielle';
 				echo '<pre>'; print_r($_SESSION['matiere']);
 				header('Location:print_pdf_landscape.php');
-			}
+			}*/
 			
 		}
 		
@@ -1769,21 +1787,10 @@
 	
 	
 	
-	if(isset($_POST['absence'])){
-		echo '<pre>';
-		print_r($_POST);
-		echo '</pre>';
-		
-		if($_POST['eleve']=='null'){
-			$_SESSION['message'] = 'Choisir un élève.';
-			header('Location:'.$source);
-		}else{
-			$dateAbs = $_POST['dateAbs'];
-			$nbHeures = (int) $_POST['nbHeures'];
-			$eleve = (int) $_POST['eleve'];
-			echo $nbHeures;
-			$config->addAbsence($source, $eleve, $dateAbs, $nbHeures);
-		}
+	if(isset($_POST['addAbsence'])){
+		// echo '<pre>'; print_r($_POST); echo '</pre>';
+		$info = $_POST;
+		$config->addAbsence($source, $info);
 	}
 	
 	
@@ -1815,9 +1822,10 @@
 	
 	
 	if(isset($_POST['updAbsence'])){
-		echo '<pre>';
-			print_r($_POST);
-			if(!empty($_POST['idAbsence'])){
+		// echo '<pre>';print_r($_POST);echo '</pre>';
+		$info = $_POST;
+		$config->updateAbsenceEleve($source, $info);
+			/*if(!empty($_POST['idAbsence'])){
 				for($i=0;$i<count($_POST['idAbsence']);$i++){
 					$ligne = $_POST['idAbsence'][$i];
 					$config->updateAbsenceEleve($source, $ligne);
@@ -1825,8 +1833,8 @@
 			}else{
 				$_SESSION['message'] = 'Aucune Valeur Transmise.';
 				header('Location:'.$source);
-			}
-		echo '</pre>';
+			}*/
+		
 	}
 	
 	

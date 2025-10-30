@@ -100,6 +100,18 @@
                             required />
                     </th>
                 </tr>
+				 <tr>
+                    <th>Contact </th>
+                    <th><input type='text' value="<?php echo stripslashes($detailProf['contact']); ?>" disabled /></th>
+                    <th>
+                        <input 
+                            type='text'
+                            name='userContact'
+                            id='userContact'
+                            value="<?php echo stripslashes($detailProf['contact']); ?>"
+                            required />
+                    </th>
+                </tr>
                 <tr>                    
                     <th colspan='3'>
 						Nom Complet Enregistré : 

@@ -1,15 +1,24 @@
 <h1 id='body3'>Affecter un enseignant à une classe</h1>
-	<?php $listeClasse = $config->listeClasseProfClasse(); 
-	/*echo '<pre>';print_r($listeClasse); echo '</pre>';*/?>
+	<?php $listeClasseFr = $config->viewClasseSection('fr','actif');
+			$listeClasseEn = $config->viewClasseSection('en','actif');
+	/*echo '<pre>';print_r($listeClasseEn); echo '</pre>';*/?>
 	<form method='post' action='../traitement.php'>
 		<p>Classe : 
 			<select name='classe' id='classe' onChange='listClasseAddTeacher()'>
+				<optgroup label='Section Anglophone'></optgroup>
 				<?php 
-					$listeClasse = $config->listeClasseProfClasse();
-					for($i=0;$i<count($listeClasse);$i++){
+					for($i=0;$i<count($listeClasseEn);$i++){
 						echo "<option value='";
-						echo $listeClasse[$i]['id_classe'];
-						echo "'>".$listeClasse[$i]['nom_classe']."</option>";
+						echo $listeClasseEn[$i]['id'];
+						echo "'>".utf8_decode($listeClasseEn[$i]['nom_classe'])."</option>";
+					}
+				?>
+				<optgroup label='Section Francophone'></optgroup>
+				<?php 
+					for($i=0;$i<count($listeClasseFr);$i++){
+						echo "<option value='";
+						echo $listeClasseFr[$i]['id'];
+						echo "'>".utf8_decode($listeClasseFr[$i]['nom_classe'])."</option>";
 					}
 				?>
 				<option value='null' selected>-Choix de la classe-</option>

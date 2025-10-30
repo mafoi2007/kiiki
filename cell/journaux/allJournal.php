@@ -1,14 +1,23 @@
+<?php 
+	$listePoste = $config->userType(); print_r($listePoste);?>
 <h1 class='bien'>Journal de Connexion des Enseignants</h1>
 		<form method='post' action=''>
-			Regions : <select name='region' id='region' onChange='go()'>
-				<option value='null'>-Region-</option>
+			Nom de l'enseignant : 
+			<select name='enseignant' id='enseignant' onChange='journalAll()'>
 				<?php 
-					$regions = $note->listeRegion();
-					for($i=0;$i<count($regions);$i++){
-						echo "<option value='";
-						echo $regions[$i]['id']."'>".$regions[$i]['libelle_region']."</option>";
+				for($i=0;$i<count($listePoste);$i++){
+					$idPoste = $listePoste[$i]['id'];
+					$libellePoste = $listePoste[$i]['libelle_poste'];
+					echo "<optgroup label='".$libellePoste."'></optgroup>";
+					$listeEnseignant = $config->getUtilisateurType($idPoste);
+					for($j=0;$j<count($listeEnseignant);$j++){
+						$idEnseignant = $listeEnseignant[$j]['idEnseignant'];
+						$nomEnseignant = $listeEnseignant[$j]['nom_complet_enseignant']; 
+						echo "<option value='".$idEnseignant."'>".$nomEnseignant."</option>";
 					}
+				}
 				?>
+				<option value='null' selected>-Choisir Enseignant-</option>
 			</select>
 			
 			Département : <div id='departement' style = 'display:inline'>

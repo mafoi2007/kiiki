@@ -2,7 +2,7 @@
 	<?php 
 		if(isset($_GET['periode'])){
 			$periode = urldecode($_GET['periode']);
-			echo "<form method='post' action=''>
+			echo "<form method='post' action='../traitement.php'>
 				<table border='0' width='75%' align='center'>
 					<tr>
 						<th>Nom de la Séquence</th>
@@ -12,10 +12,10 @@
 					$resultat = $config->viewDateAbsencePrecise($periode);
 					// echo '<pre>'; print_r($resultat);
 					echo "<tr>
-						<td>".$resultat[0]['nom_periode']."</td>
+						<td align='center'>".utf8_decode($resultat[0]['nom_periode'])."</td>
 						<input type='hidden' name='sequence' value='".$resultat[0]['id_periode']."' />
-						<td><input type='text' name='open' value='".$resultat[0]['open_date']."' /></td>
-						<td><input type='text' name='close' value='".$resultat[0]['close_date']."' /></td>
+						<td align='center'><input type='date' name='open' value='".$resultat[0]['open_date']."' /></td>
+						<td align='center'><input type='date' name='close' value='".$resultat[0]['close_date']."' /></td>
 					</tr>";
 					echo "<tr>
 						<td colspan='5' align='center'><input type='submit' name='updDate' value='Mettre à Jour' /></td>

@@ -1,7 +1,6 @@
 <?php
 	session_start();
 	require_once('../inc/connect.inc.php');
-	// require('../inc/fonction.inc.php');
 	$gestionnaire = new gestionnaire($db);
 	$config = new config($db);
 	$note = new note($db);
@@ -12,10 +11,7 @@
 	}
 	unset($_SESSION['message']);
 	
-	$poste = $_SESSION['poste'];
-	// $smarty->assign('poste', $_SESSION['poste']);
-	
-	if($_SESSION['poste']=='sg')
+	if($_SESSION['user']['userPost']=='sg')
 		{
 		 
 ?>
@@ -26,7 +22,7 @@
 	<link rel="stylesheet" type="text/css" href="../styles/style.css" />
 	<link rel ="shortcut icon" type="image/x-icon" href="../images/banniere.png" />
 	<link type="text/javascript" src="../javascript/js.js" />
-	<title>Bienvenue <?php echo $_SESSION['login']; ?></title>
+	<title>Bienvenue <?php echo $_SESSION['user']['nom_complet_enseignant']; ?></title>
 	<script>
 			function goAdd(){
 				var xhr = getXhr()
@@ -40,16 +36,250 @@
 					}
 				}
 				// Ici on va voir comment faire du POST
-				xhr.open("POST", "note/ajaxAddnt.php", true);
+				xhr.open("POST", "ajaxAddnt.php", true);
 				// Ne pas oublier xa pour le POST 
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 			
+			
+			
+			
+			function selectMatiereAdd(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('sequence').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "chooseSeq.ajax.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Classe par exemple
+				sel = document.getElementById('matier');
+				matier = sel.options[sel.selectedIndex].value;
+				xhr.send("matier="+matier);
+			}
+			
+			
+			
+			function getMatiereUpdNt(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('matiere').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "updnt.ajax.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Region par exemple
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
+			}
+
+			
+			function getSequenceUpdNt(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('sequence').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "sequpdnt.ajax.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Region par exemple
+				sel = document.getElementById('subject');
+				subject = sel.options[sel.selectedIndex].value;
+				xhr.send("subject="+subject);
+			}
+					
+			
+
+			function getMatiereDelNt(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('matiere').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "delnt.ajax.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Region par exemple
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
+			}
+
+			
+			function getSequenceDelNt(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('sequence').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "seqdelnt.ajax.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Region par exemple
+				sel = document.getElementById('subject');
+				subject = sel.options[sel.selectedIndex].value;
+				xhr.send("subject="+subject);
+			}
+			
+			
+			
+			function getMatiereViewNt(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('matiere').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "viewnt.ajax.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Region par exemple
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
+			}
+
+			function getSequenceViewNt(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('sequence').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "seqviewnt.ajax.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Region par exemple
+				sel = document.getElementById('subject');
+				subject = sel.options[sel.selectedIndex].value;
+				xhr.send("subject="+subject);
+			}
+			
+			
+					
+			function saveNoteUpdNt(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('addNt').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "updateNote.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Region par exemple
+				sel = document.getElementById('periode');
+				periode = sel.options[sel.selectedIndex].value;
+				xhr.send("periode="+periode);
+			}
+		
+					
+			function saveNoteDelNt(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('addNt').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "deleteNote.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Region par exemple
+				sel = document.getElementById('periode');
+				periode = sel.options[sel.selectedIndex].value;
+				xhr.send("periode="+periode);
+			}		
+			
+			
+			function saveNoteViewNt(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('addNt').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "viewNote.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Region par exemple
+				sel = document.getElementById('periode');
+				periode = sel.options[sel.selectedIndex].value;
+				xhr.send("periode="+periode);
+			}		
 			
 			
 			
@@ -65,7 +295,7 @@
 					}
 				}
 				// Ici on va voir comment faire du POST
-				xhr.open("POST", "note/ajaxCpnt.php", true);
+				xhr.open("POST", "ajaxCpnt.php", true);
 				// Ne pas oublier xa pour le POST 
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
@@ -91,7 +321,7 @@
 					}
 				}
 				// Ici on va voir comment faire du POST
-				xhr.open("POST", "note/ajaxDelnt.php", true);
+				xhr.open("POST", "ajaxDelnt.php", true);
 				// Ne pas oublier xa pour le POST 
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
@@ -146,7 +376,7 @@
 					}
 				}
 				// Ici on va voir comment faire du POST
-				xhr.open("POST", "note/ajaxStat.php", true);
+				xhr.open("POST", "ajaxStat.php", true);
 				// Ne pas oublier xa pour le POST 
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
@@ -169,45 +399,31 @@
 	
 	
 	<div id="body">
-		<h1>Module de saisie des notes.</h1>
-		<ul>
-			<?php /*<li><h3><a 
-				href="config.php?choix=<?php echo sha1('etatRempl'); ?>#body2">
-				Etat de remplissage</a></h3></li> */ ?>
-			<li><h3><a 
-				href="note.php?choix=<?php echo sha1('addnt'); ?>#body2">
-				Saisie Notes</a></h3></li>
-			
-			<li><h3><a 
-				href="note.php?choix=<?php echo sha1('cpnt'); ?>#body2">
-				Copie des Notes</a></h3></li>
-			<li><h3><a 
-				href="note.php?choix=<?php echo sha1('delnt'); ?>#body2">
-				Suppression des Notes</a></h3></li>
-			<li><h3><a 
-				href="note.php?choix=<?php echo sha1('statnt'); ?>#body2">
-				Statistique des Notes </a></h3></li>
-		</ul>
+		<h1 class='bien'>Module de saisie des notes.</h1>
 	</div>
 	
 	<div id="body2">
 		<?php
 			if(isset($_GET['choix'])){
 				if($_GET['choix']==sha1('addnt')){
-					require_once('note/addnt.php');
+					require_once('addnt.php');
+				}elseif($_GET['choix']==sha1('updnt')){
+					require_once('updnt.php');
+				}elseif($_GET['choix']==sha1('delnt')){
+					require_once('delnt.php');
+				}elseif($_GET['choix']==sha1('viewnt')){
+					require_once('viewnt.php');
 				}
-				elseif($_GET['choix']==sha1('cpnt')){
-					require_once('note/cpnt.php');
-				}
-				elseif($_GET['choix']==sha1('delnt')){
-					require_once('note/delnt.php');
+				/*elseif($_GET['choix']==sha1('cpnt')){
+					require_once('cpnt.php');
 				}
 				elseif($_GET['choix']==sha1('statnt')){
-					require_once('note/statnt.php');
+					require_once('statnt.php');
 				}
-				elseif($_GET['choix']==sha1('viewnt')){
-					require_once('note/viewnt.php');
-				}
+				
+				elseif($_GET['choix']==sha1('journal')){
+					require_once('journal.php');
+				}*/
 				else{
 					$_SESSION['message'] = "Choix non pris en charge";
 					header('Location:index.php');

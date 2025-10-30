@@ -9,6 +9,7 @@
         }else{
             // $resultat = $config->findEleve($eleve);
             $resultat = $config->rechercherEleve($eleve);
+			// echo '<pre>'; print_r($resultat); echo '</pre>';
             if(empty($resultat)){
                 echo "<h3 class='alert'>Aucun élève ne correspond à votre recherche.</h3>";
             }else{ ?>

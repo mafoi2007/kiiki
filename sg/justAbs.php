@@ -1,21 +1,18 @@
+<?php $eleve = $config->listeEleveAbsence(); /*echo '<pre>'; print_r($eleve); echo '</pre>';*/ ?>
 <h1 class='bien'>justification des absences</h1>
-		<form method='post' action='#3'>
-			Classe : <select name='clas' id='clas' onChange='goJustif()'>
-				<option value='null'>-Classe-</option>
+		<form method='post' action='../traitement.php'>
+			Eleve : <select name='eleve' id='eleve' onChange='goJustif()'>
+				<option value='null'>-Eleve-</option>
 				<?php 
-					$regions = $config->viewClasse('actif');
-					for($i=0;$i<count($regions);$i++){
+					for($i=0;$i<count($eleve);$i++){
 						echo "<option value='";
-						echo $regions[$i]['code_classe'];
-						echo "'>".strtoupper($regions[$i]['nom_classe'])."</option>";
+						echo $eleve[$i]['id_eleve'];
+						echo "'>".strtoupper($eleve[$i]['nom_complet'])."</option>";
 					}
 				?>
 			</select>
 			
-			Elève : <div id='eleve' style = 'display:inline'>
-				<select name='eleve'>
-					<option value='null'>-choisir un élève-</option>
-				</select>
+			<div id='view'>
 			</div>
 			
 		</form>

@@ -9,7 +9,7 @@
 	**************************************************************************
 	*************************************************************************/
 	session_start();
-	require_once('inc/pdf.class.php');
+	require_once('inc/pdfL.class.php');
 	$pdf = new pdf('L', 'mm', 'A4');
 	
 	
@@ -24,7 +24,7 @@
 		// $as = $_SESSION['as'];
 		
 		
-		$ministere = $_SESSION['ministere'];
+		/*$ministere = $_SESSION['ministere'];
 		$pays = $_SESSION['pays'];
 		$ets = $_SESSION['ets'];
 		$devise = $_SESSION['devise'];
@@ -42,7 +42,7 @@
 		$ville = ucwords($_SESSION['arrondissement']);
 		$titreSignataire = ucfirst($_SESSION['titre_signataire']);
 		$signataire = ucfirst($_SESSION['signataire']);
-		$nomChef = $_SESSION['chef_ets'];
+		$nomChef = $_SESSION['chef_ets'];*/
 		/**********************************************************************
 		***********************************************************************
 		*******	Impression/Visualisation des  Notes Séquentielles *************
@@ -50,43 +50,70 @@
 		**********************************************************************/
 		
 		if($_SESSION['print']=='VisualiserNoteSequentielle'){
-			$pdf->addPage();
+			$classe = $_SESSION['classe'];
+			$listeMatiere = $_SESSION['matiere'];
+			$listeEleve = $_SESSION['eleve'];
+			if($classe['section']=='fr'){
+				$pdf->addPage();
+				$pdf->Entete();
+				$titre = 'Visualisation des Notes Sequentielles';
+				$pdf->Titre($titre);
+				
+				$pdf->SetFont('Times','B',16);
+				$texte_1 = 'Classe : ';
+				$pdf->SetFillColor(155, 150, 149);
+				$texte_1 .= strtoupper($classe['nom_classe']);
+				$texte_2 = 'Période : '/*.$_SESSION['nom_sequence']*/;
+				$pdf->Cell(70,10,utf8_decode($texte_1), 0,0,'L');
+				$pdf->Cell(80,10,utf8_decode($texte_2), 0,0,'R');
+				$pdf->Ln(15);
+				
+				$pdf->SetFont('Arial','B',9);
+				// Je positionne l'entete du tableau
+				$pdf->Cell(8, 7, utf8_decode('N°'), 1, 0 , 'C',true);
+				$pdf->Cell(65, 7, utf8_decode('Noms et Prénoms'), 1, 0 , 'C',true);
+				$pdf->Cell(10, 7, 'Sexe', 1, 0 , 'C',true);
+				$pdf->Cell(10, 7, 'Statut', 1, 0 , 'C', true);
+				for($i=0;$i<count($listeMatiere);$i++){
+					$pdf->Cell(12, 7, $listeMatiere[$i]['code_matiere'], 1, 0 , 'C',true);
+				}
+				$pdf->Ln(7);
+				$w = 1;
+				for($x=0;$x<count($listeEleve);$x++){
+					$pdf->Cell(8, 7, $w, 1, 0 , 'C');
+					$pdf->Cell(65, 7, utf8_decode($listeEleve[$x]['nom_complet']), 1, 0 , 'L');
+					$pdf->Cell(10, 7, utf8_decode($listeEleve[$x]['sexe']), 1, 0 , 'C');
+					$pdf->Cell(10, 7, utf8_decode($listeEleve[$x]['statut']), 1, 0 , 'C');
+					$listeNote = $_SESSION['note'];
+					for($a=0;$a<count($listeMatiere);$a++){
+						$idMatiere = $listeMatiere[$a]['id_matiere'];
+						for($b=0;$b<count($listeNote);$b++){
+							
+						}
+					}
+					$pdf->Ln(7);
+					$w++;
+				}
+				
+				$fileName='vue_des_notes_classe';
+				$fileName.= '.pdf';
+			}elseif($classe['section']=='en'){}
+			
+			$pdf->Output($fileName, 'I');
+			
+			/*$pdf->addPage();
 			// On met l'entête du document
 			$pdf->EnteteDocL($ministere, $pays, $ets, $devise, $contact, $as);
 			// On met le titre du document 
 			$titre = strtoupper("Visualisation des Notes Séquentielles");
 			
-			$pdf->TitreL($titre);
-			
-			// Informations diverses
-			$pdf->SetFont('Times','B',16);
-			$texte_1 = 'Classe : ';
-			// $pdf->SetTextColor(100,100,255);  // Bleu
-			$pdf->SetFillColor(155, 150, 149);
-			$texte_1 .= strtoupper($_SESSION['nom_classe']);
-			// $pdf->SetTextColor(0,0,0);  // Noir
-			$texte_2 = 'Période : '.$_SESSION['nom_sequence'];
-			$pdf->Cell(70,10,utf8_decode($texte_1), 0,0,'L');
-			$pdf->Cell(80,10,utf8_decode($texte_2), 0,0,'R');
-			$pdf->Ln(15);
+			*/
 			
 			
-			
-			$pdf->SetFont('Arial','B',9);
-			// Je positionne l'entete du tableau
-			$pdf->Cell(8, 7, utf8_decode('N°'), 1, 0 , 'C',true);
-			$pdf->Cell(65, 7, utf8_decode('Noms et Prénoms'), 1, 0 , 'C',true);
-			$pdf->Cell(10, 7, 'Sexe', 1, 0 , 'C',true);
-			$pdf->Cell(10, 7, 'Statut', 1, 0 , 'C', true);
-			for($i=0;$i<count($_SESSION['matiere']);$i++){
-				$pdf->Cell(11, 7, 
-						$_SESSION['matiere'][$i]['id_matiere'],
-						1, 0 , 'C', true);
-			}
 			
 			// Les notes envoyées par la BD
-			$x = 1;
-			for($j=0;$j<count($_SESSION['eleve']);$j++){
+			// $x = 1;
+			/*for($j=0;$j<count($_SESSION['eleve']);$j++){
 				$nomEleve = $_SESSION['note'][$j]['nom'];
 				$sexe = $_SESSION['note'][$j]['sexe'];
 				$statut = $_SESSION['note'][$j]['statut'];
@@ -107,7 +134,7 @@
 					}
 				}
 				$x++;
-			}
+			}*/
 			
 			
 			// for($j=0;$j<count($_SESSION['eleve']);$j++){

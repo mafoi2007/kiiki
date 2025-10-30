@@ -10,7 +10,7 @@
 		echo "<script>alert('".$_SESSION['message']."');</script>";
 	}
 	unset($_SESSION['message']);
-	if($_SESSION['poste']=='sg')
+	if($_SESSION['user']['userPost']=='sg')
 		{
 	
 ?>

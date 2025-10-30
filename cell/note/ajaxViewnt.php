@@ -1,19 +1,36 @@
 <?php
 	session_start();
 	require_once('../../inc/connect.inc.php');
-	$note = new Note($db);
+	$config = new Config($db);
+	// print_r($_POST['classe']);
+	if(isset($_POST['classe'])){
+		$classe = (int) $_POST['classe'];
+		$listeDepartement = $config->verifNoteSaisieSequenceReel($classe);
+		// print_r($listeDepartement);
+		if($classe==0){
+			$msg = "<h3 class='alert'>Vous devez choisir une classe.</h3>";
+			echo $msg;
+		}else{ ?>
+			Séquence : 
+			<select name='sequence'>
+				<?php 
+				for($j=0;$j<count($listeDepartement);$j++){
+					$idSequence = $listeDepartement[$j]['id_periode'];
+					echo "<option value='".$idSequence."'> Séquence ".$idSequence."</option>";
+				}
+				?>
+			</select>
+			<input 
+				type='hidden' 
+				name='to_print' 
+				value='VisualiserNoteSequentielle' />
+			<input 
+				type='submit' 
+				name='print' 
+				value='Valider' />
+<?php 			
+		}
+	}
 ?>
 	
-	<select name='sequence'>
-		<?php 
-		if(isset($_POST['clas'])){
-			$cls = $_POST['clas'];
-			$listeDepartement = $note->verifNoteSaisieSequenceReel($cls);
-			for($j=0;$j<count($listeDepartement);$j++){
-				echo "<option value='";
-				echo $listeDepartement[$j]['sequence'];
-				echo "'>Séquence ".$listeDepartement[$j]['sequence']."</option>";
-			}
-		}
-		?>
-	</select>
+			

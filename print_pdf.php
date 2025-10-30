@@ -195,7 +195,7 @@
 				$pdf->addPage();
 				$pdf->Entete();
 				$titre = 'student list of ';
-				$titre.= $classe['eleve'][0]['nom_classe'];
+				$titre.= $classe['classe']['nom_classe'];
 				$pdf->Titre($titre);
 				
 				$pdf->SetFont('Times','',8);
@@ -244,7 +244,7 @@
 					$pdf->Cell(75, 6, $pdf->convert($classe['eleve'][$i]['nom_complet']), 1, 0 , 'L');
 					$pdf->Cell(9, 6, $pdf->convert($classe['eleve'][$i]['sexe']), 1, 0 , 'C');
 					$pdf->Cell(13, 6, $pdf->convert($classe['eleve'][$i]['statut']), 1, 0 , 'C');
-					$dateNaiss = $classe['eleve'][$i]['date_fr'].' at '.ucwords($classe['eleve'][$i]['lieu_naissance']);
+					$dateNaiss = $classe['eleve'][$i]['date_naissance'].' at '.ucwords($classe['eleve'][$i]['lieu_naissance']);
 					$pdf->Cell(55, 6, $pdf->convert($dateNaiss), 1, 0 , 'L');
 					$pdf->Ln(6);
 					$a++;
@@ -264,14 +264,14 @@
 				$pdf->Cell(20);
 				
 				$fileName='student_list_';
-				$fileName.= strtoupper(str_replace(' ','_',$classe['eleve'][0]['nom_classe']));
+				$fileName.= strtoupper(str_replace(' ','_',$classe['classe']['nom_classe']));
 				$fileName.= '.pdf';
 			}
 			elseif($classe['section']=='fr'){
 				$pdf->addPage();
 				$pdf->Entete();
 				$titre = 'Liste des eleves de la ';
-				$titre.= $classe['eleve'][0]['nom_classe'];
+				$titre.= $classe['classe']['nom_classe'];
 				$pdf->Titre($titre);
 				
 				$pdf->SetFont('Times','',8);
@@ -320,7 +320,7 @@
 					$pdf->Cell(75, 6, $pdf->convert($classe['eleve'][$i]['nom_complet']), 1, 0 , 'L');
 					$pdf->Cell(9, 6, $pdf->convert($classe['eleve'][$i]['sexe']), 1, 0 , 'C');
 					$pdf->Cell(13, 6, $pdf->convert($classe['eleve'][$i]['statut']), 1, 0 , 'C');
-					$dateNaiss = $classe['eleve'][$i]['date_fr'].' à '.ucwords($classe['eleve'][$i]['lieu_naissance']);
+					$dateNaiss = $classe['eleve'][$i]['date_naissance'].' à '.ucwords($classe['eleve'][$i]['lieu_naissance']);
 					$pdf->Cell(55, 6, $pdf->convert($dateNaiss), 1, 0 , 'L');
 					$pdf->Ln(6);
 					$a++;
@@ -340,7 +340,7 @@
 				$pdf->Cell(20);
 				
 				$fileName='liste_Eleve_';
-				$fileName.= strtoupper(str_replace(' ','_',$classe['eleve'][0]['nom_classe']));
+				$fileName.= strtoupper(str_replace(' ','_',$classe['classe']['nom_classe']));
 				$fileName.= '.pdf';
 			} 
 			
@@ -620,9 +620,9 @@
 		elseif($_SESSION['print']=='ConseilClasse'){
 			$pdf->addPage();
 			// On met l'entête du document
-			$pdf->EnteteDoc($ministere, $pays, $ets, $devise, $contact, $as);
+			$pdf->Entete();
 			// On met le titre du document 
-			$titre = "Enseignants de la classe de ".$_SESSION['liste'][0]['id_classe']."";
+			$titre = "Enseignants de la classe de ".$_SESSION['liste'][0]['nom_classe']."";
 			// $titre .= strtoupper($_SESSION['liste'][0]['nom_classe']);
 			$pdf->TitreSans($titre);
 			
@@ -642,11 +642,11 @@
 				$pdf->Ln(7);
 				$pdf->Cell(10, 6, $i, 1, 0 , 'C');
 				$pdf->Cell(70, 6, utf8_decode(strtoupper($_SESSION['liste'][$a]['nom_matiere'])), 1, 0 );
-				$enseignant = strtoupper($_SESSION['liste'][$a]['nom']).' '.ucwords($_SESSION['liste'][$a]['prenom']);
+				$enseignant = $_SESSION['liste'][$a]['nom_complet_enseignant'];
 				$pdf->Cell(100, 6, utf8_decode($enseignant), 1, 0 );
 				$i++;
 			}
-			$nomFichier = 'ConseilDeClasse_'.$_SESSION['liste'][0]['id_classe'].'.pdf';
+			$nomFichier = 'ConseilDeClasse_'.$_SESSION['liste'][0]['nom_classe'].'.pdf';
 			$pdf->Output($nomFichier, 'I');
 		}
 		
