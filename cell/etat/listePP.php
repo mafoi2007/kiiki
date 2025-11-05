@@ -21,14 +21,14 @@
 				for($a=0;$a<count($conseil);$a++){ ?>
 					<tr>
 						<td><?php echo $i; ?></td>
-						<td></td>
-						<td></td>
+						<td><?php echo $conseil[$a]['nom_classe']; ?></td>
+						<td><?php echo $conseil[$a]['nom_complet_enseignant']; ?></td>
 					</tr>
 <?php 
 				$i++;
 				}
 			}
-			echo var_dump($conseil);
+			// echo var_dump($conseil);
 			?>
 		</form>
 	</table>

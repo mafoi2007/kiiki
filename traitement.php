@@ -201,6 +201,13 @@
 		$source = str_replace($var2,'',$source);
 		$config->updateEleve($source, $eleve);
 	}
+
+
+
+	if(isset($_POST['changeClasseEleve'])){
+		echo '<pre>'; print_r($_POST); echo '</pre>';
+		$config->changerClasseEleve($source, $_POST['eleve'], $_POST['classe']);
+	}
 	
 	
 	
@@ -306,11 +313,13 @@
 	
 	if(isset($_REQUEST['addpp'])){
 		$source = $_SERVER['HTTP_REFERER'];
-		echo '<pre>';
-		print_r($_REQUEST);
-		$config->ajouterProfPrincipal($source,
+		// echo '<pre>';
+		// print_r($_POST);
+		$info = $_POST;
+		$config->ajouterProfPrincipal($source, $info);
+		/*$config->ajouterProfPrincipal($source,
 										$_REQUEST['cls'], 
-										$_REQUEST['prof']);
+										$_REQUEST['prof']);*/
 	}
 	
 	
@@ -777,11 +786,10 @@
 	
 	if(isset($_REQUEST['TraiterNoteSequentielle'])){
 		$source = $_SERVER['HTTP_REFERER'];
-		echo '<pre>';
-		print_r($_REQUEST);
-		$note->traiterNoteSequence($source,
-									$_POST['sekence'],
-									$_POST['clas']);
+		/*echo '<pre>';
+		print_r($_REQUEST);*/
+		$info = $_POST;
+		$config->traiterNoteSequence($source, $info);
 	}
 	
 	
@@ -790,9 +798,9 @@
 	if(isset($_REQUEST['TraiterMoyenneSequentielle'])){
 		echo '<pre>';
 		print_r($_REQUEST);
-		$note->traiterMoyenneSequence($source,
+		$config->traiterMoyenneSequence($source,
 									$_POST['sekence'],
-									$_POST['clas']);
+									$_POST['classe']);
 	}
 	
 	
@@ -1070,7 +1078,8 @@
 		/* Pour une ancienne année scolaire */
 		if($_POST['to_print']=='certificatScolOld'){
 			$eleve = $config->getEleveOld($_POST['eleve'],$_POST['oldYear']);
-			$section = $config->getSectionClasse($eleve['classe']);
+			// // $section = $config->getSectionClasse($eleve['classe']);
+			// // echo var_dump($section);
 			$classe = $config->getClasse($eleve['classe']);
 			// echo '<pre>';print_r($classe);
 			
@@ -1216,56 +1225,29 @@
 		// 
 		elseif($_POST['to_print']=='VisualiserNoteSequentielle'){
 			// On veut visualiser les notes séquentielles 
-			echo '<pre>'; print_r($_POST); echo '</pre>';
-			$listeMatiere = $config->listeMatiereClasse($_POST['classe']);
-			$classe = $config->getClasse($_POST['classe']);
-			$listeEleve = $config->listeEleve($_POST['classe'], 'non_supprime');
-			echo '<pre>';print_r($listeMatiere); echo '</pre>';
-			for($i=0;$i<count($listeMatiere);$i++){
-				$matiere = $listeMatiere[$i]['id_matiere'];
-				echo $matiere;
-				$notes[] = $config->listeNote($_POST['classe'], $matiere, $_POST['sequence']);
-			}
-			// echo '<pre>';print_r($notes); echo '</pre>';
-			
-			
-			$_SESSION['matiere'] = $listeMatiere;
-			$_SESSION['classe'] = $classe;
-			$_SESSION['eleve'] = $listeEleve;
-			$_SESSION['note'] = $notes;
-			$_SESSION['print'] ='VisualiserNoteSequentielle';
-			header('Location:print_pdf_landscape.php');
-			// $classe = $_POST['classe'];
-			// $sequence = $_POST['sequence'];
-			/*if($classe=='null' or $sequence=='null'){
-				$_SESSION['message'] = 'Aucune Valeur transmise.';
+			$classe = (int) $_POST['classe'];
+			$sequence = (int) $_POST['sequence'];
+			if(empty($classe)){
+				$_SESSION['message']  = 'Valeur de Classe incorrecte';
 				header('Location:'.$source);
 			}else{
-				// On stocke les données dans une table particulère
-				$resultat = $note->viewNoteSequentielle($sequence, $classe);
-				
-				// Ensuite on extrait ces données pour l'affichage PDF ou XML 
-				$export = $note->exportNoteSequence($sequence, $classe);
-				// echo '<pre>'; print_r($export); echo '</pre>';
-				$listeMatiere = $config->listeMatiereClasse($classe);
-				
-				$listeEleve = $config->listeEleve($classe,'non_supprime');
-				
-				$nomClasse = $config->viewNomClasse($classe);
-				// echo '<pre>'; print_r($listeEleve);
-				
-				
-				
-				$_SESSION['matiere'] = $listeMatiere;
-				$_SESSION['note'] = $export['eleve'];
-				$_SESSION['eleve'] = $listeEleve;
-				$_SESSION['nom_sequence'] = 'Séquence '.$sequence;
-				$_SESSION['nom_classe'] = $nomClasse['nom_classe'];
-				$_SESSION['print'] ='VisualiserNoteSequentielle';
-				echo '<pre>'; print_r($_SESSION['matiere']);
-				header('Location:print_pdf_landscape.php');
-			}*/
-			
+				if(empty($sequence)){
+					$_SESSION['message'] = 'Valeur de Séquence incorrecte';
+					header('Location:'.$source);
+				}else{
+					$config->viewNoteSequentielle($_POST['sequence'], $_POST['classe']);
+					$info = $config->exportNoteSequence($_POST['sequence'], $_POST['classe']);
+					$infoClasse = $config->getClasse($_POST['classe']);
+					$listeMatiere = $config->getMatiereClasse($classe);
+
+					// echo '<pre>'; print_r($listeMatiere); echo '</pre>';
+					$_SESSION['print'] = $print;
+					$_SESSION['eleve'] = $info;
+					$_SESSION['classe'] = $infoClasse;
+					$_SESSION['matiere'] = $listeMatiere;
+					header('Location:print_pdf_landscape.php');
+				}
+			}
 		}
 		
 		/*********************************************
@@ -1399,27 +1381,28 @@
 			$_SESSION['print'] ='BullSeq';
 			// echo $_SESSION['print'];
 			$_SESSION['sequence'] = $_POST['sekence'];
-			$_SESSION['classe'] = $_POST['clas'];
-			$_SESSION['nomClasse'] = $config->viewNomClasse($_POST['clas']);
-			$section = $config->verifSectionClasse($_POST['clas']);
+			$_SESSION['classe'] = $_POST['classe'];
+			$_SESSION['nomClasse'] = $config->viewNomClasse($_POST['classe']);
+			$section = $config->verifSectionClasse($_POST['classe']);
 			$_SESSION['section'] = $section;
-			$eleve = $note->moySequenceClasse($_POST['sekence'], 
-												$_POST['clas']);
-			$eleve2 = $note->moySequenceClasseMerite($_POST['sekence'], 
-												$_POST['clas']);
-			$tableBulletin = $note->sequenceClasse($_POST['sekence'],
-												$_POST['clas']);
-			$tableStat = $note->statSequence($_POST['sekence'], 
-												$_POST['clas']);
-			$nbGroupe = $note->afficheGroupe($_POST['clas']);
+			$eleve = $config->moySequenceClasse($_POST['sekence'], 
+												$_POST['classe']);
+			$eleve2 = $config->moySequenceClasseMerite($_POST['sekence'], 
+												$_POST['classe']);
+			$tableBulletin = $config->sequenceClasse($_POST['sekence'],
+												$_POST['classe']);
+			$tableStat = $config->statSequence($_POST['sekence'], 
+												$_POST['classe']);
+			$nbGroupe = $config->afficheGroupe($_POST['classe']);
 			for($w=0;$w<count($nbGroupe);$w++){
 				$nomGpe = $nbGroupe[$w]['groupe'];
-				$matiereGroupe[$nomGpe] = $note->getmatiereGroupe($nbGroupe[$w]['groupe'],
-														$_POST['clas']);
+				$matiereGroupe[$nomGpe] = $config->getmatiereGroupe($nbGroupe[$w]['groupe'],
+														$_POST['classe']);
 			}
-			for($x=0;$x<count($_SESSION['groupe']);$x++){
-				$gpCode = $_SESSION['groupe'][$x];
-				$listeMatiere = $note->getMatiereGroupe($gpCode,
+			$groupes = $config->getGroupeClasse($_POST['classe']);
+			for($x=0;$x<count($groupes);$x++){
+				$gpCode = $groupes[$x]['code_groupe'];
+				$listeMatiere = $config->getMatiereGroupe($gpCode,
 														$_SESSION['classe']);
 				$j=0;
 				while($j<count($listeMatiere)){
@@ -1436,9 +1419,10 @@
 			$_SESSION['bulletin'] = $tableBulletin;
 			$_SESSION['statistique'] = $tableStat;
 			$_SESSION['matiereGroupe'] = $matiereGroupe;
-			$nom_classe = $config->viewNomClasse($_POST['clas']);
+			$nom_classe = $config->getClasse($_POST['classe']);
 			$_SESSION['nom_classe'] = $nom_classe['nom_classe'];
-			$_SESSION['groupe'] = $note->getGroupeClasse($_POST['clas']);
+			$_SESSION['groupe'] = $config->getGroupeClasse($_POST['classe']);
+			// echo '<pre>'; print_r($_SESSION['eleve']);
 				// On extrait le Prof Principal de la Classe
 				$classePrincipale = $config->classePrincipale();
 				// echo '<pre>';print_r($classePrincipale); echo '</pre>';
@@ -1451,8 +1435,9 @@
 				}
 			// echo '<pre>';print_r($section);
 			// echo '<pre>';print_r($matiereGroupe);
-			// echo '<pre>';print_r($_SESSION['groupe']);
+			// print_r($_SESSION['section']);
 			// echo $_SESSION['professeurPrincipal'];
+
 			header('Location:print_pdf.php');
 		}
 		
@@ -1510,36 +1495,53 @@
 			echo "<pre>";
 				print_r($_POST);
 			echo "</pre>";
-			$_SESSION['print'] =$_POST['to_print'];
-			$_SESSION['sequence'] = $_POST['sekence'];
-			$_SESSION['classe'] = $_POST['clas'];
-			$_SESSION['nom_sequence'] = "Séquence ".$_POST['sekence'];
-			$_SESSION['nom_sequence_anglais'] = "Sequence ".$_POST['sekence'];
-			$_SESSION['nomClasse'] = $config->viewNomClasse($_POST['clas']);
-			$_SESSION['nom_classe'] = $_SESSION['nomClasse']['nom_classe'];
-			$_SESSION['code_classe'] = $_SESSION['nomClasse']['code_classe'];
-			$_SESSION['section'] = $_POST['section'];
-			/*On appelle la table qui contient les notes et moyennes séquentielles générées*/
-			$eleve = $note->moySequenceClasse($_POST['sekence'], 
-												$_POST['clas']);
-			
-			$nbGroupe = $note->afficheGroupe($_POST['clas']);
+			$section = $config->getSectionClasse($_POST['classe']);
+			$infoClasse = $config->getClasse($_POST['classe']);
+			echo var_dump($infoClasse);
+			$nbGroupe = $config->afficheGroupe($_POST['classe']);
 			for($w=0;$w<count($nbGroupe);$w++){
 				$nomGpe = $nbGroupe[$w]['groupe'];
-				$matiereGroupe[$nomGpe] = $note->getMatiereGroupe($nbGroupe[$w]['groupe'],
-														$_POST['clas']);
+				$matiereGroupe[$nomGpe] = $config->getMatiereGroupe($nbGroupe[$w]['groupe'],
+														$_POST['classe']);
 				$infoGroupe[] = $nomGpe;
-			}							
-			$tableStat = $note->statSequence($_POST['sekence'], 
-												$_POST['clas']);
+			}
+			$eleve = $config->moySequenceClasse($_POST['sequence'], 
+												$_POST['classe']);
+			$tableStat = $config->statSequence($_POST['sequence'], 
+												$_POST['classe']);
+			// $_SESSION['print'] =
+			// $_SESSION['sequence'] = $_POST['sequence'];
+			// $_SESSION['classe'] = $_POST['classe'];
+			// $_SESSION['nom_sequence'] = "Séquence ".$_POST['sequence'];
+			// $_SESSION['nom_sequence_anglais'] = "Sequence ".$_POST['sequence'];
+			// $_SESSION['nomClasse'] = $config->viewNomClasse($_POST['classe']);
+			// $_SESSION['nom_classe'] = $_SESSION['nomClasse']['nom_classe'];
+			// $_SESSION['code_classe'] = $_SESSION['nomClasse']['code_classe'];
+			// $_SESSION['section'] = $config->getSectionClasse($_POST['classe']);
+			// /*On appelle la table qui contient les notes et moyennes séquentielles générées*/
+			// 
 			
-			$_SESSION['stat'] = $tableStat;
-			$_SESSION['groupe'] = $infoGroupe;
-			$_SESSION['matiere'] = $matiereGroupe;
-			$_SESSION['eleve'] = $eleve;
+			
+			// for($w=0;$w<count($nbGroupe);$w++){
+			// 	
+			// 	
+			// 	
+			// }							
+			// 
+			
+			// 
+			// 
+			// $_SESSION['matiere'] = $matiereGroupe;
+			// 
 			
 			// echo '<pre>';print_r($_SESSION['stat']); echo '</pre>';
 			// echo '<pre>';print_r($infoGroupe); echo '</pre>';
+			$_SESSION['stat'] = $tableStat;
+			$_SESSION['eleve'] = $eleve;
+			$_SESSION['groupe'] = $infoGroupe;
+			$_SESSION['infoClasse'] = $infoClasse;
+			$_SESSION['section'] = $section;
+			$_SESSION['print'] = $_POST['to_print'];
 			header('Location:print_pdf_landscape.php');
 		}
 		

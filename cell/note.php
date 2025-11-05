@@ -42,7 +42,7 @@
 					}
 				}
 				// Ici on va voir comment faire du POST
-				xhr.open("POST", "note/ajaxViewnt.php", true);
+				xhr.open("POST", "note/viewnt.ajax.php", true);
 				// Ne pas oublier xa pour le POST 
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
@@ -169,21 +169,7 @@
 	
 	<div id="body">
 		<h1>Gestion des Notes</h1>
-		<ul>
-			<li><h3><a 
-				href="note.php?choix=<?php echo sha1('viewnt'); ?>#body2">
-				Vue globale des Notes Séquentielles</a></h3></li>
-			<li><h3><a 
-				href="note.php?choix=<?php echo sha1('addnt'); ?>#body2">
-				Saisie des Notes</a></h3></li>
-			
-			<li><h3><a 
-				href="note.php?choix=<?php echo sha1('cpnt'); ?>#body2">
-				Copie des Notes</a></h3></li>
-			<li><h3><a 
-				href="note.php?choix=<?php echo sha1('delnt'); ?>#body2">
-				Suppression des Notes</a></h3></li>
-		</ul>
+		
 	</div>
 	
 	

@@ -20,7 +20,7 @@
 	<link rel="stylesheet" type="text/css" href="../styles/style.css" />
 	<link rel ="shortcut icon" type="image/x-icon" href="../images/homme.png" />
 	<link type="text/javascript" src="../javascript/js.js" />
-	<title>Bienvenue <?php echo $_SESSION['user']['nom']; ?></title>
+	<title>Bienvenue <?php echo $_SESSION['user']['nom_complet_enseignant']; ?></title>
 </head>
 
 <body>

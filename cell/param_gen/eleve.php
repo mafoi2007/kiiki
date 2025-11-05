@@ -30,6 +30,13 @@ $page .= 'action=';
 				target = '_blank'>Préparer les listes
 			</a>
 		</h3></li>
+	<li>
+		<h3>
+			<a 
+				href='<?php echo $page;?>changeClasse#body2'  
+				target = '_blank'>Changer de Classe
+			</a>
+		</h3></li>
 </ul>
 
 
@@ -48,6 +55,8 @@ if(isset($_GET['action'])){
 		include_once('deleteEleve.php');
 	}elseif($action=='restaureEleve'){
 		include_once('restaureEleve.php');
+	}elseif($action=='changeClasse'){
+		include_once('changeClasse.php');
 	}
 	
 	

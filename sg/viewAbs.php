@@ -1,72 +1,85 @@
-<h1 class='bien'>Consultation des absences</h1>
-
-		<form method='post' action='#body3'>
-			Classe : <select name='clas' id='clas' onChange='goView()'>
-				<option value='null'>-Classe-</option>
+<?php $eleve = $config->listeEleveAbsence(); /*echo '<pre>'; print_r($eleve); echo '</pre>';*/ ?>
+<h1 class='bien'>consultation des absences</h1>
+		<form method='post' action='../traitement.php'>
+			Eleve : <select name='eleve' id='eleve' onChange='goView()'>
+				<option value='null'>-Eleve-</option>
 				<?php 
-					$regions = $config->viewClasse('actif');
-					for($i=0;$i<count($regions);$i++){
+					for($i=0;$i<count($eleve);$i++){
 						echo "<option value='";
-						echo $regions[$i]['code_classe'];
-						echo "'>".strtoupper($regions[$i]['nom_classe'])."</option>";
+						echo $eleve[$i]['id_eleve'];
+						echo "'>".strtoupper($eleve[$i]['nom_complet'])."</option>";
 					}
 				?>
 			</select>
 			
-			Elève : <div id='eleve' style = 'display:inline'>
-				<select name='eleve'>
-					<option value='null'>-choisir un élève-</option>
-				</select>
+			<div id='view'>
 			</div>
 			
 		</form>
 
 
 
+
+
 <?php 
 	if(isset($_POST['viewAbsenceEleve'])){ 
-		$eleve = $_POST['eleve'];
-		$absences = $config->viewAbsenceEleve($eleve); 
-		// echo '<pre>'; print_r($absences); echo '</pre>';
-		if(empty($absences)){
-			$message = "Cet élève n'a aucune absence enregistrée.";
-			echo "<h3 class='alert' id='body3'>".$message."</h3>";
-		}else{?>
-			<div id="body3">
-				<?php $nom = strtoupper($absences[0]['nom']).' '.ucwords($absences[0]['prenom']); ?>
-				<?php $cls = ucwords($absences[0]['nom_classe']); ?>
-				<h2 class='alert'>Absences de : <?php  echo $nom.' ('.$cls.')'; ?></h2>
-				<table border='1' width='100%'>
-					<tr>
-						<th>Date</th>
-						<th>Nombre d'Heures</th>
-						<th>Situation</th>
-					</tr>
-					<?php 
-					for($i=0;$i<count($absences);$i++){
-						echo "<tr>
-							<td>".$absences[$i]['date_abs']."</td>
-							<td>".$absences[$i]['nombre_heure']." Heures</td>
-							<td>".str_replace('ANJ','Non Justifié',$absences[$i]['justification'])."</td>
-						</tr>";
-						$total[$i] = $absences[$i]['nombre_heure'];
-					}
-					echo "<tr align='center'>
-						<th>TOTAL</th>
-						<th colspan='2'>".array_sum($total)." Heures d'Absences</th>
-					</tr>";
-					?>
-				</table>
-			</div>
-			
-			
-			
-			
-			
-			
-			
-			
-			
-<?php 			
+		/*echo '<pre>';
+		print_r($_POST);
+		echo '</pre>';*/ ?>
+
+<form method='post' action='../traitement.php' id="3">
+	<table border='1' width='100%'>
+		
+		<tr>
+			<th>N°</th>
+			<th>Date</th>
+			<th>Classe</th>
+			<th>Noms et Prénoms</th>
+			<th>Nb Heures</th>
+			<th>Justifier</th>
+		</tr>
+		<?php 
+		$abs = $config->viewAbsenceEleve($_POST['eleve']);
+		if(empty($abs)){
+			echo "<tr>
+				<td 
+					colspan='6' 
+					align='center'
+					class='alert'>Aucune Absence Enregistrée pour le moment.</td>
+			</tr>";
+		}else{
+			$w = 1;
+			for($x=0;$x<count($abs);$x++){
+				$nom = strtoupper($abs[$x]['nom']);
+				$nom .= ' '.ucwords($abs[$x]['prenom']);
+				if($abs[$x]['justification']=='ANJ'){
+					$justif = "<input type='checkbox' name='idAbsence[]' value='";
+					$justif .= $abs[$x]['id'];
+					$justif .= "' />";
+				}else{
+					$justif = "Absence Déja Justifée";
+				}
+				echo "<tr>
+					<td>".$w."</td>
+					<td>".$abs[$x]['date_abs']."</td>
+					<td>".ucwords($abs[$x]['nom_classe'])."</td>
+					<td>".$nom."</td>
+					<td>".$abs[$x]['nombre_heure']."</td>
+					<td>".$justif."</td>
+				</tr>";
+				$w++;
+			}
+			echo "<tr>
+				<td 
+					colspan='6' 
+					align='center'>
+				<input 
+					type='submit' 
+					name='updAbsence' 
+					value='Justifier' /></td>
+			</tr>";
 		}
-	}
+ 	}
+?>
+	</table>
+</form>

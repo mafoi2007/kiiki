@@ -27,7 +27,7 @@
 			href="../images/homme.png" />
 	<link type="text/javascript" 
 			src="../javascript/js.js" />
-	<title><?php echo $_SESSION['sexeUser'].' '.$_SESSION['nomUser'];?> : Traitements Séquentiels</title>
+	<title><?php echo $_SESSION['user']['nom_complet_enseignant'];?> : Traitements Séquentiels</title>
 	<script>
 			function goView(){
 				var xhr = getXhr()
@@ -174,9 +174,9 @@
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 			
 			
@@ -202,9 +202,9 @@
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 			
 			
@@ -230,9 +230,9 @@
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 	</script>
 </head>
@@ -250,6 +250,7 @@
 			<?php /*<li><h3><a 
 				href="traitement_seq.php?choix=<?php echo sha1('etatRempl'); ?>#body2">
 				Etat de remplissage</a></h3></li> */ ?>
+			<?php /*
 			<li><h3><a 
 				href="traitement_seq.php?choix=<?php echo sha1('viewNote'); ?>#body2">
 				Visualisation des Notes</a></h3></li>
@@ -263,7 +264,7 @@
 			<li><h3><a 
 				href="traitement_seq.php?choix=<?php echo sha1('traitMoy'); ?>#body2">
 				Traitement des Moyennes</a></h3></li>
-		</ul>
+		</ul> */ ?>
 	</div>
 	
 	

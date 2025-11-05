@@ -11,10 +11,11 @@
 		</tr>
 		<?php 
 		$abs = $config->viewAbsenceJustif('ANJ');
+		// echo '<pre>'; print_r($abs); echo '</pre>';
 		if(!empty($abs)){
 			$a = 1;
 			for($i=0;$i<count($abs);$i++){
-				$nom = strtoupper($abs[$i]['nom']).' '.ucwords($abs[$i]['prenom']);
+				$nom = $abs[$i]['nom_complet'];
 				echo "<tr>
 					<td align='center'>".$a."</td>
 					<td>".$abs[$i]['date_abs']."</td>

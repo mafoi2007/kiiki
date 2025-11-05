@@ -1,10 +1,10 @@
 <?php
 	session_start();
 	require_once('../../inc/connect.inc.php');
-	$note = new Note($db);
+	$config = new Config($db);
 ?>
 	
-	
+	Séquence : 
 	<select name='sekence'>
 		<option value='null' selected>-choisir-</option>
 		<option value='1'>Séquence 1</option>

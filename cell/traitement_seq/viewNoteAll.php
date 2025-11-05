@@ -1,9 +1,9 @@
-<h1 class='bien'>Récapitulatif des notes trimestrielles</h1>
+<h1 class='bien'>Récapitulatif des notes séquentielles</h1>
 		<form method='post' action='../traitement.php' target ='_blank'>
-			Classe : <select name='clas' id='clas' onChange='goViewAll()'>
+			Classe : <select name='classe' id='classe' onChange='goViewAll()'>
 				<option value='null'>-Classe-</option>
 				<?php 
-					$regions = $note->classesTraitees();
+					$regions = $config->classesTraiteesSeq();
 					for($i=0;$i<count($regions);$i++){
 						echo "<option value='";
 						echo $regions[$i]['classe'];
@@ -12,10 +12,7 @@
 				?>
 			</select>
 			
-			Trimestre : <div id='trimestre' style = 'display:inline'>
-				<select name='trimestre'>
-					<option value='null'>-choisir un trimestre-</option>
-				</select>
+			<div id='trimestre' style = 'display:inline'>
 			</div>
 			
 		</form>

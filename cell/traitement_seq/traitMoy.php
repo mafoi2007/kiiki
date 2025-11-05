@@ -1,9 +1,9 @@
 <h1 class='bien'>traitement des moyennes séquentielles</h1>
 		<form method='post' action='../traitement.php' target ='_blank'>
-			Classe : <select name='clas' id='clas' onChange='goTraitMoy()'>
+			Classe : <select name='classe' id='classe' onChange='goTraitMoy()'>
 				<option value='null'>-Classe-</option>
 				<?php 
-					$regions = $note->classesTraiteesSeq();
+					$regions = $config->classesTraiteesSeq();
 					for($i=0;$i<count($regions);$i++){
 						echo "<option value='";
 						echo $regions[$i]['classe'];
@@ -12,10 +12,7 @@
 				?>
 			</select>
 			
-			Séquence : <div id='sekence' style = 'display:inline'>
-				<select name='sekence'>
-					<option value='null'>-choisir une séquence-</option>
-				</select>
+			<div id='sekence' style = 'display:inline'>
 			</div>
 			
 		</form>

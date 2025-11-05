@@ -13,7 +13,7 @@
 	if(isset($_SESSION['message'])){
 		echo "<script>alert('".$_SESSION['message']."');</script>";
 	}unset($_SESSION['message']);
-	if($_SESSION['poste']=='censeur') { 
+	if($_SESSION['user']['userPost']=='censeur'){ 
 		
 	
 ?>
@@ -24,6 +24,29 @@
 	<link rel="stylesheet" type="text/css" href="../styles/style.css" />
 	<link rel ="shortcut icon" type="image/x-icon" href="../images/homme.png" />
 	<link type="text/javascript" src="../javascript/js.js" />
+	<script>
+		function recapMatiere(){
+			var xhr = getXhr()
+			// On définit ce qu'on va faire quand on aura la reponse 
+			xhr.onreadystatechange = function(){
+				// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+				if(xhr.readyState==4 && xhr.status==200){
+					leselect = xhr.responseText;
+					// On se sert de l'innerHTML pour rajouter les options à la liste
+					document.getElementById('trimestre').innerHTML = leselect;
+				}
+			}
+			// Ici on va voir comment faire du POST
+			xhr.open("POST", "etat/statmatiere.ajax.php", true);
+			// Ne pas oublier xa pour le POST 
+			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			// Ne pas oublier de poster les arguments 
+			// C'est-à-dire l'id de la Classe par exemple
+			sel = document.getElementById('matiere');
+			matiere = sel.options[sel.selectedIndex].value;
+			xhr.send("matiere="+matiere);
+		}
+	</script>
 	<title>Etats</title>
 </head>
 
@@ -36,17 +59,16 @@
 	
 	<div id="body">
 		<h1>états</h1>
-		<ul>
-			<li><h3><a href="etat.php?choix=<?php echo sha1('certif');?>#body2">Certificat de scolarité</a></h3></li>
-			<li><h3><a href="etat.php?choix=<?php echo sha1('listeEleve');?>#body2">Liste des élèves</a></h3></li>
-			<li><h3><a href="etat.php?choix=<?php echo sha1('vueEff'); ?>#body2">Vue d'ensemble des effectifs</a></h3></li>
-			<li><h3><a href="etat.php?choix=<?php echo sha1('relNote'); ?>#body2">Relevé de Notes des Enseignants</a></h3></li>
-			<li><h3><a href="etat.php?choix=<?php echo sha1('listePP'); ?>#body2">Liste des Professeurs Principaux</a></h3></li>
-			<li><h3><a href="etat.php?choix=<?php echo sha1('conseil'); ?>#body2">Conseil de classe</a></h3></li>
-		</ul>
 	</div>
 		<?php 
 		if(isset($_GET['choix'])){
+			$lien = 'etat/'.urldecode($_GET['choix']).'.php';
+			if($lien){
+				require_once($lien);
+			}else{
+				echo "<h3 class='alert' align='center'>Choix Non Valide.</h3>";
+			}
+			/*echo $lien;
 			$choix = urldecode($_GET['choix']);
 			echo "<div id='body2'>";
 				if($choix==sha1('certif')){
@@ -64,7 +86,7 @@
 				}else{
 					echo "<h3 class='alert' align='center'>Choix Non Valide.</h3>";
 				}
-			echo "</div>";
+			echo "</div>";*/
 		}
 		?>
 	

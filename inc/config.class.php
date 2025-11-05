@@ -703,6 +703,20 @@
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
 		}
+
+
+
+
+
+		public function listeEleveAll($etat){
+			$sql = "SELECT * 
+					FROM eleve
+					WHERE etat='$etat'
+					ORDER BY nom_complet";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
 		
 		
 		// Les statistiques de liste d'une classe donnée 
@@ -1068,7 +1082,7 @@
 		public function verifSectionClasse($classe){
 			$sql = "SELECT section 
 					FROM classe
-					WHERE code_classe='$classe'";
+					WHERE classe.id='$classe'";
 			$req = $this->_db->query($sql);
 			$res = $req->fetch(PDO::FETCH_ASSOC);
 			$resultat = $res['section'];
@@ -1334,7 +1348,7 @@
 			// echo '<pre>';print_r($infoEleve);echo '</pre>';
 			
 			$nom = $this->setNom($eleve['nomEleve']);
-			$classe = $this->setUserId($eleve['classeEleve']);
+			// $classe = $this->setUserId($eleve['classeEleve']);
 			$matricule = $eleve['matriculeEleve'];
 			$rne = $eleve['rneEleve'];
 			$sexe = $this->setSexe($eleve['sexeEleve']);
@@ -1376,12 +1390,12 @@
 					$valeur[] = $lieuNaiss;
 				}
 			}
-			if(!empty($classe)){
-				if($classe!=$infoEleve['classe']){
-					$champ[] = 'classe';
-					$valeur[] = $classe;
-				}
-			}
+			// if(!empty($classe)){
+			// 	if($classe!=$infoEleve['classe']){
+			// 		$champ[] = 'classe';
+			// 		$valeur[] = $classe;
+			// 	}
+			// }
 			if(!empty($nomPere)){
 				if($nomPere!=$infoEleve['nom_pere']){
 					$champ[] = 'nom_pere';
@@ -1431,6 +1445,31 @@
 				$_SESSION['message'] = 'Aucune information n a été modifiée.';
 				header('Location:'.$source);
 			}
+		}
+
+
+
+
+
+		public function changerClasseEleve($source, $eleve, $classe){
+			$this->_eleve = $this->setUserId($eleve);
+			$this->_classe = $this->setUserId($classe);
+			// Ici on va changer la classe dans la table eleve et la classe dans la table note
+			$eleveTable = $this->_db->prepare("UPDATE eleve SET 
+												classe = :classe
+												WHERE id =:eleve");
+			$noteTable = $this->_db->prepare("UPDATE note SET 
+												id_classe =:classe
+												WHERE id_eleve =:eleve");
+			$eleveTable->bindValue(':classe', $this->_classe);
+			$eleveTable->bindValue(':eleve', $this->_eleve);
+			$eleveTable->execute();
+
+			$noteTable->bindValue(':classe', $this->_classe);
+			$noteTable->bindValue(':eleve', $this->_eleve);
+			$noteTable->execute();
+			$_SESSION['message'] = 'Classe Modifiée';
+			header('Location:'.$source);
 		}
 		
 		
@@ -1625,7 +1664,20 @@
 		 }
 		
 		
-		
+		// Liste des Matières qui interviennent dans une classe 
+		public function getMatiereClasse($classe){
+			$sql = "SELECT prof_classe.id as id, id_classe, nom_classe, code_matiere, id_matiere, 
+									nom_matiere, coef, groupe, nom_groupe
+					FROM prof_classe, classe, matiere, groupe
+					WHERE id_classe='$classe'
+						AND classe.id = id_classe
+						AND matiere.id = id_matiere
+						AND groupe = groupe.id
+					ORDER BY nom_matiere";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
 		
 		
 		
@@ -1926,7 +1978,8 @@
 			$this->_db->query($sql);
 			$_SESSION['message'] = 'Utilisateur restauré.';
 			header('Location:'.$source);
-		}  
+		}
+  
 		
 		
 		// On supprime un utilisateur 
@@ -2368,7 +2421,44 @@
 		
 		
 		
-		
+		/**
+		 * Les Notes séquentielles d'un élève
+		 * @param int $classe
+		 * @param int $sequence
+		 * @return array $resultat
+		 */
+		public function noteEleveSequence($classe, $sequence){
+			$as = $this->getCurrentYear();
+			$this->_classe = $this->setUserId($classe);
+			$this->_sequence = $this->setUserId($sequence);
+			$listeMatiere = $this->getMatiereClasse($this->_classe);
+			// echo '<pre>'; print_r($listeMatiere); echo '</pre>';
+			for($i=0;$i<count($listeMatiere);$i++){
+				$idMatiere = $listeMatiere[$i]['id_matiere'];
+				$codeMatiere = $listeMatiere[$i]['code_matiere'];
+				$notesEleve[$codeMatiere] = $this->getNoteEleveSequence($this->_sequence, $idMatiere, $this->_classe);
+			}
+			return $notesEleve;
+		}
+
+
+
+
+
+		private function getNoteEleveSequence($sequence, $matiere, $classe){
+			$sql = "SELECT id_eleve, nom_complet, id_matiere, nom_matiere, code_matiere, 
+							id_classe, nom_classe, id_periode, note, observation
+					FROM note, eleve, matiere, classe
+					WHERE eleve.id = id_eleve
+						AND matiere.id = id_matiere
+						AND classe.id = id_classe
+						AND id_periode = '$sequence'
+						AND id_matiere = '$matiere'
+						AND id_classe = '$classe'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
 		
 		
 		
@@ -2485,7 +2575,10 @@
 		n'a pas déjà un titulaire; si c'est le cas, on procède à une 
 		mise à jour. Si ce n'est pas le cas, on procède à l'insertion 
 		pure et simple. */
-		public function ajouterProfPrincipal($source, $classe, $enseignant){
+		public function ajouterProfPrincipal($source, $info /*$classe, $enseignant*/){
+			echo '<pre>'; print_r($info); echo '</pre>';
+			$classe = $info['classe'];
+			$enseignant = $info['prof'];
 			foreach($classe as $cle=>$valeur){
 				if($enseignant[$cle]!='null'){
 					$cls = $valeur;
@@ -2548,7 +2641,7 @@
 		qui passent dans la classe.*/
 		public function conseilDeClasse($classe) {
 			$this->_classe = $this->setNom($classe);
-			$sql = "SELECT	id_prof, id_classe, id_matiere, coef, groupe,
+			$sql = "SELECT	id_prof, id_classe, id_matiere, coef, groupe, code_matiere,
 							nom_matiere, nom_classe, nom, prenom, nom_complet_enseignant
 					FROM prof_classe, matiere, classe, enseignant
 					WHERE id_classe='".$this->_classe."'
@@ -2565,10 +2658,10 @@
 		
 		
 		public function classePrincipale(){
-			$sql = "SELECT nom, prenom, nom_classe, classe_principale.id as id, sexe,
-						classe as code_classe
+			$sql = "SELECT nom, prenom, nom_complet_enseignant, nom_classe, classe_principale.id as id, 
+							sexe, classe as code_classe
 					FROM enseignant, classe, classe_principale
-					WHERE classe=code_classe AND prof=login
+					WHERE classe=classe.id AND prof=enseignant.id
 					ORDER BY niveau_classe DESC";
 			$req = $this->_db->query($sql);
 			while($res=$req->fetch(PDO::FETCH_ASSOC)){
@@ -2578,14 +2671,50 @@
 		}
 		
 		
+
+
+		public function getTrimestre($matiere){
+			$sequence = $this->getTrimestreDraft($matiere);
+			for($i=0;$i<count($sequence);$i++){
+				if($sequence[$i]['id_periode']=='1' or $sequence[$i]['id_periode']=='2'){
+					$trimestre[0] = '1';
+				}
+				if($sequence[$i]['id_periode']=='3' or $sequence[$i]['id_periode']=='4'){
+					$trimestre[1] = '2';
+				}
+				if($sequence[$i]['id_periode']=='5' or $sequence[$i]['id_periode']=='6'){
+					$trimestre[2] = '3';
+				}
+			}
+			return $trimestre;
+		}
+
+
+
+
+		// On veut vérifier les notes saisies pour un trimestre à travers la table note_saisie 
+		public function getTrimestreDraft($matiere){
+			$this->_matiere = $this->setLogin($matiere);
+			$sql = "SELECT id_periode 
+					FROM note_saisie
+					WHERE id_matiere = '$this->_matiere'
+					GROUP BY id_periode ORDER BY id_periode ASC";
+			$req = $this->_db->query($sql);
+			$res=$req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+
+
+
+
 		
 		
 		// Liste des Matières issues de la table Prof_classe
 		public function listeMatiereProfClasse(){
 			$sql = "SELECT id_matiere, nom_matiere
 					FROM prof_classe, matiere
-					WHERE id_matiere = code_matiere
-					GROUP BY id_matiere ORDER BY id_matiere DESC";
+					WHERE id_matiere = matiere.id
+					GROUP BY id_matiere ORDER BY nom_matiere";
 			$req = $this->_db->query($sql);
 			while($reponse = $req->fetch(PDO::FETCH_ASSOC)){
 				$resultat[] = $reponse;
@@ -3416,7 +3545,17 @@
 		
 		// Visualiser les absences selon qu'elles sont justifiées (ANJ) ou non(AJ)
 		public function viewAbsenceJustif($etat){
-			$sql = "SELECT id_eleve, date_absence, nombre_heure, justification,
+			$sql = "SELECT absence.id as id, id_eleve, date_absence, nombre_heure, justification,
+						nom_complet, classe, nom_classe, 
+						DATE_FORMAT(date_absence, '%d / %m / %Y') as date_abs
+					FROM absence, eleve, classe 
+					WHERE eleve.id = id_eleve
+						AND eleve.classe = classe.id
+					ORDER BY nom_complet";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+			/*$sql = "SELECT id_eleve, date_absence, nombre_heure, justification,
 							nom, prenom, classe, nom_classe, absence.id as id,
 							DATE_FORMAT(date_absence, '%d / %m / %Y') as date_abs
 					FROM absence, eleve, classe
@@ -3425,7 +3564,7 @@
 						AND justification='$etat'";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
-			return $res;
+			return $res;*/
 		}
 		
 		
@@ -3682,11 +3821,13 @@
 		
 		private function setNote($note){
 			$this->_note = str_replace(',', '.', $note);
-			if($this->_note < 0){
+			if($this->_note <= 0){
 				$this->_note = NULL;
 			}elseif($this->_note > 20){
 				$this->_note = NULL;
-			}else{
+			}elseif($this->_note==''){
+				$this->_note = NULL;
+			}elseif($this->_note>0 and $this->_note<=20){
 				$this->_note = (float) $this->_note;
 			}
 			return $this->_note;
@@ -3830,7 +3971,7 @@
 		 * @return void car c'est nue procédure 
 		*/ 
 		public function modifierNote($source, $note){
-			// echo '<pre>'; print_r($note); echo '</pre>';
+			echo '<pre>'; print_r($note); echo '</pre>';
 			$this->_classe = $this->setUserId($note['classe']);
 			$this->_matiere = $this->setUserId($note['matiere']);
 			$this->_sequence = $this->setUserId($note['sequence']);
@@ -3839,24 +3980,42 @@
 			$notes = $note['note'];
 			$annuler = $note['annuler'];
 			$this->_date = DATE('Y-m-d H:i:s');
-
 			for($i=0;$i<count($eleve);$i++){
 				$this->_eleve = $this->setUserId($eleve[$i]);
+				// La Colonne des notes modifées ou à modifier
+				/*********
+				 * Comportement Atendu : Pour éviter les aléats du genre un élève a été ajouté après
+				 * la saisie des notes, on fera simplement un delete from et ensuite un insert into
+				 * afin de gérer la situation.
+				 * **** */ 
 				if(!empty($notes[$i])){
-					$countValue[] = $notes[$i]; 
+					$countValue[] = $notes[$i];
 					$this->_note = $this->setNote($notes[$i]);
 					echo "<p> L'élève ".$this->_eleve." obtient ".$this->_note.".</p>";
-					$update = $this->_db->prepare("UPDATE note
-													SET note =:note
-													WHERE id_eleve=:eleve
-														AND id_matiere=:matiere
-														AND id_classe=:classe
-														AND id_periode=:sequence");
-					$update->execute(array('note'=>$this->_note,
-											'eleve'=>$this->_eleve,
-											'matiere'=>$this->_matiere,
-											'classe'=>$this->_classe,
-											'sequence'=>$this->_sequence));
+					$delete = $this->_db->prepare("DELETE FROM note WHERE 
+													id_eleve = :eleve
+													AND id_matiere = :matiere
+													AND id_classe = :classe
+													AND id_periode =:periode");
+					$delete->bindValue(':eleve',$this->_eleve);
+					$delete->bindValue(':matiere',$this->_matiere);
+					$delete->bindValue(':classe',$this->_classe);
+					$delete->bindValue(':periode',$this->_sequence);
+					$delete->execute();
+
+
+					$insert = $this->_db->prepare("INSERT INTO note 
+													SET note =:note,
+													id_eleve =:eleve,
+													id_matiere =:matiere,
+													id_classe =:classe,
+													id_periode =:sequence");
+					$insert->bindValue(':note',$this->_note);
+					$insert->bindValue(':eleve',$this->_eleve);
+					$insert->bindValue(':matiere',$this->_matiere);
+					$insert->bindValue(':classe',$this->_classe);
+					$insert->bindValue(':sequence',$this->_sequence);
+					$insert->execute();
 					$this->journalUpdateNote($this->_classe, $this->_matiere, $this->_sequence,$this->_competence);
 				}
 			}
@@ -3865,30 +4024,37 @@
 				for($k=0;$k<count($annuler);$k++){
 					$this->_student = $this->setUserId($annuler[$k]);
 					$myNote = $this->setNote(-1); // On veut annuler ;-)
-					$reset = $this->_db->prepare("UPDATE note
-												SET note =:note
-												WHERE id_eleve=:eleve
+					$reset = $this->_db->prepare("UPDATE note SET 
+													note =:note
+													WHERE id_eleve =:eleve
 													AND id_matiere =:matiere
-													AND id_classe=:classe
+													AND id_classe =:classe
 													AND id_periode=:sequence");
-					$reset->execute(array('note'=>$myNote,
-											'eleve'=>$this->_student,
-											'matiere'=>$this->_matiere,
-											'classe'=>$this->_classe,
-											'sequence'=>$this->_sequence));
+					$reset->bindValue(':note',$myNote);
+					$reset->bindValue(':eleve',$this->_student);
+					$reset->bindValue(':matiere',$this->_matiere);
+					$reset->bindValue(':classe',$this->_classe);
+					$reset->bindValue(':sequence',$this->_sequence);
+					$reset->execute();
 				}
 			}else{}
 
 			if(isset($countValue)){
-				$phrase = count($countValue)." notes ont été modifiées ";
+				if(count($countValue)==1){
+					$phrase = count($countValue)." note a été modifiée ";
+				}else{
+					$phrase = count($countValue)." notes ont été modifiées ";
+				}
+				
 			}else{
-				$phrase = " aucune note modifiée ";
+					$phrase = " aucune note modifiée ";
 			}
 			if(isset($k)){
-				$phrase .= " et ".$k." notes annulées";
+				$phrase .= " et ".$k." note(s) annulée(s)";
 			}else{
 				$phrase .= " et pas de notes annulée.";
 			}
+
 			$_SESSION['message'] = $phrase;
 			header('Location:'.$source);
 		}
@@ -3977,7 +4143,8 @@
 			$sql = "SELECT id_classe, nom_classe
 					FROM note_saisie, classe
 					WHERE classe.id = id_classe
-					GROUP BY id_classe";
+					GROUP BY id_classe 
+					ORDER BY section, niveau_classe, nom_classe";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
@@ -3998,11 +4165,636 @@
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
 		}
+
+
+
+		// Le nombre  et les noms de groupes définis pour une classe
+		public function getGroupeClasse($classe){
+			$sql = "SELECT DISTINCT groupe, nom_groupe, code_groupe
+					FROM prof_classe, groupe 
+					WHERE id_classe='$classe'
+						AND groupe = groupe.id
+					ORDER BY nom_groupe";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+
+
+		private function prepaTableSequence($periode, $classe, $table){
+			// echo '<pre>'; print_r($infoClasse); echo '</pre>';
+			$sql_prepa = "CREATE TABLE $table (";
+			$sql_prepa .= "id int(11) auto_increment primary key, ";
+			$sql_prepa .= "id_eleve int(11) not null, ";
+			$sql_prepa .= "rne TEXT  null, ";
+			$sql_prepa .= "nom_eleve TEXT not null, ";
+			$sql_prepa .= "sexe TEXT null, ";
+			$sql_prepa .= "date_en date null, ";
+			$sql_prepa .= "date_fr TEXT null, ";
+			$sql_prepa .= "lieu_naissance TEXT null, ";
+			$sql_prepa .= "adresse_parent TEXT null, ";
+			$sql_prepa .= "statut TEXT null, ";
+			$sql_prepa .= "photo TEXT null, ";
+			$listeMatiere = $this->listeMatiereClasse($classe);
+			
+			for($a=0;$a<count($listeMatiere);$a++){
+				$matiere = strtolower($listeMatiere[$a]['code_matiere']);
+				$req_creation_0 = "`".$matiere."_competence` TEXT NULL, ";
+				$req_creation_1 = "`".$matiere."_seq` decimal(4,2) DEFAULT NULL, ";
+				$req_creation_2 = "`".$matiere."_coef` decimal(4,2) NULL, ";
+				$req_creation_3 = "`".$matiere."_total` decimal(5,2) NULL, ";
+				$req_creation_4 = "`".$matiere."_min` decimal(4,2) NULL, ";
+				$req_creation_5 = "`".$matiere."_max` decimal(4,2) NULL, ";
+				$req_creation_6 = "`".$matiere."_appreciation` TEXT  null, ";
+				$req_creation_7 = "`".$matiere."_cote` TEXT  null, ";
+				$req_creation_8 = "`".$matiere."_enseignant` TEXT  null, ";
+				$req_creation_9 = "`".$matiere."_rank` int(11) null, ";
+				$sql_prepa .= $req_creation_0;
+				$sql_prepa .= $req_creation_1;
+				$sql_prepa .= $req_creation_2;
+				$sql_prepa .= $req_creation_3;
+				$sql_prepa .= $req_creation_4;
+				$sql_prepa .= $req_creation_5;
+				$sql_prepa .= $req_creation_6;
+				$sql_prepa .= $req_creation_7;
+				$sql_prepa .= $req_creation_8;
+				$sql_prepa .= $req_creation_9;
+			}
+			$groupe = $this->getGroupeClasse($classe);
+			// echo '<pre>'; print_r($groupe); echo '</pre>';
+			for($b=0;$b<count($groupe);$b++){
+				$gp = $groupe[$b]['code_groupe'];
+				$sql_prepa .= $gp."_total float(5,2) NULL, ";
+				$sql_prepa .= $gp."_coef float(4,2) NULL, ";
+				$sql_prepa .= $gp."_moyenne float(4,2) NULL, ";
+				$sql_prepa .= $gp."_min float(4,2) NULL, ";
+				$sql_prepa .= $gp."_max float(4,2) NULL, ";
+				$sql_prepa .= $gp."_appreciation TEXT NULL, ";
+				$sql_prepa .= $gp."_cote TEXT NULL, ";
+				$sql_prepa .= $gp."_rank int(11) NULL, ";
+			}
+			$sql_prepa .= "total_point float(5,2) NULL, ";
+			$sql_prepa .= "total_coef float(4,2) NULL, ";
+			$sql_prepa .= "moyenne float(4,2) NULL, ";
+			$sql_prepa .= "min float(4,2) NULL, ";
+			$sql_prepa .= "max float(4,2) NULL, ";
+			$sql_prepa .= "appreciation TEXT NULL, ";
+			$sql_prepa .= "cote TEXT NULL, ";
+			$sql_prepa .= "classes int(11), ";
+			$sql_prepa .= "rang TEXT null, ";
+			$sql_prepa .= "absence_total int(11) null, ";
+			$sql_prepa .= "absence_non_just int(11) null, ";
+			$sql_prepa .= "absence_just int(11) null ";
+			$sql_prepa .= ")";
+			$sql_del = "DROP TABLE IF EXISTS $table";
+			$this->_db->query($sql_del); 
+			$this->_db->query($sql_prepa);
+		}
+
+
+
+
+		private function addEleveTable($classe, $table){
+			$listeEleve = $this->listeEleve($classe, 'non_supprime');
+			// echo '<pre>'; print_r($listeEleve); echo '</pre>';
+			for($c=0;$c<count($listeEleve);$c++){
+				$idEleve = $listeEleve[$c]['id'];
+				$nomEleve = addslashes($listeEleve[$c]['nom_complet']);
+				$sexeEleve = $listeEleve[$c]['sexe'];
+				$dateNaissance = $listeEleve[$c]['date_naissance'];
+				$date_fr = $listeEleve[$c]['date_fr'];
+				$lieuNaissance = strtoupper($listeEleve[$c]['lieu_naissance']);
+				$matriculeEleve = $listeEleve[$c]['matricule'];
+				$rneEleve = $listeEleve[$c]['rne'];
+				$adresseParent = $listeEleve[$c]['adresse_parent'];
+				$statut = $listeEleve[$c]['statut'];
+				if(empty($listeEleve[$c]['photo'])){
+					$photo = '/images/eleve/no_name.png';
+				}else{
+					$photo = $listeEleve[$c]['photo'];
+				}
+				$insertion = $this->_db->prepare("INSERT INTO $table SET 
+											id_eleve =:idEleve,
+											rne =:rne,
+											nom_eleve =:nom,
+											sexe =:sexe,
+											date_en =:dateEn,
+											date_fr =:dateFr,
+											lieu_naissance =:lieu,
+											adresse_parent =:adresse,
+											statut =:statut,
+											photo =:photo");
+				$insertion->bindValue(':idEleve', $idEleve);
+				$insertion->bindValue(':rne', $rneEleve);
+				$insertion->bindValue(':nom', $nomEleve);
+				$insertion->bindValue(':sexe', $sexeEleve);
+				$insertion->bindValue(':dateEn', $dateNaissance);
+				$insertion->bindValue(':dateFr', $date_fr);
+				$insertion->bindValue(':lieu', $lieuNaissance);
+				$insertion->bindValue(':adresse', $adresseParent);
+				$insertion->bindValue(':statut', $statut);
+				$insertion->bindValue(':photo', $photo);
+				$insertion->execute();
+			}
+		}
+
+
+
+
+
+
+
+		// On visualise les notes séquentielles 
+		private function viewNoteSequentielleEleve($classe, $periode, $eleve){
+			$sql = "SELECT note.id_eleve as id_eleve, note.id_matiere as id_matiere, 
+						note.id_classe as id_classe, note.id_periode as id_periode, 
+						note.note as note, note.observation as observation, code_matiere, nom_matiere,
+						nom_complet, nom_classe
+					FROM note, matiere, eleve, classe
+					WHERE note.id_eleve = '$eleve'
+						AND note.id_classe = '$classe'
+						AND note.id_periode = '$periode'
+						AND note.id_matiere = matiere.id
+						AND note.id_eleve = eleve.id
+						AND note.id_classe = classe.id
+					ORDER BY code_matiere";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+
+
+
+
+
+		private function getCompetence($classe, $matiere, $periode){
+			$sql = "SELECT *
+					FROM note_saisie
+					WHERE id_classe='$classe'
+						AND id_matiere = '$matiere'
+						AND id_periode = '$periode'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res;
+		}
+
+
+
+		// On récupère le Coef d'une matière. Ceci est utile pour calculer les notes
+		private function getCoefMatiere($matiere, $classe){
+			$sql = "SELECT coef
+					FROM prof_classe 
+					WHERE id_classe='$classe' AND id_matiere = '$matiere' 
+					";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res['coef'];
+		}
+
+
+		// On récupère le prof d'une matière. Ceci est utile pour calculer les notes
+		private function getEnseignantMatiere($matiere, $classe){
+			$sql = "SELECT id_prof, nom_complet_enseignant
+					FROM prof_classe, enseignant 
+					WHERE id_classe='$classe' 
+						AND id_matiere = '$matiere'
+						AND id_prof = enseignant.id 
+					";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res['nom_complet_enseignant'];
+		}
+
+
+
+
+		private function getMinMatiere($champ, $table){
+			$sql = "SELECT MIN($champ) as minimum
+					FROM $table
+					WHERE $champ >0";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res['minimum'];
+		}
+
+
+
+		private function getMaxMatiere($champ, $table){
+			$sql = "SELECT MAX($champ) as maximum
+					FROM $table
+					WHERE $champ >0";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res['maximum'];
+		}
+
+
+
+		private function getRankMatiere($codeMatiere, $table){
+			$champCible = strtolower($codeMatiere.'_rank');
+			$champMatiere = strtolower($codeMatiere.'_seq');
+			$sql = "SELECT $champMatiere, id_eleve
+					FROM $table
+					WHERE $champMatiere >0
+					ORDER BY $champMatiere DESC";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			$a = 1;
+			for($i=0;$i<count($res);$i++){
+				$eleve = $res[$i]['id_eleve'];
+				$rank = $a;
+				$sql = "UPDATE $table SET $champCible = '$rank'
+						WHERE id_eleve = '$eleve'";
+				$req = $this->_db->query($sql);
+				$a++;
+			}
+		}
+
+
+
+		private function getRank($table){
+			$sql = "SELECT moyenne, id_eleve
+					FROM $table
+					WHERE moyenne >0
+					ORDER BY moyenne DESC";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			$a = 1;
+			for($i=0;$i<count($res);$i++){
+				$eleve = $res[$i]['id_eleve'];
+				$rank = $a;
+				$sql = "UPDATE $table SET rang = '$rank'
+						WHERE id_eleve = '$eleve'";
+				$req = $this->_db->query($sql);
+				$a++;
+			}
+		}
+
+
+
+
+		private function addDataSequence($classe, $periode, $table){
+			$listeEleve = $this->listeEleve($classe, 'non_supprime');
+			$section = $this->getSectionClasse($classe);
+			for($c=0;$c<count($listeEleve);$c++){
+				$idEleve = $listeEleve[$c]['id'];
+				$noteEleve = $this->viewNoteSequentielleEleve($classe, $periode, $idEleve);
+				for($i=0;$i<count($noteEleve);$i++){
+					$champCompetence = $noteEleve[$i]['code_matiere'].'_competence';
+					$champSequence = $noteEleve[$i]['code_matiere'].'_seq';
+					$champCoef = $noteEleve[$i]['code_matiere'].'_coef';
+					$champTotal = $noteEleve[$i]['code_matiere'].'_total';
+					$champAppreciation = $noteEleve[$i]['code_matiere'].'_appreciation';
+					$champCote = $noteEleve[$i]['code_matiere'].'_cote';
+					$champEnseignant = $noteEleve[$i]['code_matiere'].'_enseignant';
+					$noteObtenue = $this->setNote($noteEleve[$i]['note']);
+					// echo var_dump($noteObtenue).'<br />';
+					$idEleve = $noteEleve[$i]['id_eleve'];
+					$idMatiere = $noteEleve[$i]['id_matiere'];
+					$codeMatiere = strtolower($noteEleve[$i]['code_matiere']);
+					$competence = $this->getCompetence($classe, $idMatiere, $periode);
+					if($noteObtenue==NULL){
+						$coef = NULL;
+						$total = NULL;
+						}else{
+							$coef = $this->getCoefMatiere($idMatiere, $classe);
+							$total = $noteObtenue * $coef;
+						}
+					$enseignant = $this->getEnseignantMatiere($idMatiere, $classe);
+					$appr = $this->showAppreciation($noteObtenue);
+					$libelleAppreciation = 'nom_appreciation_'.$section;
+					$appreciation = $appr[$libelleAppreciation];
+					$cote = $appr['cote'];
+					$requete = $this->_db->prepare("UPDATE $table SET
+											$champSequence = :note,
+											$champCompetence = :competence,
+											$champCoef = :coef,
+											$champTotal =:total,
+											$champAppreciation =:appreciation,
+											$champCote =:cote,
+											$champEnseignant = :enseignant
+											WHERE id_eleve = :eleve");
+					$requete->bindValue(':note', $noteObtenue);
+					$requete->bindValue(':competence', $competence['competence']);
+					$requete->bindValue(':enseignant', $enseignant);
+					$requete->bindValue(':coef', $coef);
+					$requete->bindValue(':total', $total);
+					$requete->bindValue(':cote', $cote);
+					$requete->bindValue(':appreciation', $appreciation);
+					$requete->bindValue(':eleve', $idEleve);
+					$requete->execute();
+				}
+			}
+		}
+
+
+
+
+
+		private function addRankMinMaxSequence($classe, $table){
+			$listeMatiere = $this->listeMatiereClasse($classe);
+			// echo '<pre>'; print_r($listeMatiere); echo '</pre>';
+			for($i=0;$i<count($listeMatiere);$i++){
+				$idMatiere = $listeMatiere[$i]['id'];
+				$codeMatiere = $listeMatiere[$i]['code_matiere'];
+				$champCible = strtolower($codeMatiere.'_seq');
+				$champMin = strtolower($codeMatiere.'_min');
+				$champMax = strtolower($codeMatiere.'_max');
+				$champRank =  strtolower($codeMatiere.'_rank');
+				$min = $this->getMinMatiere($champCible,$table);
+				$max = $this->getMaxMatiere($champCible, $table);
+				$rank  = $this->getRankMatiere($codeMatiere, $table);
+				print_r($rank);
+				$requete  = $this->_db->prepare("UPDATE $table SET 
+							$champMin =:min,
+							$champMax = :max
+							");
+				$requete->bindValue(':min', $min);
+				$requete->bindValue(':max', $max);
+				$requete->execute();
+			}
+		}
 		
 		
 		
 		
-		
+		/*************
+		On a validé le bouton TRAITER LES NOTES SEQUENTIELLES
+		******************************************************/
+		public function traiterNoteSequence($source,$info){
+			// echo '<pre>'; print_r($info); echo '</pre>';
+			$this->_periode = $this->setUserId($info['sekence']);
+			$this->_classe = $this->setUserId($info['classe']);
+			$infoClasse = $this->getClasse($this->_classe);
+			$table = 'sequence_'.$this->_periode.'_'.$this->_classe;
+			// On crée la table et on y ajoute les noms des élèves 
+			$this->prepaTableSequence($this->_periode, $this->_classe,$table);
+			// On insère les élèves dans la table créée 
+			$this->addEleveTable($this->_classe, $table);
+			// On intègre les notes séquentielles de l'élève
+			$this->addDataSequence($this->_classe, $this->_periode, $table);
+			// On génère les minimum, maximum et rang pour chaque matière présente
+			$this->addRankMinMaxSequence($this->_classe, $table);
+			// On introduit les heures d'absence 
+			// On enregistre le traitement 
+			$req_traite = "INSERT INTO bull_seq(pret, classe, sequence) ";
+			$req_traite .= "VALUES('oui', '$this->_classe', '$this->_periode')";
+			$req_traite_del = "DELETE FROM bull_seq";
+			$req_traite_del .= " WHERE classe='$this->_classe' 
+									AND sequence='$this->_periode'";
+			$exec_traite_del = $this->_db->query($req_traite_del);
+			$exec_traite = $this->_db->query($req_traite);
+			// Quand tout se termine, on affiche le message
+			$_SESSION['message'] = 'Notes de la Séquence '.$this->_periode;
+			$_SESSION['message'] .= ' traitées pour la '.$infoClasse['nom_classe'];
+			header('Location:'.$source);
+			
+			
+			
+			// Après avoir crée la table, on insère les noms des élèves dans la table créée.
+			// 
+			// for($c=0;$c<count($listeEleve);$c++){
+				
+				// En fonction de la séquence on fait les calculs et on applique un coefficient ainsi que les 
+				// moyennes par matières et appréciation qui s'imposent
+				/*if($periode==1){
+					$sequence_1 = $this->viewNoteSequentielleEleve($classe,
+																	1, 
+																	$idEleve);
+					// print_r($sequence_2);
+					// On introduit les Notes de la Séquence 1 
+					
+					
+					
+					// On produit les Notes sequentielles par matière 
+					
+					
+					$_SESSION['message'] = "Notes de la Séquence ";
+					$_SESSION['message'] .= $periode." traitées";
+					header('Location: '.$source);
+				}*/
+				/*elseif($periode==2){
+					$sequence_1 = $this->viewNoteSequentielleEleve($classe,
+																	2, 
+																	$idEleve);
+					// print_r($sequence_2);
+					// On introduit les Notes de la Séquence 2 
+					for($d=0;$d<count($sequence_1);$d++){
+						$compet = $sequence_1[$d]['competence'];
+						$mat = $sequence_1[$d]['id_matiere'];
+						$note = $sequence_1[$d]['note_simple'];
+						$prof = $sequence_1[$d]['sexe_enseignant']." ";
+						$prof .= strtoupper($sequence_1[$d]['nom_enseignant'])." ";
+						$prof .= ucwords($sequence_1[$d]['prenom_enseignant']);
+						
+						$sql_upd = "UPDATE $table SET ";
+						$sql_upd .= $mat."_seq1 = '$note',";
+						$sql_upd .= $mat."_enseignant = '$prof',";
+						$sql_upd .= $mat."_competence = '$compet'";
+						$sql_upd .= " WHERE id_eleve = '$idEleve'; ";
+						// echo $sql_upd.'<br/>';
+						$req_4 = $this->_db->query($sql_upd);
+					}
+					
+					
+					// On produit les Notes Sequentielles par matière 
+					$this->calculNoteSequence(2, $classe, $idEleve);
+					$req_traite = "INSERT INTO bull_seq(pret, classe, sequence) ";
+					$req_traite .= "VALUES('oui', '$classe', '$periode')";
+					$req_traite_del = "DELETE FROM bull_seq";
+					$req_traite_del .= " WHERE classe='$classe' 
+											AND sequence='$periode'";
+					$exec_traite_del = $this->_db->query($req_traite_del);
+					$exec_traite = $this->_db->query($req_traite);
+					
+					// On Introduit les heures d'Absence qu'il faut  
+					$absences = $this->calculAbsenceTrimestre($idEleve,1);
+					// $sql_10 = "UPDATE $table SET 
+					// 			absence_total = '".$absences['total']."',
+					// 			absence_non_just = '".$absences['non_justif']."',
+					// 			absence_just = '".$absences['justif']."'
+					// 			WHERE id_eleve = '$idEleve'";
+					// $this->_db->query($sql_10);
+					// print_r($absences);
+					
+					$_SESSION['message'] = "Notes de la Séquence ";
+					$_SESSION['message'] .= $periode." traitées";
+					header('Location: '.$source);
+				}*/
+				/*elseif($periode==3){
+					$sequence_1 = $this->viewNoteSequentielleEleve($classe,
+																	3, 
+																	$idEleve);
+					// print_r($sequence_2);
+					// On introduit les Notes de la Séquence 3 
+					for($d=0;$d<count($sequence_1);$d++){
+						$compet = $sequence_1[$d]['competence'];
+						$mat = $sequence_1[$d]['id_matiere'];
+						$note = $sequence_1[$d]['note_simple'];
+						$prof = $sequence_1[$d]['sexe_enseignant']." ";
+						$prof .= strtoupper($sequence_1[$d]['nom_enseignant'])." ";
+						$prof .= ucwords($sequence_1[$d]['prenom_enseignant']);
+						
+						$sql_upd = "UPDATE $table SET ";
+						$sql_upd .= $mat."_seq1 = '$note',";
+						$sql_upd .= $mat."_enseignant = '$prof',";
+						$sql_upd .= $mat."_competence = '$compet'";
+						$sql_upd .= " WHERE id_eleve = '$idEleve'; ";
+						// echo $sql_upd.'<br/>';
+						$req_4 = $this->_db->query($sql_upd);
+					}
+					
+					
+					// On produit les Notes Trimestrielles par matière 
+					$this->calculNoteSequence(3, $classe, $idEleve);
+					$req_traite = "INSERT INTO bull_seq(pret, classe, sequence) ";
+					$req_traite .= "VALUES('oui', '$classe', '$periode')";
+					$req_traite_del = "DELETE FROM bull_seq";
+					$req_traite_del .= " WHERE classe='$classe' 
+											AND sequence='$periode'";
+					$exec_traite_del = $this->_db->query($req_traite_del);
+					$exec_traite = $this->_db->query($req_traite);
+					
+					// On Introduit les heures d'Absence qu'il faut  
+					$absences = $this->calculAbsenceTrimestre($idEleve,1);
+					$sql_10 = "UPDATE $table SET 
+								absence_total = '".$absences['total']."',
+								absence_non_just = '".$absences['non_justif']."',
+								absence_just = '".$absences['justif']."'
+								WHERE id_eleve = '$idEleve'";
+					$this->_db->query($sql_10);
+					// print_r($absences);
+					
+					$_SESSION['message'] = "Notes de la Séquence ";
+					$_SESSION['message'] .= $periode." traitées";
+					header('Location: '.$source);
+				}*/
+				// elseif($periode==4){
+					/*$sequence_1 = $this->viewNoteSequentielleEleve($classe,
+																	4, 
+																	$idEleve);*/
+					// print_r($sequence_2);
+					// On introduit les Notes de la Séquence 4 
+					/*for($d=0;$d<count($sequence_1);$d++){
+						$compet = $sequence_1[$d]['competence'];
+						$mat = $sequence_1[$d]['id_matiere'];
+						$note = $sequence_1[$d]['note_simple'];
+						$prof = $sequence_1[$d]['sexe_enseignant']." ";
+						$prof .= strtoupper($sequence_1[$d]['nom_enseignant'])." ";
+						$prof .= ucwords($sequence_1[$d]['prenom_enseignant']);
+						
+						$sql_upd = "UPDATE $table SET ";
+						$sql_upd .= $mat."_seq1 = '$note',";
+						$sql_upd .= $mat."_enseignant = '$prof',";
+						$sql_upd .= $mat."_competence = '$compet'";
+						$sql_upd .= " WHERE id_eleve = '$idEleve'; ";
+						// echo $sql_upd.'<br/>';
+						$req_4 = $this->_db->query($sql_upd);
+					}*/
+					
+					
+					// On produit les Notes Trimestrielles par matière 
+					/*$this->calculNoteSequence(4, $classe, $idEleve);
+					$req_traite = "INSERT INTO bull_seq(pret, classe, sequence) ";
+					$req_traite .= "VALUES('oui', '$classe', '$periode')";
+					$req_traite_del = "DELETE FROM bull_seq";
+					$req_traite_del .= " WHERE classe='$classe' 
+											AND sequence='$periode'";
+					$exec_traite_del = $this->_db->query($req_traite_del);
+					$exec_traite = $this->_db->query($req_traite);*/
+					
+					// On Introduit les heures d'Absence qu'il faut  
+					// $absences = $this->calculAbsenceTrimestre($idEleve,1);
+					// $sql_10 = "UPDATE $table SET 
+					// 			absence_total = '".$absences['total']."',
+					// 			absence_non_just = '".$absences['non_justif']."',
+					// 			absence_just = '".$absences['justif']."'
+					// 			WHERE id_eleve = '$idEleve'";
+					// $this->_db->query($sql_10);
+					// print_r($absences);
+					
+					/*$_SESSION['message'] = "Notes de la Séquence ";
+					$_SESSION['message'] .= $periode." traitées";
+					header('Location: '.$source);*/
+				// }
+				// elseif($periode==5){
+					/*$sequence_1 = $this->viewNoteSequentielleEleve($classe,
+																	5, 
+																	$idEleve);*/
+					// print_r($sequence_2);
+					// On introduit les Notes de la Séquence 5 
+					/*for($d=0;$d<count($sequence_1);$d++){
+						$compet = $sequence_1[$d]['competence'];
+						$mat = $sequence_1[$d]['id_matiere'];
+						$note = $sequence_1[$d]['note_simple'];
+						$prof = $sequence_1[$d]['sexe_enseignant']." ";
+						$prof .= strtoupper($sequence_1[$d]['nom_enseignant'])." ";
+						$prof .= ucwords($sequence_1[$d]['prenom_enseignant']);
+						
+						$sql_upd = "UPDATE $table SET ";
+						$sql_upd .= $mat."_seq1 = '$note',";
+						$sql_upd .= $mat."_enseignant = '$prof',";
+						$sql_upd .= $mat."_competence = '$compet'";
+						$sql_upd .= " WHERE id_eleve = '$idEleve'; ";
+						// echo $sql_upd.'<br/>';
+						$req_4 = $this->_db->query($sql_upd);
+					}*/
+					
+					
+					// On produit les Notes Trimestrielles par matière 
+					/*$this->calculNoteSequence(5, $classe, $idEleve);
+					$req_traite = "INSERT INTO bull_seq(pret, classe, sequence) ";
+					$req_traite .= "VALUES('oui', '$classe', '$periode')";
+					$req_traite_del = "DELETE FROM bull_seq";
+					$req_traite_del .= " WHERE classe='$classe' 
+											AND sequence='$periode'";
+					$exec_traite_del = $this->_db->query($req_traite_del);
+					$exec_traite = $this->_db->query($req_traite);*/
+					
+					// On Introduit les heures d'Absence qu'il faut  
+					/*$absences = $this->calculAbsenceTrimestre($idEleve,1);
+					$sql_10 = "UPDATE $table SET 
+								absence_total = '".$absences['total']."',
+								absence_non_just = '".$absences['non_justif']."',
+								absence_just = '".$absences['justif']."'
+								WHERE id_eleve = '$idEleve'";
+					$this->_db->query($sql_10);*/
+					// print_r($absences);
+					
+					/*$_SESSION['message'] = "Notes de la Séquence ";
+					$_SESSION['message'] .= $periode." traitées";
+					header('Location: '.$source);*/
+				// }
+				// elseif($periode==6){
+					/*$sequence_1 = $this->viewNoteSequentielleEleve($classe,
+																	6, 
+																	$idEleve);*/
+					// print_r($sequence_2);
+					// On introduit les Notes de la Séquence 1 
+					
+					
+					
+					// On produit les Notes Trimestrielles par matière 
+					/*$this->calculNoteSequence(6, $classe, $idEleve);
+					*/
+					
+					// On Introduit les heures d'Absence qu'il faut  
+					/*$absences = $this->calculAbsenceTrimestre($idEleve,1);
+					$sql_10 = "UPDATE $table SET 
+								absence_total = '".$absences['total']."',
+								absence_non_just = '".$absences['non_justif']."',
+								absence_just = '".$absences['justif']."'
+								WHERE id_eleve = '$idEleve'";
+					$this->_db->query($sql_10);*/
+					// print_r($absences);
+					
+					/*$_SESSION['message'] = "Notes de la Séquence ";
+					$_SESSION['message'] .= $periode." traitées";
+					header('Location: '.$source);*/
+				// }
+								
+			// }
+		}
 
 		
 		
@@ -4010,15 +4802,590 @@
 		
 		
 		
+		/*************
+		On visualise les notes séquentielles d'une classe
+		******************************************************/
+		public function viewNoteSequentielle($periode, $classe){
+			// On appelle la fonction qui créé notre table
+			$this->tableNoteSequence($periode, $classe);
+			$nomTable = "view_Sequence_".$periode."_".$classe;
+			
+			/*Ensuite on extrait les notes de la table note pour insertion
+			dans notre table de destination. On procède de manière unitaire
+			c'est-à-dire que pour une classe, on procède à l'extraction élève par élève.*/
+			$listeEleve = $this->listeEleve($classe, 'non_supprime');
+			for($i=0;$i<count($listeEleve);$i++){
+				$nomEleve = strtoupper($listeEleve[$i]['nom_complet']);
+				$sexeEleve = $listeEleve[$i]['sexe'];
+				$statutEleve = $listeEleve[$i]['statut'];
+				$matriculeEleve = $listeEleve[$i]['matricule'];
+				$rneEleve = $listeEleve[$i]['rne'];
+				$dateNaissance = $listeEleve[$i]['date_naissance'];
+				$idEleve = $listeEleve[$i]['id'];
+				$sql = "INSERT INTO $nomTable(nom, sexe, statut, matricule, 
+												date_naissance, id_eleve, rne)
+						VALUES('$nomEleve','$sexeEleve','$statutEleve',
+								'$matriculeEleve','$dateNaissance','$idEleve','$rneEleve')";
+				$req = $this->_db->query($sql);
+				$variable = $this->viewNoteEleveSequence($idEleve, $periode);
+				for($a=0;$a<count($variable);$a++){
+					$matiere = strtolower($variable[$a]['code_matiere']);
+					$note = $this->setNote($variable[$a]['note']);
+					$insert = $this->_db->prepare("UPDATE $nomTable SET 
+													`$matiere` =:note
+													WHERE id_eleve =:eleve");
+					$insert->bindValue(':note', $note);
+					$insert->bindValue(':eleve', $idEleve);
+					$insert->execute();			
+				}
+			}
+		}
 		
 		
 		
+
+		/*******
+		On crée la table qui va permettre de visualiser les notes 
+		séquentielles d'une classe au complet.
+		***********************************************************/
+		private function tableNoteSequence($periode, $classe){
+			$listeMatiere = $this->listeMatiereClasse($classe); // On récupère les matières de la classe 
+			// echo '<pre>';print_r($listeMatiere);
+			$nomTable = "view_Sequence_".$periode."_".$classe;
+			// On supprime d'abord la table si elle existe
+			$sql_1 = "DROP TABLE IF EXISTS ".$nomTable;
+			$req_1 = $this->_db->query($sql_1);
+			// Ensuite on la créé à nouveau
+			$sql = "CREATE TABLE ".$nomTable."(";
+			$sql .= "`id` int(11) AUTO_INCREMENT PRIMARY KEY,";
+			$sql .= "`nom` varchar(255) not null,";
+			$sql .= "`id_eleve` int(11) not null,";
+			$sql .= "`rne` int(11) not null,";
+			$sql .= "`sexe` varchar(10),";
+			$sql .= "`statut` varchar(10),";
+			$sql .= "`date_naissance` date,";
+			$sql .= "`matricule` varchar(20),";
+			
+			// On récupère les noms des matières qu'on insère directement dans les champs 
+			for($i=0;$i<count($listeMatiere);$i++){
+				$nomMatiere = strtolower($listeMatiere[$i]['code_matiere']);
+				$sql .= "`".$nomMatiere."` FLOAT(4,2) null,";
+			}
+			$sql .= "`vide` varchar(10));";
+			$req = $this->_db->query($sql);
+			$sql_2 = "ALTER TABLE $nomTable DROP COLUMN vide";
+			$req_2 = $this->_db->query($sql_2);
+		}
 		
 		
 		
+		private function viewNoteEleveSequence($eleve, $periode){
+			$sql = "SELECT id_matiere, note, id_eleve,
+							nom_complet, id_periode, code_matiere
+					FROM note, eleve, matiere 
+					WHERE id_eleve = '$eleve' AND id_periode='$periode'
+							AND eleve.id=id_eleve
+							AND id_matiere = matiere.id
+					ORDER BY nom_complet, id_matiere";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
 		
-		
-		
+
+
+		public function exportNoteSequence($sequence, $classe){
+			$table = "view_sequence_".$sequence."_".$classe;
+			$classe = $this->getClasse($classe);
+			$sql = "SELECT *
+					FROM $table";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			$resultat['eleve'] = $res;
+			$resultat['sequence'] = $sequence;
+			$resultat['classe'] = $classe['nom_classe'];
+			return $resultat;
+		}
+
+
+
+
+		public function classesTraiteesSeq(){
+			$sql = "SELECT classe, nom_classe 
+					FROM bull_seq, classe 
+					WHERE classe = classe.id
+					GROUP BY nom_classe ORDER BY section, niveau_classe, nom_classe";
+			$req = $this->_db->query($sql);
+			while($res = $req->fetch(PDO::FETCH_ASSOC)){
+				$resultat[] = $res;
+			}
+			return $resultat;
+		}
+
+
+
+
+		public function sequencesTraitees($classe){
+			$sql = "SELECT DISTINCT sequence 
+					FROM bull_seq
+					WHERE classe='$classe'";
+			$req = $this->_db->query($sql);
+			while($res = $req->fetch(PDO::FETCH_ASSOC)){
+				$resultat[] = $res;
+			}
+			return $resultat;
+		}
+
+
+		// Les matières d'un groupe 
+		public function getMatiereGroupe($gp,$classe){
+			$sql = "SELECT id_matiere, nom_matiere, id_prof, nom_complet_enseignant, code_matiere
+					FROM prof_classe, matiere, enseignant 
+					WHERE groupe='$gp'
+						AND matiere.id = id_matiere
+						AND id_classe = '".$classe."'
+						AND enseignant.id = id_prof
+					ORDER BY nom_matiere";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+
+
+
+		// Le Total des coefficients définis dans une classe
+		private function totalCoefClasse($classe){
+			$sql = "SELECT SUM(coef) as totalCoef
+					FROM prof_classe 
+					WHERE id_classe = '$classe'";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res['totalCoef'];
+		}
+
+
+
+
+
+
+
+
+		private function addTotalGroupe($classe, $table){
+			$listeEleve = $this->listeEleve($classe, 'non_supprime');
+			$section = $this->getSectionClasse($classe);
+			for($i=0;$i<count($listeEleve);$i++){
+				$idEleve = $listeEleve[$i]['id'];
+				//  On récupère les matières par Groupe
+				$groupe = $this->getGroupeClasse($classe);
+				// print_r($groupe);
+				for($a=0;$a<count($groupe);$a++){
+					$codeGroupe = $groupe[$a]['code_groupe'];
+					$matieres = $this->getMatiereGroupe($groupe[$a]['groupe'],$classe);
+					$champGroupePoint[$a] = $codeGroupe.'_total';
+					$champGroupeCoef[$a] = $codeGroupe.'_coef';
+					$champGroupeMoyenne[$a] = $codeGroupe.'_moyenne';
+					// print_r($matieres);
+					for($b=0;$b<count($matieres);$b++){
+						$champMatiere = strtolower($matieres[$b]['code_matiere'].'_total');
+						$champCoef = strtolower($matieres[$b]['code_matiere'].'_coef');
+						// echo $champCoef.'<br />';
+						$sqlMatiere = "SELECT $champMatiere FROM $table WHERE id_eleve='$idEleve'";
+						$reqMatiere = $this->_db->query($sqlMatiere);
+						$resMatiere = $reqMatiere->fetch(PDO::FETCH_ASSOC);
+						$points[$codeGroupe][$champMatiere] = $resMatiere[$champMatiere];
+
+						$sqlCoef = "SELECT $champCoef FROM $table WHERE id_eleve='$idEleve'";
+						$reqCoef = $this->_db->query($sqlCoef);
+						$resCoef = $reqCoef->fetch(PDO::FETCH_ASSOC);
+						$coef[$codeGroupe][$champCoef] = $resCoef[$champCoef];
+					}
+					$sommePoint[$a] = array_sum($points[$codeGroupe]);
+					$sommeCoef[$a] = array_sum($coef[$codeGroupe]);
+					// print_r($coef[$codeGroupe]);
+					// echo '<hr />';
+					if(empty($sommeCoef[$a]) or $sommeCoef[$a]==0){
+						$moyenneGroupe[$a] = NULL;
+					}else{
+							$moyenneGroupe[$a] = $sommePoint[$a] / $sommeCoef[$a];
+					}
+					$sqlUpdate = "UPDATE $table SET 
+									$champGroupePoint[$a] = '$sommePoint[$a]',
+									$champGroupeCoef[$a] = '$sommeCoef[$a]',
+									$champGroupeMoyenne[$a] = '$moyenneGroupe[$a]'
+								WHERE id_eleve = '$idEleve'
+									";
+					$this->_db->query($sqlUpdate);
+				}
+				$sommeTotalePoint = array_sum($sommePoint);
+				$sommeTotaleCoef = array_sum($sommeCoef);
+				if(empty($sommeTotaleCoef) or $sommeTotaleCoef==0){
+					$moyenneTotale = NULL;
+					$appr = NULL;
+					$cote = NULL;
+				}else{
+					$totalCoefClasse = $this->totalCoefClasse($classe);
+					$classement = $totalCoefClasse * 50 / 100;
+					if($sommeTotaleCoef>=$classement){
+						$moyenneTotale = $sommeTotalePoint / $sommeTotaleCoef;
+						$appreciation = $this->showAppreciation($moyenneTotale);
+						$appr = $appreciation['cote'];
+						$codeSection = 'nom_appreciation_'.$section;
+						$cote = $appreciation[$codeSection];
+					}else{
+						$moyenneTotale = NULL;
+						$appr = NULL;
+						$cote = NULL;
+					}
+				}
+				$updateMoyenne = $this->_db->prepare("UPDATE $table SET 
+												total_point =:point,
+												total_coef =:coef,
+												moyenne =:moyenne,
+												cote =:cote,
+												appreciation =:appr
+												WHERE id_eleve =:eleve");
+				$updateMoyenne->bindValue(':point', $sommeTotalePoint);
+				$updateMoyenne->bindValue(':coef', $sommeTotaleCoef);
+				$updateMoyenne->bindValue(':moyenne', $moyenneTotale);
+				$updateMoyenne->bindValue(':cote', $cote);
+				$updateMoyenne->bindValue(':appr', $appr);
+				$updateMoyenne->bindValue(':eleve', $idEleve);
+				$updateMoyenne->execute();
+			}
+		}
+
+
+
+
+
+
+
+
+		/*************
+		On a validé le bouton TRAITER LES MOYENNES SEQUENTIELLES
+		******************************************************/
+		public function traiterMoyenneSequence($source, $periode, $classe){
+			$this->_sequence = $this->setUserId($periode);
+			$this->_classe = $this->setUserId($classe);
+			$table = 'sequence_'.$this->_sequence.'_'.$this->_classe;
+			$section = $this->getSectionClasse($classe);
+			$infoClasse = $this->getClasse($this->_classe);
+			// On introduit les totaux par groupe ainsi que les moyennes 
+			$this->addTotalGroupe($this->_classe, $table);
+			// On gère le classement des élèves
+			$min = $this->getMinMatiere('moyenne', $table);
+			$max = $this->getMaxMatiere('moyenne', $table);
+			$count = "SELECT count(moyenne) as moyenne 
+					FROM $table 
+					WHERE moyenne > '0'";
+			$requete = $this->_db->query($count);
+			$resultat = $requete->fetch(PDO::FETCH_ASSOC);
+			$this->getRank($table);
+			$update = $this->_db->prepare("UPDATE $table SET 
+							min =:min,
+							max =:max,
+							classes = :classes
+							");
+			$update->bindValue(':min',$min);
+			$update->bindValue(':max', $max);
+			$update->bindValue(':classes', $resultat['moyenne']);
+			$update->execute();
+			$_SESSION['message'] = 'Moyennes de la classe de '.$infoClasse['nom_classe'];
+			$_SESSION['message'] .= ' traitées pour la Séquence '.$this->_sequence;
+			$_SESSION['message'] .= '. Vous pouvez imprimer les bulletins de la classe.';
+
+			header('Location: '.$source);
+
+
+
+			// $table = "sequence_".$periode."_".$classe;
+			// 
+			// // print_r($listeEleve);
+			// 			
+			
+			/*$rang = $this->showRangEleve($table);*/
+			/*for($j=0;$j<count($rang['resultat']);$j++){
+				echo "<p>L'élève ".$rang['id'][$j]." a obtenu ".$rang['resultat'][$j]." et est classé "; 
+						echo $rang['rang'][$j].".</p>";
+				$rank = $rang['rang'][$j];
+				$id = $rang['id'][$j];
+				$moy = $rang['resultat'][$j];
+				$sql = "UPDATE $table 
+						SET rang = '$rank'
+						WHERE  moyenne = '$moy'";
+				$req = $this->_db->query($sql);
+			}*/
+			/*
+			
+			
+			*/
+		}
+
+
+
+
+		// Quelles informations y'a t-il dans la table moy_sequence_periode_cls ?
+		public function moySequenceClasse($periode, $classe){
+			$table = 'sequence_'.$periode.'_'.$classe;
+			$sql = "SELECT * FROM `$table`";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+
+
+
+		// Quelles informations y'a t-il dans la table moy_sequence_periode_cls ?
+		// Par Odre de Mérite
+		public function moySequenceClasseMerite($periode, $classe){
+			$table = 'sequence_'.$periode.'_'.$classe;
+			$sql = "SELECT * FROM $table ORDER BY moyenne DESC";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+
+
+
+		// Quelles informations y'a t-il dans la table sequence_periode_cls ?
+		public function sequenceClasse($periode, $classe){
+			$table = 'sequence_'.$periode.'_'.$classe;
+			$sql = "SELECT * FROM $table";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);{
+				$resultat[] = $res;
+			}
+			return $resultat;
+		}
+
+
+
+		public function statSequence($periode, $classe){
+			$table = 'sequence_'.$periode.'_'.$classe;
+			
+			/*/Pour les statistiques de la séquence, on va d'abord ressortir
+			les effectifs genrés. */
+			$liste = $this->listeEleve($classe, 'non_supprime');
+			for($i=0;$i<count($liste);$i++){
+				$sexe[$i] = $liste[$i]['sexe'];
+			}
+			$genre = array_count_values($sexe);
+			if(!$genre['F']){$effFille = 0;} else{$effFille = $genre['F'];}
+			if(!$genre['M']){$effMasc = 0;} else{$effMasc = $genre['M'];}
+			$effTotal = $effMasc + $effFille;
+			
+			/*Maintenant, on ressort les effectifs des élèves réellement
+			classés, c'est à dire qui ont au moins une moyenne supérieure
+			à zéro. */
+			$sql1 = "SELECT count(moyenne) as evalMasc 
+					FROM $table 
+					WHERE moyenne >'0.00' AND sexe = 'M'";
+			/*$req = $this->_db->query($sql);
+			while($res = $req->fetch(PDO::FETCH_ASSOC)){*/
+			$req1 = $this->_db->query($sql1);
+			$res1 = $req1->fetch(PDO::FETCH_ASSOC);
+			
+			$sql2 = "SELECT count(moyenne) as evalFille 
+					FROM $table 
+					WHERE moyenne >'0.00' AND sexe = 'F'";
+			
+			$req2 = $this->_db->query($sql2);
+			$res2 = $req2->fetch(PDO::FETCH_ASSOC);
+			
+			$evalTotal = $res1['evalMasc'] + $res2['evalFille'];
+			
+			/*Maintenant, on ressort les effectifs des élèves 
+			qui ont au moins une moyenne supérieure à 10.
+			 */
+			$sql3 = "SELECT count(moyenne) as moyMasc 
+					FROM $table 
+					WHERE moyenne >='10.00' AND sexe = 'M'";
+			$req3 = $this->_db->query($sql3);
+			$res3 = $req3->fetch(PDO::FETCH_ASSOC);
+			
+			$sql4 = "SELECT count(moyenne) as moyFille 
+					FROM $table 
+					WHERE moyenne >='10.00' AND sexe = 'F'";
+			$req4 = $this->_db->query($sql4);
+			$res4 = $req4->fetch(PDO::FETCH_ASSOC);
+			
+			/*Maintenant, on ressort les effectifs des élèves 
+			qui ont la sous moyenne.
+			 */
+			$sql5 = "SELECT count(moyenne) as sousMoyMasc 
+					FROM $table 
+					WHERE moyenne <10 AND moyenne >'0.00' AND sexe = 'M'";
+			$req5 = $this->_db->query($sql5);
+			$res5 =$req5->fetch(PDO::FETCH_ASSOC);
+			
+			$sql6 = "SELECT count(moyenne) as sousMoyFille 
+					FROM $table 
+					WHERE moyenne <10 AND moyenne > '0.00' AND sexe = 'F'";
+			$req6 = $this->_db->query($sql6);
+			$res6 =$req6->fetch(PDO::FETCH_ASSOC);
+			
+			
+			
+			$moyTotal = $res3['moyMasc'] + $res4['moyFille'];
+			$sousMoyTotal = $res5['sousMoyMasc'] + $res6['sousMoyFille'];
+			
+			if($res1['evalMasc']!=0){
+				$tauxMasc = $res3['moyMasc']*100/$res1['evalMasc'];
+			}else{
+				$tauxMasc = '';
+			}
+
+			if($res2['evalFille']!=0){
+				$tauxFille = $res4['moyFille']*100/$res2['evalFille'];
+			}else{
+				$tauxFille = '';
+			}
+
+			
+			
+			$sql = "SELECT count(moyenne) as moyTotal 
+					FROM $table 
+					WHERE moyenne >='10.00'";
+			$req = $this->_db->query($sql) ;
+			$res =$req->fetch(PDO::FETCH_ASSOC);
+			if($evalTotal!=0){
+				$tauxTotal = $res['moyTotal']*100/$evalTotal;
+			}else{
+				$tauxTotal = '';
+			}
+			
+			$sqlNFM = "SELECT MAX(moyenne) as maxMasc 
+					FROM $table 
+					WHERE sexe = 'M' AND moyenne > '0.00'";
+			$reqNFM = $this->_db->query($sqlNFM) ;
+			$resNFM =$reqNFM->fetch(PDO::FETCH_ASSOC);
+			
+			$sqlNFF = "SELECT MAX(moyenne) as maxFille 
+					FROM $table 
+					WHERE sexe = 'F' AND moyenne >'0.00'";
+			$reqNFF = $this->_db->query($sqlNFF) ;
+			$resNFF =$reqNFF->fetch(PDO::FETCH_ASSOC);
+			
+			$sqlNFT = "SELECT MAX(moyenne) as maxTotal 
+					FROM $table 
+					WHERE moyenne > '0.00'";
+			$reqNFT = $this->_db->query($sqlNFT) ;
+			$resNFT =$reqNFT->fetch(PDO::FETCH_ASSOC);
+			
+			$sql10 = "SELECT MIN(moyenne) as minMasc 
+					FROM $table 
+					WHERE sexe = 'M' AND moyenne >'0.00'";
+			$req10 = $this->_db->query($sql10) ;
+			$res10 =$req10->fetch(PDO::FETCH_ASSOC);
+			
+			$sql11 = "SELECT MIN(moyenne) as minFille 
+					FROM $table 
+					WHERE sexe = 'F' AND moyenne >'0.00'";
+			$req11 = $this->_db->query($sql11) ;
+			$res11 =$req11->fetch(PDO::FETCH_ASSOC);
+			
+			$sql12 = "SELECT MIN(moyenne) as minTotal 
+					FROM $table 
+					WHERE moyenne >'0.00'";
+			$req12 = $this->_db->query($sql12) ;
+			$res12 =$req12->fetch(PDO::FETCH_ASSOC);
+			
+			$sql20 = "SELECT AVG(moyenne) as moyGenMasc 
+					FROM $table 
+					WHERE sexe='M' AND moyenne>'0.00'";
+			$req20 = $this->_db->query($sql20) ;
+			$res20 =$req20->fetch(PDO::FETCH_ASSOC);
+			
+			$sql21 = "SELECT AVG(moyenne) as moyGenFille 
+					FROM $table 
+					WHERE sexe='F' AND moyenne>'0.00'";
+			$req21 = $this->_db->query($sql21) ;
+			$res21 = $req21->fetch(PDO::FETCH_ASSOC);
+			
+			$sql22 = "SELECT AVG(moyenne) as moyGenTotal 
+					FROM $table 
+					WHERE moyenne>'0.00'";
+			$req22 = $this->_db->query($sql22) ;
+			$res22 = $req22->fetch(PDO::FETCH_ASSOC);
+			
+			
+			$stat['effMasc'] = $effMasc;
+			$stat['effFille'] = $effFille;
+			$stat['effTotal'] = $effTotal;
+			$stat['evalMasc'] = $res1['evalMasc'];
+			$stat['evalFille'] = $res2['evalFille'];
+			$stat['evalTotal'] = $evalTotal;
+			$stat['moyMasc'] = $res3['moyMasc'];
+			$stat['moyFille'] = $res4['moyFille'];
+			$stat['moyTotal'] = $moyTotal;
+			$stat['sousMoyMasc'] = $res5['sousMoyMasc'];
+			$stat['sousMoyFille'] = $res6['sousMoyFille'];
+			$stat['sousMoyTotal'] = $sousMoyTotal;
+			// $stat['tauxMasc'] = $tauxMasc;
+			$stat['tauxMasc'] = substr($tauxMasc,0,5);
+			$stat['tauxFille'] = substr($tauxFille,0,5);
+			$stat['tauxTotal'] = substr($tauxTotal,0,5);
+			$stat['noteForteMasc'] = $resNFM['maxMasc'];
+			$stat['noteForteFille'] = $resNFF['maxFille'];
+			$stat['noteForteTotal'] = $resNFT['maxTotal'];
+			$stat['noteFaibleMasc'] = $res10['minMasc'];
+			$stat['noteFaibleFille'] = $res11['minFille'];
+			$stat['noteFaibleTotal'] = $res12['minTotal'];
+			$stat['moyGenMasc'] = substr($res20['moyGenMasc'],0,5);
+			$stat['moyGenFille'] = substr($res21['moyGenFille'],0,5);
+			$stat['moyGenTotal'] = substr($res22['moyGenTotal'],0,5);
+			return $stat;
+		}
+
+
+
+
+
+
+		/*public function sequencesTraitees($classe){
+			$sql = "SELECT DISTINCT sequence 
+					FROM bull_seq
+					WHERE classe='$classe'";
+			$req = $this->_db->query($sql);
+			while($res = $req->fetch(PDO::FETCH_ASSOC)){
+				$resultat[] = $res;
+			}
+			return $resultat;
+		}*/
+
+
+
+
+
+
+
+
+
+
+
+
+		// Les groupes et le nombre de groupes d'une classe
+		public function afficheGroupe($classe){
+			$sql = "SELECT groupe, nom_groupe
+					FROM prof_classe, groupe 
+					WHERE id_classe='$classe'
+						AND groupe.id = groupe
+					GROUP BY groupe";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			
+			return $res;
+		}
+
+
+
+
+
+
+
+
+
+
 		
 		
 		
@@ -4056,6 +5423,23 @@
 			
 			/*$req = "ALTER TABLE enseignant ADD contact VARCHAR(100)";
 			$this->_db->query($req);*/
+
+
+			// J'annule les zéros qui se trouvent dans la table Note
+			$sql = "SELECT * FROM note WHERE note= 0";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			for($i=0;$i<count($res);$i++){
+				$idEleve = $res[$i]['id'];
+				$noteObtenue = $this->setNote($res[$i]['note']);
+				$sqlUpdate = $this->_db->prepare("UPDATE note SET 
+									note = :note 
+									WHERE id =:eleve");
+				$sqlUpdate->bindValue(':note', $noteObtenue);
+				$sqlUpdate->bindValue(':eleve', $idEleve);
+				$sqlUpdate->execute();
+				
+			}
 			
 		}
 		

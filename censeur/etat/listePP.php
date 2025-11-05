@@ -1,4 +1,7 @@
-<h1 class='bien'>Liste des professeurs principaux</h1>
+<div id='body2'>
+	<h1 class='bien'>Liste des professeurs principaux</h1>
+</div>
+
 	
 	<table border='1' width='90%'>
 		<tr>

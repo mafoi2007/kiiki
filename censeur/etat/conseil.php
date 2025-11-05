@@ -1,4 +1,7 @@
-<h1>conseil de classe</h1>
+<div id='body2'>
+	<h1 class='bien'>conseil de classe</h1>
+</div>
+
 	<form method='post' action='../traitement.php' target = _blank>
 		<p>Classe : 
 			<select name='object'>

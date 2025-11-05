@@ -249,25 +249,6 @@
 			$this->Cell(100,25, $signataire.',');
 		}
 		
-		/*
-		public function EnteteDoc($ministere, $pays, $ets, $devise, 
-									$contact, $anneeScolaire){
-			$this->SetFont('Times','',8);
-			$this->Cell(10,20, utf8_decode($ministere),0,0,'L');
-			$this->Cell(175,20, utf8_decode($pays),0,0,'R');
-			$this->Image('images/logo.jpg', 100, 8, 20);
-			
-			$this->Ln(6);
-			$this->SetFont('Times','B',11);
-			$this->Cell(10,20, strtoupper(utf8_decode($ets)),0,0,'L');
-			$this->SetFont('Times','',8);
-			$this->Cell(165,20, $devise,0,0,'R');
-			
-			$this->Ln(6);
-			$this->SetFont('Times','B',8);
-			$this->Cell(10,20, utf8_decode($contact),0,0,'L');
-			$this->Cell(165,20, 'Annee Scolaire : '.$anneeScolaire,0,0,'R');
-		}*/
 		
 		
 		
@@ -276,79 +257,24 @@
 		
 		
 		
-		/*
-		public function EnteteDocAnglais($ministere, $pays, $ets, $devise, 
-									$contact, $anneeScolaire){
-			
-			$this->SetFont('Times','',8);
-			$this->Cell(10,20, utf8_decode($ministere),0,0,'L');
-			$this->Cell(175,20, utf8_decode($pays),0,0,'R');
-			$this->Image('images/logo.jpg', 100, 8, 20);
-			
-			$this->Ln(6);
-			$this->SetFont('Times','B',11);
-			$this->Cell(10,20, strtoupper(utf8_decode($ets)),0,0,'L');
-			$this->SetFont('Times','',8);
-			$this->Cell(165,20, $devise,0,0,'R');
-			
-			$this->Ln(6);
-			$this->SetFont('Times','B',8);
-			$this->Cell(10,20, utf8_decode($contact),0,0,'L');
-			$this->Cell(165,20, 'School Year : '.$anneeScolaire,0,0,'R');
-		}*/
-		
-		/*
-		// POUR LE MODE PAYSAGE (LANDSCAPE)
-		public function EnteteDocL($ministere, $pays, $ets, $devise,
-									$contact, $anneeScolaire){
-			$this->SetFont('Times','',8);
-			$this->Cell(10,10, $ministere,0,0,'L');
-			$this->Cell(250,10, $pays,0,0,'R');
-			$this->Image('images/logo.jpg', 135, 8, 20);
-			
-			$this->Ln(6);
-			$this->SetFont('Times','B',12);
-			$this->Cell(10,10, utf8_decode($ets),0,0,'L');
-			$this->SetFont('Times','',8);
-			$this->Cell(245,10, $devise,0,0,'R');
-			
-			$this->Ln(6);
-			$this->SetFont('Times','B',8);
-			$this->Cell(10,10, $contact);
-			$this->Cell(250,10, 'Annee Scolaire : '.$anneeScolaire,0,0,'R');
-		}*/
 		
 		
 		
-		/*
-		public function EnteteDocLAnglais($ministere, $pays, $ets, $devise,
-									$contact, $anneeScolaire){
-			$this->SetFont('Times','',8);
-			$this->Cell(10,10, $ministere,0,0,'L');
-			$this->Cell(250,10, $pays,0,0,'R');
-			$this->Image('images/logo.jpg', 135, 8, 20);
-			
-			$this->Ln(6);
-			$this->SetFont('Times','B',12);
-			$this->Cell(10,10, utf8_decode($ets),0,0,'L');
-			$this->SetFont('Times','',8);
-			$this->Cell(245,10, $devise,0,0,'R');
-			
-			$this->Ln(6);
-			$this->SetFont('Times','B',8);
-			$this->Cell(10,10, $contact);
-			$this->Cell(250,10, 'School Year : '.$anneeScolaire,0,0,'R');
-		}*/
+		
+		
+		
+		
+		
 		
 		
 		function Titre($titre){
 			// On crée d'abord un espace pour gérer les informations d'entête
-			$this->Ln(9);
+			$this->Ln(3);
 			$this->SetFont('Times', 'B', 18);
 			// Déplacer à droite
-			$this->Cell(10);
+			$this->Cell(5);
 			// Bordure du titre
-			$this->Cell(140, 8, $this->convert(strtoupper($titre)), 0, 0 , 'C');
+			$this->Cell(180, 8, $this->convert(strtoupper($titre)), 0, 0 , 'C');
 			// Retour à la ligne
 			$this->Ln(10);
 		}

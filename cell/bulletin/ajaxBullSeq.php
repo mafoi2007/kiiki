@@ -3,14 +3,14 @@
 	require_once('../../inc/connect.inc.php');
 	$note = new Note($db);
 	$config = new Config($db);
-	// echo $_POST['clas'];
+	// echo $_POST['classe'];
 ?>
 	
-	<select name='sekence'>
+	Séquence : <select name='sekence'>
 		<?php 
-		if(isset($_POST['clas'])){
-			$cls = $_POST['clas'];
-			$listeDepartement = $note->sequencesTraitees($cls);
+		if(isset($_POST['classe'])){
+			$cls = $_POST['classe'];
+			$listeDepartement = $config->sequencesTraitees($cls);
 			for($j=0;$j<count($listeDepartement);$j++){
 				echo "<option value='";
 				echo $listeDepartement[$j]['sequence'];

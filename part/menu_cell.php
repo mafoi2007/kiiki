@@ -51,23 +51,19 @@
 		</ul>
 	</div>
 	
-	
+	<?php /*
 	<div id="sous_menu">
 		<h3><a href="<?php echo $serveur?>cell/note.php">Gestion des Notes</a></h3>
 		<ul>
-			<li><a href="note.php?choix=<?php echo sha1('viewnt'); ?>#body2">Vue globale des Notes Séquentielles</a></li>
-			<li><a href="note.php?choix=<?php echo sha1('addnt'); ?>#body2">Saisie des Notes</a></li>
-			<li><a href="note.php?choix=<?php echo sha1('cpnt'); ?>#body2">Copie des Notes</a></li>
-			<li><a href="note.php?choix=<?php echo sha1('delnt'); ?>#body2">Suppression des Notes</a></li>
+			
 		</ul>
-	</div>
+	</div> */?>
 	
 	
 	<div id="sous_menu">
 		<h3><a href="<?php echo $serveur?>cell/traitement_seq.php">traitements séquentiels</a></h3>
 		<ul>
-			<?php /*<li><a href="traitement_trim.php?choix=<?php echo sha1('etatRempl'); ?>#body2">état de remplissage</a></li> */?>
-			<li><a href="traitement_seq.php?choix=<?php echo sha1('viewNote'); ?>#body2">visualisation des notes</a></li>
+			<li><a href="note.php?choix=<?php echo sha1('viewnt'); ?>#body2">Vue globale des Notes Séquentielles</a></li>
 			<li><a href="traitement_seq.php?choix=<?php echo sha1('viewNoteAll'); ?>#body2">Recapitulatif des notes</a></li>
 			<li><a href="traitement_seq.php?choix=<?php echo sha1('traitNote'); ?>#body2">traitement des notes</a></li>
 			<li><a href="traitement_seq.php?choix=<?php echo sha1('traitMoy'); ?>#body2">traitement des moyennes</a></li>

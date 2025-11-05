@@ -769,9 +769,6 @@
 			$resultat['eleve'] = $res;
 			$resultat['sequence'] = $sequence;
 			$resultat['classe'] = $classe;
-			
-			
-			
 			return $resultat;
 		}
 		
@@ -967,17 +964,7 @@
 		***********		M E N U   TRAITEMENT NOTE 	*********************
 		*****************************************************************
 		****************************************************************/
-		// Le nombre  et les noms de groupes définis pour une classe
-		public function getGroupeClasse($classe){
-			$sql = "SELECT DISTINCT groupe
-					FROM prof_classe 
-					WHERE id_classe='".$classe."' ORDER BY groupe";
-			$req = $this->_db->query($sql);
-			while($res = $req->fetch(PDO::FETCH_ASSOC)){
-				$resultat[] = $res['groupe'];
-			}
-			return $resultat;
-		}
+		
 		
 		
 		
@@ -1066,16 +1053,7 @@
 		
 		
 		
-		public function sequencesTraitees($classe){
-			$sql = "SELECT DISTINCT sequence 
-					FROM bull_seq
-					WHERE classe='$classe'";
-			$req = $this->_db->query($sql);
-			while($res = $req->fetch(PDO::FETCH_ASSOC)){
-				$resultat[] = $res;
-			}
-			return $resultat;
-		}
+		
 		
 		
 		
@@ -1111,19 +1089,7 @@
 		
 		
 		
-		// Les matières d'un groupe 
-		public function getMatiereGroupe($gp,$classe){
-			$sql = "SELECT id_matiere, nom_matiere, id_prof, nom, prenom
-					FROM prof_classe, matiere, enseignant 
-					WHERE groupe='".$gp."'
-						AND code_matiere = id_matiere
-						AND id_classe = '".$classe."'
-						AND login = id_prof
-					ORDER BY nom_matiere";
-			$req = $this->_db->query($sql);
-			$res = $req->fetchAll(PDO::FETCH_ASSOC);
-			return $res;
-		}
+		
 		
 		/*****************************************************************
 		*********	VISUALISATION DES NOTES SEQUENTIELLES		**********
@@ -2823,9 +2789,10 @@
 		// Les Classes pour lesquelles on a déjà saisi les notes
 		public function viewClasseNote(){
 			$sql = "SELECT id_classe, nom_classe
-					FROM note, classe
-					WHERE id_classe = code_classe
-					GROUP BY id_classe ORDER BY section, niveau";
+					FROM note, classe, niveau_classe
+					WHERE id_classe = classe.id
+						AND niveau_classe = niveau_classe.id
+					GROUP BY id_classe ORDER BY classe.section, nom_niveau, nom_classe";
 			$req = $this->_db->query($sql);
 			while($res = $req->fetch(PDO::FETCH_ASSOC)){
 				$reponse[] = $res;
@@ -4737,16 +4704,6 @@
 		
 		
 		
-		// Quelles informations y'a t-il dans la table sequence_periode_cls ?
-		public function sequenceClasse($periode, $classe){
-			$table = 'sequence_'.$periode.'_'.$classe;
-			$sql = "SELECT * FROM $table";
-			$req = $this->_db->query($sql);
-			$res = $req->fetchAll(PDO::FETCH_ASSOC);{
-				$resultat[] = $res;
-			}
-			return $resultat;
-		}
 		
 		
 		
@@ -4756,19 +4713,6 @@
 		
 		
 		
-		// Quelles informations y'a t-il dans la table moy_sequence_periode_cls ?
-		public function moySequenceClasse($periode, $classe){
-			$table = 'sequence_'.$periode.'_'.$classe;
-			$sql = "SELECT * FROM `$table`";
-			$req = $this->_db->query($sql);
-			$res = $req->fetchAll(PDO::FETCH_ASSOC);
-			
-			/*$req = $this->_db->query($sql);
-			$res = $req->fetchAll(PDO::FETCH_ASSOC);{
-				$resultat[] = $res;
-			}*/
-			return $res;
-		}
 		
 		
 		
@@ -4776,15 +4720,9 @@
 		
 		
 		
-		// Quelles informations y'a t-il dans la table moy_sequence_periode_cls ?
-		// Par Odre de Mérite
-		public function moySequenceClasseMerite($periode, $classe){
-			$table = 'sequence_'.$periode.'_'.$classe;
-			$sql = "SELECT * FROM $table ORDER BY moyenne DESC";
-			$req = $this->_db->query($sql);
-			$res = $req->fetchAll(PDO::FETCH_ASSOC);
-			return $res;
-		}
+		
+		
+		
 		
 		
 		
@@ -4983,167 +4921,7 @@
 		
 		
 		
-		public function statSequence($periode, $classe){
-			$table = 'sequence_'.$periode.'_'.$classe;
-			
-			/*/Pour les statistiques de la séquence, on va d'abord ressortir
-			les effectifs genrés. */
-			$liste = $this->listeEleve($classe, 'non_supprime');
-			for($i=0;$i<count($liste);$i++){
-				$sexe[$i] = $liste[$i]['sexe'];
-			}
-			$genre = array_count_values($sexe);
-			if(!$genre['F']){$effFille = 0;} else{$effFille = $genre['F'];}
-			if(!$genre['M']){$effMasc = 0;} else{$effMasc = $genre['M'];}
-			$effTotal = $effMasc + $effFille;
-			
-			/*Maintenant, on ressort les effectifs des élèves réellement
-			classés, c'est à dire qui ont au moins une moyenne supérieure
-			à zéro. */
-			$sql1 = "SELECT count(moyenne) as evalMasc 
-					FROM $table 
-					WHERE moyenne >'0.00' AND sexe = 'M'";
-			/*$req = $this->_db->query($sql);
-			while($res = $req->fetch(PDO::FETCH_ASSOC)){*/
-			$req1 = $this->_db->query($sql1);
-			$res1 = $req1->fetch(PDO::FETCH_ASSOC);
-			
-			$sql2 = "SELECT count(moyenne) as evalFille 
-					FROM $table 
-					WHERE moyenne >'0.00' AND sexe = 'F'";
-			
-			$req2 = $this->_db->query($sql2);
-			$res2 = $req2->fetch(PDO::FETCH_ASSOC);
-			
-			$evalTotal = $res1['evalMasc'] + $res2['evalFille'];
-			
-			/*Maintenant, on ressort les effectifs des élèves 
-			qui ont au moins une moyenne supérieure à 10.
-			 */
-			$sql3 = "SELECT count(moyenne) as moyMasc 
-					FROM $table 
-					WHERE moyenne >='10.00' AND sexe = 'M'";
-			$req3 = $this->_db->query($sql3);
-			$res3 = $req3->fetch(PDO::FETCH_ASSOC);
-			
-			$sql4 = "SELECT count(moyenne) as moyFille 
-					FROM $table 
-					WHERE moyenne >='10.00' AND sexe = 'F'";
-			$req4 = $this->_db->query($sql4);
-			$res4 = $req4->fetch(PDO::FETCH_ASSOC);
-			
-			/*Maintenant, on ressort les effectifs des élèves 
-			qui ont la sous moyenne.
-			 */
-			$sql5 = "SELECT count(moyenne) as sousMoyMasc 
-					FROM $table 
-					WHERE moyenne <10 AND moyenne >'0.00' AND sexe = 'M'";
-			$req5 = $this->_db->query($sql5);
-			$res5 =$req5->fetch(PDO::FETCH_ASSOC);
-			
-			$sql6 = "SELECT count(moyenne) as sousMoyFille 
-					FROM $table 
-					WHERE moyenne <10 AND moyenne > '0.00' AND sexe = 'F'";
-			$req6 = $this->_db->query($sql6);
-			$res6 =$req6->fetch(PDO::FETCH_ASSOC);
-			
-			
-			
-			$moyTotal = $res3['moyMasc'] + $res4['moyFille'];
-			$sousMoyTotal = $res5['sousMoyMasc'] + $res6['sousMoyFille'];
-			
-			$tauxMasc = $res3['moyMasc']*100/$res1['evalMasc'];
-			$tauxFille = $res4['moyFille']*100/$res2['evalFille'];
-			
-			$sql = "SELECT count(moyenne) as moyTotal 
-					FROM $table 
-					WHERE moyenne >='10.00'";
-			$req = $this->_db->query($sql) ;
-			$res =$req->fetch(PDO::FETCH_ASSOC);
-			$tauxTotal = $res['moyTotal']*100/$evalTotal;
-			
-			$sqlNFM = "SELECT MAX(moyenne) as maxMasc 
-					FROM $table 
-					WHERE sexe = 'M' AND moyenne > '0.00'";
-			$reqNFM = $this->_db->query($sqlNFM) ;
-			$resNFM =$reqNFM->fetch(PDO::FETCH_ASSOC);
-			
-			$sqlNFF = "SELECT MAX(moyenne) as maxFille 
-					FROM $table 
-					WHERE sexe = 'F' AND moyenne >'0.00'";
-			$reqNFF = $this->_db->query($sqlNFF) ;
-			$resNFF =$reqNFF->fetch(PDO::FETCH_ASSOC);
-			
-			$sqlNFT = "SELECT MAX(moyenne) as maxTotal 
-					FROM $table 
-					WHERE moyenne > '0.00'";
-			$reqNFT = $this->_db->query($sqlNFT) ;
-			$resNFT =$reqNFT->fetch(PDO::FETCH_ASSOC);
-			
-			$sql10 = "SELECT MIN(moyenne) as minMasc 
-					FROM $table 
-					WHERE sexe = 'M' AND moyenne >'0.00'";
-			$req10 = $this->_db->query($sql10) ;
-			$res10 =$req10->fetch(PDO::FETCH_ASSOC);
-			
-			$sql11 = "SELECT MIN(moyenne) as minFille 
-					FROM $table 
-					WHERE sexe = 'F' AND moyenne >'0.00'";
-			$req11 = $this->_db->query($sql11) ;
-			$res11 =$req11->fetch(PDO::FETCH_ASSOC);
-			
-			$sql12 = "SELECT MIN(moyenne) as minTotal 
-					FROM $table 
-					WHERE moyenne >'0.00'";
-			$req12 = $this->_db->query($sql12) ;
-			$res12 =$req12->fetch(PDO::FETCH_ASSOC);
-			
-			$sql20 = "SELECT AVG(moyenne) as moyGenMasc 
-					FROM $table 
-					WHERE sexe='M' AND moyenne>'0.00'";
-			$req20 = $this->_db->query($sql20) ;
-			$res20 =$req20->fetch(PDO::FETCH_ASSOC);
-			
-			$sql21 = "SELECT AVG(moyenne) as moyGenFille 
-					FROM $table 
-					WHERE sexe='F' AND moyenne>'0.00'";
-			$req21 = $this->_db->query($sql21) ;
-			$res21 = $req21->fetch(PDO::FETCH_ASSOC);
-			
-			$sql22 = "SELECT AVG(moyenne) as moyGenTotal 
-					FROM $table 
-					WHERE moyenne>'0.00'";
-			$req22 = $this->_db->query($sql22) ;
-			$res22 = $req22->fetch(PDO::FETCH_ASSOC);
-			
-			
-			$stat['effMasc'] = $effMasc;
-			$stat['effFille'] = $effFille;
-			$stat['effTotal'] = $effTotal;
-			$stat['evalMasc'] = $res1['evalMasc'];
-			$stat['evalFille'] = $res2['evalFille'];
-			$stat['evalTotal'] = $evalTotal;
-			$stat['moyMasc'] = $res3['moyMasc'];
-			$stat['moyFille'] = $res4['moyFille'];
-			$stat['moyTotal'] = $moyTotal;
-			$stat['sousMoyMasc'] = $res5['sousMoyMasc'];
-			$stat['sousMoyFille'] = $res6['sousMoyFille'];
-			$stat['sousMoyTotal'] = $sousMoyTotal;
-			// $stat['tauxMasc'] = $tauxMasc;
-			$stat['tauxMasc'] = $this->couperChiffre($tauxMasc,5);
-			$stat['tauxFille'] = $this->couperChiffre($tauxFille,5);
-			$stat['tauxTotal'] = $this->couperChiffre($tauxTotal,5);
-			$stat['noteForteMasc'] = $resNFM['maxMasc'];
-			$stat['noteForteFille'] = $resNFF['maxFille'];
-			$stat['noteForteTotal'] = $resNFT['maxTotal'];
-			$stat['noteFaibleMasc'] = $res10['minMasc'];
-			$stat['noteFaibleFille'] = $res11['minFille'];
-			$stat['noteFaibleTotal'] = $res12['minTotal'];
-			$stat['moyGenMasc'] = $this->couperChiffre($res20['moyGenMasc'],5);
-			$stat['moyGenFille'] = $this->couperChiffre($res21['moyGenFille'],5);
-			$stat['moyGenTotal'] = $this->couperChiffre($res22['moyGenTotal'],4);
-			return $stat;
-		}
+		
 		
 		
 		
@@ -5733,9 +5511,7 @@
 			$table = "sequence_".$periode."_".$classe;
 			$listeEleve = $this->listeEleve($classe, 'non_supprime');
 			// print_r($listeEleve);
-			$section = $this->getSection($classe);
-			
-			
+			$section = $this->getSection($classe);			
 			// On fait un traitement pour chaque élève de la classe 
 			for($i=0;$i<count($listeEleve);$i++){
 				$idEleve = $listeEleve[$i]['id'];
@@ -6051,128 +5827,6 @@
 		
 		
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
 		/************************************************************************
 		*************************************************************************
 		*************************************************************************
@@ -6295,21 +5949,7 @@
 		
 		
 		
-		// Les groupes et le nombre de groupes d'une classe
-		public function afficheGroupe($classe){
-			$sql = "SELECT groupe
-					FROM prof_classe 
-					WHERE id_classe='".$classe."'
-					GROUP BY groupe";
-			$req = $this->_db->query($sql);
-			$res = $req->fetchAll(PDO::FETCH_ASSOC);
-			
-			/*$req = $this->_db->query($sql);
-			$res = $req->fetchAll(PDO::FETCH_ASSOC);{
-				$resultat[] = $res;
-			}*/
-			return $res;
-		}
+		
 		
 		
 		

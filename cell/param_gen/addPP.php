@@ -10,8 +10,34 @@
 			</tr>
 			<?php 
 			$listeClasse = $config->listeClasseProfClasse();
-			echo '<pre>'; print_r($listeClasse);
+			// echo '<pre>'; print_r($listeClasse);
 			$a = 1;
+			for($i=0;$i<count($listeClasse);$i++){ ?>
+				<tr>
+					<td align='center'><?php echo $a; ?></td>
+					<td>
+						<?php echo $listeClasse[$i]['nom_classe'];?>
+						<input 
+							type='hidden' 
+							name='classe[]' 
+							value='<?php echo $listeClasse[$i]['id_classe']; ?>' />
+					</td>
+					<td>
+						<select name='prof[]'>
+							<?php 
+							$prof = $config->conseilDeClasse($listeClasse[$i]['id_classe']);
+							for($j=0;$j<count($prof);$j++){
+								$idProf = $prof[$j]['id_prof'];
+								$nomProf = $prof[$j]['nom_complet_enseignant'];
+								echo "<option value='".$idProf."'>".$nomProf."</option>";
+							} ?>
+							<option value='null' selected>-Choisir-</option>
+						</select>
+					</td>
+				</tr>
+<?php 
+				$a++;
+			}
 			/*for($i=0;$i<count($listeClasse);$i++){
 				echo "<tr>
 					<td align='center'>".$a."</td>

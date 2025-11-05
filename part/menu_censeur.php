@@ -2,12 +2,10 @@
 	<div id='sous_menu'>
 		<h3><a href='<?php echo $serveur; ?>censeur/etat.php'>états</a></h3>
 		<ul>
-			<li><a href="etat.php?choix=<?php echo sha1('certif');?>#body2">Certificat de scolarité</a></li>
-			<li><a href="etat.php?choix=<?php echo sha1('listeEleve');?>#body2">Liste des élèves</a></li>
-			<li><a href="etat.php?choix=<?php echo sha1('vueEff'); ?>#body2">Vue d'ensemble des effectifs</a></li>
-			<li><a href="etat.php?choix=<?php echo sha1('relNote'); ?>#body2">Relevé de Notes des Enseignants</a></li>
-			<li><a href="etat.php?choix=<?php echo sha1('listePP'); ?>#body2">Liste des Professeurs Principaux</a></li>
-			<li><a href="etat.php?choix=<?php echo sha1('conseil'); ?>#body2">Conseil de classe</a></li>
+			<li><a href="etat.php?choix=statclasse#body2">Statistiques par Classe</a></li>
+			<li><a href="etat.php?choix=statmatiere#body2">Statistiques par matière</a></li>			
+			<li><a href="etat.php?choix=listePP#body2">Liste des Professeurs Principaux</a></li>
+			<li><a href="etat.php?choix=conseil#body2">Conseil de classe</a></li>
 		</ul>
 	</div>
 	

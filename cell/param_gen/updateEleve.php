@@ -37,37 +37,6 @@
 				<td colspan='5'>&nbsp;</td>
 			</tr>
 			<tr>
-				<td>Classe</td>
-				<td>
-					<select>
-						<option disabled selected>
-							<?php echo $eleve['nom_classe'];?>
-						</option>
-					</select>
-				</td>
-				<td>
-					<select name='classeEleve'>
-						<?php $classeFr = $config->viewClasseAll('actif'); ?>
-						
-							<?php 
-							for($i=0;$i<count($classeFr);$i++){
-								echo "<option value='";
-								echo $classeFr[$i]['id'];
-								echo "'";
-								if($eleve['classe']==$classeFr[$i]['id']){
-									echo "selected";
-								}
-								echo ">";
-								echo $classeFr[$i]['nom_classe'];
-								echo "</option>";
-							} ?>						
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<td colspan='5'>&nbsp;</td>
-			</tr>
-			<tr>
 				<td>Matricule National</td>
 				<td><input 
 						type='text'

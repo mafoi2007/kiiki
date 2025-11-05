@@ -548,24 +548,13 @@
 		elseif($_SESSION['print']=='ProfesseursPrincipaux'){
 			$pdf->addPage();
 			// On met l'entête du document
-			$pdf->EnteteDoc($ministere, $pays, $ets, $devise, $contact, $as);
+			$pdf->Entete();
 			// On met le titre du document 
-			$pdf->Ln(20);
-			$titre = "NOTE DE SERVICE N°_______________ ";
-			$titre .= "PORTANT PROPOSITION DES ";
-			$pdf->SetFont('Times', 'B', 14);
-			$pdf->Cell(140, 8, utf8_decode($titre), 0, 0 , 'L');
-			$pdf->Ln(8);
-			$titre = "PROFESSEURS PRINCIPAUX POUR L'ANNEE SCOLAIRE ";
-			$titre .= $as;
-			$pdf->SetFont('Times', 'B', 14);
-			$pdf->Cell(140, 8, utf8_decode($titre), 0, 0 , 'L');
-			
-			$pdf->Ln(15);
-			
-			
+			$titre = "liste des professeurs titulaires ";
+			$pdf->Titre($titre);
 			$pdf->SetFont('Arial','B',10);
 			// Je positionne l'entete du tableau
+			$pdf->Cell(30);
 			$pdf->Cell(10, 7, utf8_decode('N°'), 1, 0 , 'C');
 			$pdf->Cell(60, 7, 'Classe', 1, 0 , 'C');
 			$pdf->Cell(70, 7, 'Professeur Principal', 1, 0 , 'C');
@@ -575,6 +564,7 @@
 			// Par boucle je récupère la liste envoyée dans une variable de session
 			for($a=0;$a<count($_SESSION['liste']);$a++){
 				$pdf->Ln(7);
+				$pdf->Cell(30);
 				$pdf->Cell(10, 7, utf8_decode($i), 1, 0 , 'C');
 				$pdf->Cell(60, 7, utf8_decode(ucwords($_SESSION['liste'][$a]['nom_classe'])), 1, 0 , 'C');
 				$enseignant = strtoupper($_SESSION['liste'][$a]['nom']);
@@ -585,17 +575,14 @@
 				$i++;
 			}
 			$pdf->SetFont('Arial','B',12);
-			$texte = 'N.B. : Les intéressés devront remplir le cahier ';
-			$texte .= 'de charges du Professeur Principal.';
-			$pdf->Ln(10);
-			$pdf->Cell(110,7, utf8_decode($texte),0,0,'L');
+			
 			// Le signataire du document 
 			$pdf->SetFont('Arial','',10);
 			$pdf->Ln(10);
 			$pdf->Cell(100,30, ' ');
-			$arrondissement = $_SESSION['arrondissement'];
-			$signataire = $_SESSION['signataire'];
-			$pdf->Cell(100,30, 'Fait a '.ucwords($arrondissement).', le ___________');
+			$arrondissement = $_SESSION['information']['ville'];
+			$signataire = $_SESSION['information']['signataire_fr'];
+			$pdf->Cell(100,30, 'Fait a '.ucwords($arrondissement).', le'.DATE('d / M / Y'));
 			$pdf->Ln(10);
 			$pdf->Cell(130,30, ' ');
 			$pdf->Cell(100,25, $signataire.',');
@@ -858,49 +845,50 @@
 			if($_SESSION['section']=='en'){
 				/****** PV SEQUENTIEL ALPHABETIQUE*****/
 				$pdf->addPage();
-				$pdf->EnteteDocAnglais($ministereAnglais, $paysAnglais, $etsAnglais, $deviseAnglais, $contact, $as);
+				$pdf->Entete();
+				$ville = $_SESSION['information']['ville'];
+				$signataire = $_SESSION['information']['signataire_en'];
 				if($_SESSION['sequence']==1){
 					$sequence = 'First Sequence';
 				}elseif($_SESSION['sequence']==2){
 					$sequence = 'Second Sequence';
 				}elseif($_SESSION['sequence']==3){
-					$sequence = 'Third Sequence';
+					$sequence = 'Troisieme Sequence';
 				}elseif($_SESSION['sequence']==4){
-					$sequence = 'Fourth Sequence';
+					$sequence = 'Quatrieme Sequence';
 				}elseif($_SESSION['sequence']==5){
-					$sequence = 'Fifth Sequence';
+					$sequence = 'Cinquieme Sequence';
 				}elseif($_SESSION['sequence']==6){
-					$sequence = 'Sixth Sequence';
+					$sequence = 'Sixieme Sequence';
 				}
-				$titre = $sequence." Report";
-				$pdf->TitreSans($titre);
+				$titre = "report of the ".$sequence;
+				$pdf->Titre($titre);
 				$classe = "Class : ".strtoupper($_SESSION['nom_classe']);
-				$effectifClasse = 'Roll: '.count($_SESSION['eleve']);
+				$effectifClasse = 'Roll : '.count($_SESSION['eleve']);
 				$effectifEvalue = 'Evaluated : '.$_SESSION['eleve'][0]['classes'];
-				$signataire = $_SESSION['signataire'];
 				$pdf->SetFont('Times','B',12);
-				$pdf->Text(10,50, utf8_decode($classe));
-				$pdf->Text(100,50, utf8_decode($effectifClasse));
-				$pdf->Text(10,60, utf8_decode($effectifEvalue));
-				$pdf->Text(100,60, 'Sequence  : '.utf8_decode($sequence));
-				$pdf->Ln(20);
+				$pdf->Cell(85,5,utf8_decode($classe),0,0,'L');
+				$pdf->Cell(35,5,utf8_decode($effectifClasse),0,0,'C');
+				$pdf->Cell(35,5,utf8_decode($effectifEvalue),0,0,'C');
+				$pdf->Ln(5);
+				
 				/*Construction du tableau Informationnel statistique*/
 				$pdf->Cell(55,8,'',0,0,'C');
-				$pdf->Cell(35,8,utf8_decode('Object'),1,0,'C');
+				$pdf->Cell(35,8,utf8_decode('Title'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode('Female'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode('Male'),1,0,'C');
-				$pdf->Cell(20,8,utf8_decode('Global'),1,0,'C');
+				$pdf->Cell(20,8,utf8_decode('Total'),1,0,'C');
 				$pdf->Ln(8);
 				$pdf->Cell(55);
 				$pdf->SetFont('Times','',10);
 				
-				$pdf->Cell(35,8,utf8_decode('Averages'),1,0,'C');
+				$pdf->Cell(35,8,utf8_decode('Average'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['moyFille']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['moyMasc']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['moyTotal']),1,0,'C');
 				$pdf->Ln(8);
 				$pdf->Cell(55);
-				$pdf->Cell(35,8,utf8_decode('Sub - Averages'),1,0,'C');
+				$pdf->Cell(35,8,utf8_decode('Sub - Average'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['sousMoyFille']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['sousMoyMasc']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['sousMoyTotal']),1,0,'C');
@@ -919,13 +907,13 @@
 				$pdf->Ln(8);
 				$pdf->Cell(55);
 				
-				$pdf->Cell(35,8,utf8_decode('First Average'),1,0,'C');
+				$pdf->Cell(35,8,utf8_decode('Max Average'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteForteFille']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteForteMasc']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteForteTotal']),1,0,'C');
 				$pdf->Ln(8);
 				$pdf->Cell(55);
-				$pdf->Cell(35,8,utf8_decode('Last Average'),1,0,'C');
+				$pdf->Cell(35,8,utf8_decode('Low Average'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteFaibleFille']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteFaibleMasc']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteFaibleTotal']),1,0,'C');
@@ -938,13 +926,13 @@
 				// Informations du PV
 				$pdf->SetFont('Times','B',8);
 				$pdf->Cell(10,5,utf8_decode('N°'),1,0,'C',true);
-				$pdf->Cell(20,5,utf8_decode('National Id.'),1,0,'C',true);
-				$pdf->Cell(55,5,utf8_decode('Full Name'),1,0,'C',true);
+				$pdf->Cell(20,5,utf8_decode('Identifier'),1,0,'C',true);
+				$pdf->Cell(55,5,utf8_decode('Student Name'),1,0,'C',true);
 				$pdf->Cell(10,5,utf8_decode('Sex'),1,0,'C',true);
 				$pdf->Cell(15,5,utf8_decode('Average'),1,0,'C',true);
 				$pdf->Cell(10,5,utf8_decode('Rank'),1,0,'C',true);
-				$pdf->Cell(25,5,utf8_decode('Appreciation'),1,0,'C',true);
-				$pdf->Cell(10,5,utf8_decode('Grade'),1,0,'C',true);
+				$pdf->Cell(25,5,utf8_decode('Grade'),1,0,'C',true);
+				$pdf->Cell(10,5,utf8_decode('Cote'),1,0,'C',true);
 				$pdf->Cell(35,5,utf8_decode('Observations'),1,0,'C',true);
 				$pdf->Ln(5);
 				$a = 1;
@@ -962,10 +950,6 @@
 					else{
 						if($_SESSION['eleve'][$i]['rang']=='1'){
 							$rang = $_SESSION['eleve'][$i]['rang'].'st';
-						}elseif($_SESSION['eleve'][$i]['rang']=='2'){
-							$rang = $_SESSION['eleve'][$i]['rang'].'nd';
-						}elseif($_SESSION['eleve'][$i]['rang']=='3'){
-							$rang = $_SESSION['eleve'][$i]['rang'].'rd';
 						}else{
 							$rang = $_SESSION['eleve'][$i]['rang'].'th';
 						}
@@ -978,62 +962,66 @@
 					$pdf->Ln(5);
 					$a++;
 				}
-				$pdf->Ln(7);
+				$pdf->Ln(2);
 				$pdf->Cell(100);
-				$texte = 'Done at '.$ville.', on the '.DATE('M d, Y').'.';
+				$texte = 'Done at '.strtoupper($ville).', the __________________.';
 				$pdf->Cell(60,5, utf8_decode($texte),0,0,'R');
-				$pdf->Ln(10);
+				$pdf->Ln(5);
 				$pdf->Cell(100);
-				$pdf->Cell(60,5,utf8_decode($signataireAnglais),0,0,'R');
+				$pdf->SetFont('Times','BI',9);
+				$pdf->Cell(60,5,utf8_decode($signataire),0,0,'C');
 								
 								
 								
 								
 								/****** PV SEQUENTIEL DE MERITE *****/
 				$pdf->addPage();
-				$pdf->EnteteDocAnglais($ministereAnglais, $paysAnglais, $etsAnglais, $deviseAnglais, $contact, $as);
+				$pdf->Entete();
 				if($_SESSION['sequence']==1){
 					$sequence = 'First Sequence';
 				}elseif($_SESSION['sequence']==2){
 					$sequence = 'Second Sequence';
 				}elseif($_SESSION['sequence']==3){
-					$sequence = 'Third Sequence';
+					$sequence = 'Troisieme Sequence';
 				}elseif($_SESSION['sequence']==4){
-					$sequence = 'Fourth Sequence';
+					$sequence = 'Quatrieme Sequence';
 				}elseif($_SESSION['sequence']==5){
-					$sequence = 'Fifth Sequence';
+					$sequence = 'Cinquieme Sequence';
 				}elseif($_SESSION['sequence']==6){
-					$sequence = 'Sixth Sequence';
+					$sequence = 'Sixieme Sequence';
 				}
-				$titre = $sequence." Report";
+				$titre = "Report of the ".$sequence."";
 				$pdf->TitreSans($titre);
+				$classe = "Class : ".strtoupper($_SESSION['nom_classe']);
+				$effectifClasse = 'Roll: '.count($_SESSION['eleve']);
+				$effectifEvalue = 'Evaluated : '.$_SESSION['eleve'][0]['classes'];
+				
 				$classe = "Class : ".strtoupper($_SESSION['nom_classe']);
 				$effectifClasse = 'Roll : '.count($_SESSION['eleve']);
 				$effectifEvalue = 'Evaluated : '.$_SESSION['eleve'][0]['classes'];
-				$signataire = $_SESSION['signataire'];
 				$pdf->SetFont('Times','B',12);
-				$pdf->Text(10,50, utf8_decode($classe));
-				$pdf->Text(100,50, utf8_decode($effectifClasse));
-				$pdf->Text(10,60, utf8_decode($effectifEvalue));
-				$pdf->Text(100,60, 'Sequence  : '.utf8_decode($sequence));
-				$pdf->Ln(20);
+				$pdf->Cell(85,5,utf8_decode($classe),0,0,'L');
+				$pdf->Cell(35,5,utf8_decode($effectifClasse),0,0,'C');
+				$pdf->Cell(35,5,utf8_decode($effectifEvalue),0,0,'C');
+				$pdf->Ln(5);
+				// $pdf->Ln(20);
 				/*Construction du tableau Informationnel statistique*/
 				$pdf->Cell(55,8,'',0,0,'C');
-				$pdf->Cell(35,8,utf8_decode('Object'),1,0,'C');
+				$pdf->Cell(35,8,utf8_decode('Title'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode('Female'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode('Male'),1,0,'C');
-				$pdf->Cell(20,8,utf8_decode('Global'),1,0,'C');
+				$pdf->Cell(20,8,utf8_decode('Total'),1,0,'C');
 				$pdf->Ln(8);
 				$pdf->Cell(55);
 				$pdf->SetFont('Times','',10);
 				
-				$pdf->Cell(35,8,utf8_decode('Averages'),1,0,'C');
+				$pdf->Cell(35,8,utf8_decode('Average'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['moyFille']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['moyMasc']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['moyTotal']),1,0,'C');
 				$pdf->Ln(8);
 				$pdf->Cell(55);
-				$pdf->Cell(35,8,utf8_decode('Sub - Averages'),1,0,'C');
+				$pdf->Cell(35,8,utf8_decode('Sub - Average'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['sousMoyFille']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['sousMoyMasc']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['sousMoyTotal']),1,0,'C');
@@ -1052,13 +1040,13 @@
 				$pdf->Ln(8);
 				$pdf->Cell(55);
 				
-				$pdf->Cell(35,8,utf8_decode('First Average'),1,0,'C');
+				$pdf->Cell(35,8,utf8_decode('Max Average'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteForteFille']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteForteMasc']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteForteTotal']),1,0,'C');
 				$pdf->Ln(8);
 				$pdf->Cell(55);
-				$pdf->Cell(35,8,utf8_decode('Last Average'),1,0,'C');
+				$pdf->Cell(35,8,utf8_decode('Low Average'),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteFaibleFille']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteFaibleMasc']),1,0,'C');
 				$pdf->Cell(20,8,utf8_decode($_SESSION['statistique']['noteFaibleTotal']),1,0,'C');
@@ -1071,13 +1059,13 @@
 				// Informations du PV
 				$pdf->SetFont('Times','B',8);
 				$pdf->Cell(10,5,utf8_decode('N°'),1,0,'C',true);
-				$pdf->Cell(20,5,utf8_decode('National Id.'),1,0,'C',true);
-				$pdf->Cell(55,5,utf8_decode('Full Name'),1,0,'C',true);
+				$pdf->Cell(20,5,utf8_decode('Identifier'),1,0,'C',true);
+				$pdf->Cell(55,5,utf8_decode('Student Name'),1,0,'C',true);
 				$pdf->Cell(10,5,utf8_decode('Sex'),1,0,'C',true);
 				$pdf->Cell(15,5,utf8_decode('Average'),1,0,'C',true);
 				$pdf->Cell(10,5,utf8_decode('Rank'),1,0,'C',true);
-				$pdf->Cell(25,5,utf8_decode('Appreciation'),1,0,'C',true);
-				$pdf->Cell(10,5,utf8_decode('Grade'),1,0,'C',true);
+				$pdf->Cell(25,5,utf8_decode('Grade'),1,0,'C',true);
+				$pdf->Cell(10,5,utf8_decode('Cote'),1,0,'C',true);
 				$pdf->Cell(35,5,utf8_decode('Observations'),1,0,'C',true);
 				$pdf->Ln(5);
 				$a = 1;
@@ -1095,10 +1083,6 @@
 					else{
 						if($_SESSION['eleve2'][$i]['rang']=='1'){
 							$rang = $_SESSION['eleve2'][$i]['rang'].'st';
-						}elseif($_SESSION['eleve2'][$i]['rang']=='2'){
-							$rang = $_SESSION['eleve2'][$i]['rang'].'nd';
-						}elseif($_SESSION['eleve2'][$i]['rang']=='3'){
-							$rang = $_SESSION['eleve2'][$i]['rang'].'rd';
 						}else{
 							$rang = $_SESSION['eleve2'][$i]['rang'].'th';
 						}
@@ -1111,13 +1095,14 @@
 					$pdf->Ln(5);
 					$a++;
 				}
-				$pdf->Ln(7);
+				$pdf->Ln(2);
 				$pdf->Cell(100);
-				$texte = 'Done at '.$ville.', on the '.DATE('M d, Y').'.';
+				$texte = 'Done at '.strtoupper($ville).', the __________________.';
 				$pdf->Cell(60,5, utf8_decode($texte),0,0,'R');
-				$pdf->Ln(10);
+				$pdf->Ln(5);
 				$pdf->Cell(100);
-				$pdf->Cell(60,5,utf8_decode($signataireAnglais),0,0,'R');
+				$pdf->SetFont('Times','BI',9);
+				$pdf->Cell(60,5,utf8_decode($signataire),0,0,'C');
 				
 				
 				
@@ -1128,32 +1113,32 @@
 				for($a=0;$a<count($eleve);$a++){
 					$pdf->addPage();
 					// On met l'entête du document
-					$pdf->EnteteDocAnglais($ministereAnglais, $paysAnglais, $etsAnglais, $deviseAnglais, $contact, $as);
+					$pdf->Entete();
 					// On met le titre du document
-					$titre = $sequence." Reported Marks ";
+					$titre = "Sequential report marks of ".$sequence;
 					$pdf->SetFont('Times','BUI',14);
 					// $pdf->SetFont('Times','BU',14);
 					// Informations sur l'élève 
-					$pdf->Text(40,45,strtoupper(utf8_decode($titre)));
+					$pdf->Text(40,75,strtoupper(utf8_decode($titre)));
 					$pdf->SetFont('Times','',10);
-					$lib_nom = 'Full Name : ';
-					$lib_classe = 'Class : ';
-					$lib_matricule = 'National Id. : ';
+					$lib_nom = 'Student Name : ';
+					$lib_classe = 'Class  : ';
+					$lib_matricule = 'Identifier. : ';
 					$lib_effectif = 'Roll : ';
-					$lib_dateNaissance = 'DAte of Birth : ';
-					$lib_lieuNaissance = 'At : ';
+					$lib_dateNaissance = 'Date of birth : ';
+					$lib_lieuNaissance = 'at : ';
 					$lib_sexe = 'Sex : ';
 					$lib_redoublant = 'Repeater : ';
-					$lib_titulaire = 'Class Master : ';
-					$pdf->Text(20,55,utf8_decode($lib_nom));
-					$pdf->Text(120,55,utf8_decode($lib_classe));
-					$pdf->Text(20,60,utf8_decode($lib_matricule));
-					$pdf->Text(120,60,utf8_decode($lib_effectif));
-					$pdf->Text(20,65,utf8_decode($lib_dateNaissance));
-					$pdf->Text(100,65,utf8_decode($lib_lieuNaissance));
-					$pdf->Text(20,70,utf8_decode($lib_sexe));
-					$pdf->Text(50,70,utf8_decode($lib_redoublant));
-					$pdf->Text(100,70,utf8_decode($lib_titulaire));
+					$lib_titulaire = 'Class Principal : ';
+					$pdf->Text(20,85,utf8_decode($lib_nom));
+					$pdf->Text(120,85,utf8_decode($lib_classe));
+					$pdf->Text(20,90,utf8_decode($lib_matricule));
+					$pdf->Text(120,90,utf8_decode($lib_effectif));
+					$pdf->Text(20,95,utf8_decode($lib_dateNaissance));
+					$pdf->Text(100,95,utf8_decode($lib_lieuNaissance));
+					$pdf->Text(20,100,utf8_decode($lib_sexe));
+					$pdf->Text(50,100,utf8_decode($lib_redoublant));
+					$pdf->Text(100,100,utf8_decode($lib_titulaire));
 					
 					$pdf->SetFont('Times','B',10);
 					$nom = $eleve[$a]['nom_eleve'];
@@ -1164,25 +1149,25 @@
 					$lieuNaissance = $eleve[$a]['lieu_naissance'];
 					$sexe = $eleve[$a]['sexe'];
 					$redoublant = $eleve[$a]['statut'];
-					$titulaire = $_SESSION['professeurPrincipal'];
+					$titulaire = ''; /*$_SESSION['professeurPrincipal'];*/
 					$image =$eleve[$a]['photo'];
 					
-					$pdf->Text(50,55,utf8_decode($nom));
-					$pdf->Text(140,55,utf8_decode($nomClasse));
-					$pdf->Text(40,60,utf8_decode($matricule));
-					$pdf->Text(150,60,utf8_decode($effectif));
-					$pdf->Text(55,65,utf8_decode($dateNaissance));
-					$pdf->Text(105,65,utf8_decode($lieuNaissance));
-					$pdf->Text(30,70,utf8_decode($sexe));
-					$pdf->Text(70,70,utf8_decode($redoublant));
-					$pdf->Text(135,70,utf8_decode($titulaire));
+					$pdf->Text(50,85,utf8_decode($nom));
+					$pdf->Text(140,85,utf8_decode($nomClasse));
+					$pdf->Text(40,90,utf8_decode($matricule));
+					$pdf->Text(150,90,utf8_decode($effectif));
+					$pdf->Text(55,95,utf8_decode($dateNaissance));
+					$pdf->Text(105,95,utf8_decode($lieuNaissance));
+					$pdf->Text(30,100,utf8_decode($sexe));
+					$pdf->Text(70,100,utf8_decode($redoublant));
+					$pdf->Text(135,100,utf8_decode($titulaire));
 					 
 					// $pdf->Image($image, 30, 40, 10);
 					// $pdf->Image($image, 170, 45, 22, 22);
 					// Titre du Tableau du bulletin
 					
 					// On créé un espace supplémentaire entre le tableau et les info du haut
-					$pdf->Ln(55);
+					$pdf->Ln(40);
 					$pdf->SetFont('Times','B',8);
 					$pdf->Cell(8);
 					$pdf->Cell(40,6, utf8_decode('Subject'),1,0,'C',true);
@@ -1192,90 +1177,81 @@
 					$pdf->Cell(15,6, utf8_decode('Product'),1,0,'C',true);
 					$pdf->Cell(10,6, utf8_decode('Min'),1,0,'C',true);
 					$pdf->Cell(10,6, utf8_decode('Max'),1,0,'C',true);
-					$pdf->Cell(22,6, utf8_decode('Appreciation'),1,0,'C',true);
-					$pdf->Cell(10,6, utf8_decode('Grade'),1,0,'C',true);
-					$pdf->Cell(20,6, utf8_decode('Observ..'),1,0,'C',true);
+					$pdf->Cell(22,6, utf8_decode('Grade'),1,0,'C',true);
+					$pdf->Cell(10,6, utf8_decode('Cote'),1,0,'C',true);
+					$pdf->Cell(20,6, utf8_decode('Teacher Obs.'),1,0,'C',true);
 					$pdf->SetFont('Times','',8);
 					$pdf->Ln(6);
 					
 					// On ressort une boucle qui liste les groupes définis
 					for($b=0;$b<count($_SESSION['groupe']);$b++){
-						$codeGroupe = $_SESSION['groupe'];
-						$totalGroupe = $codeGroupe[$b].'_total';
-						$coefGroupe = $codeGroupe[$b].'_coef';
-						$minGroupe = $codeGroupe[$b].'_min';
-						$maxGroupe = $codeGroupe[$b].'_max';
-						$apprGroupe = $codeGroupe[$b].'_appreciation';
-						$coteGroupe = $codeGroupe[$b].'_cote';
-						$moyenneGroupe = $codeGroupe[$b].'_moyenne';
-						
-						// Pour chaque groupe, on ressort le code et le nom de la matière
-						$test = $codeGroupe[$b];
-						$nomMatiere = $_SESSION['nom_matiere'][$test];
-						$codeMatiere = $_SESSION['code_matiere'][$test];
-						for($c=0;$c<count($codeMatiere);$c++){
-							$seq1 = $codeMatiere[$c].'_seq1';
-							$competence = $codeMatiere[$c].'_competence';
-							$seqCoef = $codeMatiere[$c].'_coef';
-							$seqTotal = $codeMatiere[$c].'_total';
-							$seqAppr = $codeMatiere[$c].'_appreciation';
-							$seqMin = $codeMatiere[$c].'_min';
-							$seqMax = $codeMatiere[$c].'_max';
-							$seqCote = $codeMatiere[$c].'_cote';
-							$enseignant = $codeMatiere[$c].'_enseignant';
-							
+						$codeGroupe = $_SESSION['groupe'][$b]['code_groupe'];
+						$idGroupe = $_SESSION['groupe'][$b]['groupe'];
+						$nomGroupe = $_SESSION['groupe'][$b]['nom_groupe'];
+						$matieresGroupe = $_SESSION['matiereGroupe'][$idGroupe];
+						for($c=0;$c<count($matieresGroupe);$c++){
+							$codeMatiere = $matieresGroupe[$c]['code_matiere'];
+							$competence = strtolower($codeMatiere.'_competence');
+							$sekence = strtolower($codeMatiere.'_seq');
+							$coef = strtolower($codeMatiere.'_coef');
+							$produit = strtolower($codeMatiere.'_total');
+							$min = strtolower($codeMatiere.'_min');
+							$max = strtolower($codeMatiere.'_max');
+							$appr = strtolower($codeMatiere.'_appreciation');
+							$cote = strtolower($codeMatiere.'_cote');
+							$enseignant = strtolower($codeMatiere.'_enseignant');
+							$nomMatiere = strtoupper($matieresGroupe[$c]['nom_matiere']);
+							// $pdf->Cell(12,6, utf8_decode($eleve[$a][$seq1]),1,0,'C');
+							// $pdf->SetFont('Times','B',8);
 							$pdf->Cell(8);
-							// $matiereEnseignant = strtoupper($nomMatiere[$c]).' / ';
-							// $matiereEnseignant .= $eleve[$a][$enseignant];
-							$pdf->Cell(40,3, utf8_decode(strtoupper($nomMatiere[$c])),'LTR',0,'L');
-							$pdf->Cell(35,6, utf8_decode($eleve[$a][$competence]),'LTR',0,'L');
+							$pdf->Cell(40,3, substr($nomMatiere,0,23),1,0,'L');
 							
-							// Les notes à valeur zéro ne doivent pas apparaitre
-							if($eleve[$a][$seq1]=='0.00' or $eleve[$a][$seq1]==''){
-								$pdf->Cell(12,6, '--',1,0,'C');
-								$pdf->Cell(10,6, '--',1,0,'C');
-								$pdf->SetFont('Times','B',7);
-								$pdf->Cell(15,6, '--',1,0,'C',true);
-							}else{
-								$pdf->Cell(12,6, utf8_decode($eleve[$a][$seq1]),1,0,'C');
-								$pdf->Cell(10,6, utf8_decode($eleve[$a][$seqCoef]),1,0,'C');
-								$pdf->SetFont('Times','B',7);
-								$pdf->Cell(15,6, utf8_decode($eleve[$a][$seqTotal]),1,0,'C',true);
-							}
-							$pdf->SetFont('Times','',7);
-							$pdf->Cell(10,6, utf8_decode($eleve[$a][$seqMin]),1,0,'C');
-							$pdf->Cell(10,6, utf8_decode($eleve[$a][$seqMax]),1,0,'C');
-							$pdf->Cell(22,6, utf8_decode(ucfirst($eleve[$a][$seqAppr])),1,0,'L');
-							$pdf->Cell(10,6, utf8_decode(ucfirst($eleve[$a][$seqCote])),1,0,'L');
+							$pdf->Cell(35,3, utf8_decode(substr($eleve[$a][$competence],0,20)),0,0,'L');
+							$pdf->Cell(12,6, utf8_decode($eleve[$a][$sekence]),1,0,'C');
+							$pdf->Cell(10,6, utf8_decode($eleve[$a][$coef]),1,0,'C');
+							$pdf->Cell(15,6, utf8_decode($eleve[$a][$produit]),1,0,'C');
+							$pdf->Cell(10,6, utf8_decode($eleve[$a][$min]),1,0,'C');
+							$pdf->Cell(10,6, utf8_decode($eleve[$a][$max]),1,0,'C');
+							$pdf->Cell(22,6, utf8_decode($eleve[$a][$appr]),1,0,'C');
+							$pdf->Cell(10,6, utf8_decode($eleve[$a][$cote]),1,0,'C');
 							$pdf->Cell(20,6, utf8_decode(''),1,0,'C');
-							
-							// $pdf->Cell(50,6, utf8_decode(ucfirst($eleve[$a][$trimAppr])),1,0,'L');
-							// On Insère ici le nom de l'enseignant de la matière
+							$pdf->SetFont('Times','',8);
+							// $pdf->Ln(6);
 							$pdf->Ln(3);
 							$pdf->SetFont('Times','I',7);
-							$pdf->Cell(55,3, utf8_decode($eleve[$a][$enseignant]),0,0,'C');
-							
+							$pdf->Cell(8);
+							$pdf->Cell(40,3, utf8_decode($eleve[$a][$enseignant]),1,0,'L');
 							$pdf->SetFont('Times','',7);
+							$pdf->Cell(35,3, utf8_decode(substr($eleve[$a][$competence],20,35)),1,0,'L');
 							$pdf->Ln(3);
+							$pdf->SetFont('Times','',8);
 						}
 						$pdf->Cell(8);
 						$pdf->SetFont('Times','B',8);
-						$pdf->Cell(75,6, utf8_decode(strtoupper('Total of the Group '.$codeGroupe[$b])),1,0,'L',true);
-						$pdf->Cell(12,6, utf8_decode($eleve[$a][$moyenneGroupe]),1,0,'C',true);
+						$moyenneGroupe = $codeGroupe.'_moyenne';
+						$coefGroupe = $codeGroupe.'_coef';
+						$totalGroupe = $codeGroupe.'_total';
+						$minGroupe = $codeGroupe.'_min';
+						$maxGroupe = $codeGroupe.'_max';
+						$apprGroupe = $codeGroupe.'_appreciation';
+						$coteGroupe = $codeGroupe.'_cote';
+						$pdf->Cell(75,6, utf8_decode(strtoupper('Total of '.$nomGroupe)),1,0,'L',true);
+						$pdf->Cell(12,6, utf8_decode(utf8_decode($eleve[$a][$moyenneGroupe])),1,0,'C',true);
 						$pdf->Cell(10,6, utf8_decode($eleve[$a][$coefGroupe]),1,0,'C',true);
 						$pdf->Cell(15,6, utf8_decode($eleve[$a][$totalGroupe]),1,0,'C',true);
-						$pdf->Cell(10,6, utf8_decode($eleve[$a][$minGroupe]),1,0,'C',true);
-						$pdf->Cell(10,6, utf8_decode($eleve[$a][$maxGroupe]),1,0,'C',true);
-						$pdf->Cell(22,6, utf8_decode($eleve[$a][$apprGroupe]),1,0,'C',true);
-						$pdf->Cell(10,6, utf8_decode($eleve[$a][$coteGroupe]),1,0,'C',true);
+						$pdf->Cell(10,6, $eleve[$a][$minGroupe],1,0,'C',true);
+						$pdf->Cell(10,6, $eleve[$a][$maxGroupe],1,0,'C',true);
+						$pdf->Cell(22,6, $eleve[$a][$apprGroupe],1,0,'C',true);
+						$pdf->Cell(10,6, $eleve[$a][$coteGroupe],1,0,'C',true);
 						$pdf->Cell(20,6, '',1,0,'C',true);
 						$pdf->Ln(6);
 						$pdf->SetFont('Times','',7);
+						
 					}
 					$pdf->SetFont('Times','B',9);
-					$pdf->Ln(6);
+					$pdf->Ln(1);
 					$pdf->Cell(8);
-					$pdf->Cell(87,6, utf8_decode('GLOBAL'),1,0,'C',true);
+					$pdf->Cell(87,6, utf8_decode('TOTAL'),1,0,'C',true);
 					// $pdf->Cell(12,6, utf8_decode($eleve[$a]['moyenne']),1,0,'C',true);
 					$pdf->Cell(10,6, utf8_decode($eleve[$a]['total_coef']),1,0,'C',true);
 					$pdf->Cell(15,6, utf8_decode($eleve[$a]['total_point']),1,0,'C',true);
@@ -1284,14 +1260,14 @@
 					$pdf->Cell(25,6, utf8_decode(ucwords($eleve[$a]['moyenne'])),1,0,'L',true);
 					// $pdf->Cell(10,6, utf8_decode(ucwords($eleve[$a]['cote'])),1,0,'L',true);
 					// $pdf->Cell(20,6, '',1,0,'L',true);
-					$pdf->Ln(10);
+					$pdf->Ln(8);
 					$pdf->Cell(8);
 					
 					$pdf->Cell(53,6,utf8_decode('Discipline'), 1,0,'C',true);
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
 					$pdf->Cell(53,6,utf8_decode('Work'), 1,0,'C',true);
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
-					$pdf->Cell(53,6,utf8_decode('Class Profile'), 1,0,'C',true);
+					$pdf->Cell(53,6,utf8_decode('Classe Profile'), 1,0,'C',true);
 					$pdf->Ln(6);
 					$pdf->Cell(8);
 					
@@ -1302,7 +1278,7 @@
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
 					$pdf->Cell(17,6,utf8_decode('Total Gén.'), 1,0,'C');
 					$pdf->Cell(10,6,utf8_decode($eleve[$a]['total_point']), 1,0,'C');
-					$pdf->Cell(26,6,utf8_decode('Appreciation'), 1,0,'C');
+					$pdf->Cell(26,6,utf8_decode('Grade'), 1,0,'C');
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
 					$pdf->Cell(30,6,utf8_decode('General Average'), 1,0,'C');
 					$pdf->Cell(23,6,$_SESSION['statistique']['moyGenTotal'], 1,0,'C');
@@ -1311,7 +1287,7 @@
 					
 					$pdf->Cell(20,6,utf8_decode('Abs Just.'), 1,0,'C');
 					$pdf->Cell(6,6,utf8_decode(''), 1,0,'C');
-					$pdf->Cell(20,6,utf8_decode('Blame. Cond.'), 1,0,'C');
+					$pdf->Cell(20,6,utf8_decode('Blâme. Cond.'), 1,0,'C');
 					$pdf->Cell(7,6,utf8_decode(''), 1,0,'C');
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
 					$pdf->Cell(17,6,utf8_decode('Coef'), 1,0,'C');
@@ -1339,7 +1315,7 @@
 					}
 					// $pdf->Cell(26,6,'', 1,0,'C');
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
-					$pdf->Cell(30,6,utf8_decode('Nb Moyennes'), 1,0,'C');
+					$pdf->Cell(30,6,utf8_decode('Nb Aver.'), 1,0,'C');
 					$pdf->Cell(23,6,$_SESSION['statistique']['moyTotal'], 1,0,'C');
 					$pdf->Ln(6);
 					$pdf->Cell(8);
@@ -1349,7 +1325,7 @@
 					$pdf->Cell(20,6,utf8_decode('Excl. Déf.'), 1,0,'C');
 					$pdf->Cell(7,6,utf8_decode(''), 1,0,'C');
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
-					$pdf->Cell(27,6,utf8_decode('Grade'), 1,0,'C');
+					$pdf->Cell(27,6,utf8_decode('Côte'), 1,0,'C');
 					if($eleve[$a]['moyenne']=='0.00'){
 						$pdf->Cell(26,6,'--', 1,0,'C');
 					}else{
@@ -1362,65 +1338,57 @@
 					$pdf->Ln(6);
 					$pdf->Cell(8);
 					
-					$pdf->Cell(20,6,utf8_decode(''), 0,0,'C');
-					$pdf->Cell(6,6,utf8_decode(''), 0,0,'C');
-					$pdf->Cell(20,6,utf8_decode(''), 0,0,'C');
+					$pdf->Cell(46,6,utf8_decode(''), 0,0,'C');
 					$pdf->Cell(7,6,utf8_decode(''), 0,0,'C');
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
-					$pdf->Cell(17,6,utf8_decode(''), 0,0,'C');
-					$pdf->Cell(10,6,utf8_decode(''), 0,0,'C');
+					$pdf->Cell(27,6,'Rank', 1,0,'C');
+					$RANGG = utf8_decode($eleve[$a]['rang']).' / '.$_SESSION['eleve'][0]['classes'];
+					$pdf->Cell(26,6,$RANGG, 1,0,'C');
+					$pdf->Cell(5, 6, '',0,0,'C');
+					$texte = 'Done  at '.$ville.' the ________________';
+					$pdf->Cell(53,6,utf8_decode(''), 0,0,'C');
+					$pdf->Ln(6);
+					$pdf->Cell(8);
+
+					$pdf->Cell(46,6,utf8_decode(''), 0,0,'C');
+					$pdf->Cell(7,6,utf8_decode(''), 0,0,'C');
+					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
+					$pdf->Cell(27,6,'', 0,0,'C');
+					$RANGG = utf8_decode($eleve[$a]['rang']).' / '.$_SESSION['eleve'][0]['classes'];
 					$pdf->Cell(26,6,'', 0,0,'C');
+					$pdf->Cell(5, 6, '',0,0,'C');
+					$texte = 'Done  at '.$ville.' the ________________';
+					$pdf->Cell(53,6,utf8_decode($texte), 0,0,'C');
+					$pdf->Ln(3);
+					$pdf->Cell(8);
+
+					$pdf->Cell(46,6,utf8_decode('The Parent'), 0,0,'C');
+					$pdf->Cell(7,6,utf8_decode(''), 0,0,'C');
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
-					$pdf->Cell(30,6,utf8_decode(''), 0,0,'C');
-					$pdf->Cell(23,6,'', 0,0,'C');
-					$pdf->Ln(6);
-					$pdf->Cell(8);
-					
-										
-					$pdf->SetFont('Times','I',9);
-					$pdf->Cell(28,6,utf8_decode('CNA: Competences Not Acquired.'), 0,0,'C');
-					$pdf->Cell(25,6,utf8_decode(''), 0,0,'C');
+					$pdf->Cell(53,6,'Class Principal', 0,0,'C');
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
-					$pdf->Cell(28,6,utf8_decode('CWA: Competence Well Acquired.'), 0,0,'C');
-					$pdf->Cell(25,6,utf8_decode(''), 0,0,'C');
+					$texte = $_SESSION['information']['signataire_en'];
+					$pdf->Cell(53,6,$texte, 0,0,'C');
 					$pdf->Ln(6);
 					$pdf->Cell(8);
-					$pdf->Cell(28,6,utf8_decode('CAA: Competences Averagely Acquired.'), 0,0,'C');
-					$pdf->Cell(25,6,utf8_decode(''), 0,0,'C');
-					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
-					$pdf->Cell(28,6,utf8_decode('CVWA: Competences Very Well Acquired.'), 0,0,'C');
-					$pdf->Cell(25,6,utf8_decode(''), 0,0,'C');
-					$pdf->Ln(6);
-					$pdf->Cell(8);
-					$pdf->Cell(28,6,utf8_decode('CA: Competences Acquired.'), 0,0,'C');
-					$pdf->Cell(25,6,utf8_decode(''), 0,0,'C');
-					$pdf->Ln(6);
-					$pdf->Cell(8);
-					
+
 					$pdf->SetFont('Times','B',9);
 					
-					// On doit pouvoir dire Non Classé au Rang et à la Moyenne 
 					
-					$texte = 'Done at '.$ville.' on the  ________________';
-					$pdf->Text(135,230, utf8_decode($texte));
-					
-					$pdf->Text(10,250, utf8_decode('The Parent'));
-					
-					$pdf->Text(50,250, utf8_decode('Principal Teacher'));
-					
-					$pdf->Text(150,250, utf8_decode($signataireAnglais));
 				}
 				
 				
 				// Le nom du fichier sera Bull_Trimestre_NumeroTrimestre_Classe
-				$nomFichier = 'Reported_Mark_Sequence_'.$_SESSION['sequence'].'_'.$_SESSION['nom_classe'].'.pdf';
+				$nomFichier = 'Bulletin_Sequence_'.$_SESSION['sequence'].'_'.$_SESSION['nom_classe'].'.pdf';
 				$pdf->Output($nomFichier, 'I');
 			}
 			
 			elseif($_SESSION['section']=='fr'){
 				/****** PV SEQUENTIEL ALPHABETIQUE*****/
 				$pdf->addPage();
-				$pdf->EnteteDoc($ministere, $pays, $ets, $devise, $contact, $as);
+				$pdf->Entete();
+				$ville = $_SESSION['information']['ville'];
+				$signataire = $_SESSION['information']['signataire_fr'];
 				if($_SESSION['sequence']==1){
 					$sequence = 'Premiere Sequence';
 				}elseif($_SESSION['sequence']==2){
@@ -1434,18 +1402,17 @@
 				}elseif($_SESSION['sequence']==6){
 					$sequence = 'Sixieme Sequence';
 				}
-				$titre = "Procès Verbal de la ".$sequence;
-				$pdf->TitreSans($titre);
+				$titre = "Proces Verbal de la ".$sequence;
+				$pdf->Titre($titre);
 				$classe = "Classe : ".strtoupper($_SESSION['nom_classe']);
 				$effectifClasse = 'Effectif : '.count($_SESSION['eleve']);
 				$effectifEvalue = 'Evalués : '.$_SESSION['eleve'][0]['classes'];
-				$signataire = $_SESSION['signataire'];
 				$pdf->SetFont('Times','B',12);
-				$pdf->Text(10,50, utf8_decode($classe));
-				$pdf->Text(100,50, utf8_decode($effectifClasse));
-				$pdf->Text(10,60, utf8_decode($effectifEvalue));
-				$pdf->Text(100,60, utf8_decode('Période  : ').utf8_decode($sequence));
-				$pdf->Ln(20);
+				$pdf->Cell(85,5,utf8_decode($classe),0,0,'L');
+				$pdf->Cell(35,5,utf8_decode($effectifClasse),0,0,'C');
+				$pdf->Cell(35,5,utf8_decode($effectifEvalue),0,0,'C');
+				$pdf->Ln(5);
+				
 				/*Construction du tableau Informationnel statistique*/
 				$pdf->Cell(55,8,'',0,0,'C');
 				$pdf->Cell(35,8,utf8_decode('Libellé'),1,0,'C');
@@ -1536,20 +1503,21 @@
 					$pdf->Ln(5);
 					$a++;
 				}
-				$pdf->Ln(7);
+				$pdf->Ln(2);
 				$pdf->Cell(100);
-				$texte = 'Fait à '.$ville.', le '.DATE('d M Y').'.';
+				$texte = 'Fait à '.strtoupper($ville).', le __________________.';
 				$pdf->Cell(60,5, utf8_decode($texte),0,0,'R');
-				$pdf->Ln(10);
+				$pdf->Ln(5);
 				$pdf->Cell(100);
-				$pdf->Cell(60,5,utf8_decode($signataire),0,0,'R');
+				$pdf->SetFont('Times','BI',9);
+				$pdf->Cell(60,5,utf8_decode($signataire),0,0,'C');
 								
 								
 								
 								
 								/****** PV SEQUENTIEL DE MERITE *****/
 				$pdf->addPage();
-				$pdf->EnteteDoc($ministere, $pays, $ets, $devise, $contact, $as);
+				$pdf->Entete();
 				if($_SESSION['sequence']==1){
 					$sequence = 'Premiere Sequence';
 				}elseif($_SESSION['sequence']==2){
@@ -1563,18 +1531,21 @@
 				}elseif($_SESSION['sequence']==6){
 					$sequence = 'Sixieme Sequence';
 				}
-				$titre = "Procès Verbal de la ".$sequence."";
+				$titre = "Proces Verbal de la ".$sequence."";
 				$pdf->TitreSans($titre);
 				$classe = "Classe de : ".strtoupper($_SESSION['nom_classe']);
 				$effectifClasse = 'Effectif Classe: '.count($_SESSION['eleve']);
 				$effectifEvalue = 'Effectif Evalué : '.$_SESSION['eleve'][0]['classes'];
-				$signataire = $_SESSION['signataire'];
+				
+				$classe = "Classe : ".strtoupper($_SESSION['nom_classe']);
+				$effectifClasse = 'Effectif : '.count($_SESSION['eleve']);
+				$effectifEvalue = 'Evalués : '.$_SESSION['eleve'][0]['classes'];
 				$pdf->SetFont('Times','B',12);
-				$pdf->Text(10,50, utf8_decode($classe));
-				$pdf->Text(100,50, utf8_decode($effectifClasse));
-				$pdf->Text(10,60, utf8_decode($effectifEvalue));
-				$pdf->Text(100,60, 'Sequence  : '.utf8_decode($sequence));
-				$pdf->Ln(20);
+				$pdf->Cell(85,5,utf8_decode($classe),0,0,'L');
+				$pdf->Cell(35,5,utf8_decode($effectifClasse),0,0,'C');
+				$pdf->Cell(35,5,utf8_decode($effectifEvalue),0,0,'C');
+				$pdf->Ln(5);
+				// $pdf->Ln(20);
 				/*Construction du tableau Informationnel statistique*/
 				$pdf->Cell(55,8,'',0,0,'C');
 				$pdf->Cell(35,8,utf8_decode('Libellé'),1,0,'C');
@@ -1665,13 +1636,14 @@
 					$pdf->Ln(5);
 					$a++;
 				}
-				$pdf->Ln(7);
+				$pdf->Ln(2);
 				$pdf->Cell(100);
-				$texte = 'Fait à '.$ville.', le '.DATE('d M Y').'.';
+				$texte = 'Fait à '.strtoupper($ville).', le __________________.';
 				$pdf->Cell(60,5, utf8_decode($texte),0,0,'R');
-				$pdf->Ln(10);
+				$pdf->Ln(5);
 				$pdf->Cell(100);
-				$pdf->Cell(60,5,utf8_decode($signataire),0,0,'R');
+				$pdf->SetFont('Times','BI',9);
+				$pdf->Cell(60,5,utf8_decode($signataire),0,0,'C');
 				
 				
 				
@@ -1682,13 +1654,13 @@
 				for($a=0;$a<count($eleve);$a++){
 					$pdf->addPage();
 					// On met l'entête du document
-					$pdf->EnteteDoc($ministere, $pays, $ets, $devise, $contact, $as);
+					$pdf->Entete();
 					// On met le titre du document
 					$titre = "Bulletin de Notes de la ".$sequence;
 					$pdf->SetFont('Times','BUI',14);
 					// $pdf->SetFont('Times','BU',14);
 					// Informations sur l'élève 
-					$pdf->Text(40,45,strtoupper(utf8_decode($titre)));
+					$pdf->Text(40,75,strtoupper(utf8_decode($titre)));
 					$pdf->SetFont('Times','',10);
 					$lib_nom = 'Noms et Prénoms : ';
 					$lib_classe = 'Classe de  : ';
@@ -1699,15 +1671,15 @@
 					$lib_sexe = 'Sexe : ';
 					$lib_redoublant = 'Redoublant : ';
 					$lib_titulaire = 'Professeur Principal : ';
-					$pdf->Text(20,55,utf8_decode($lib_nom));
-					$pdf->Text(120,55,utf8_decode($lib_classe));
-					$pdf->Text(20,60,utf8_decode($lib_matricule));
-					$pdf->Text(120,60,utf8_decode($lib_effectif));
-					$pdf->Text(20,65,utf8_decode($lib_dateNaissance));
-					$pdf->Text(100,65,utf8_decode($lib_lieuNaissance));
-					$pdf->Text(20,70,utf8_decode($lib_sexe));
-					$pdf->Text(50,70,utf8_decode($lib_redoublant));
-					$pdf->Text(100,70,utf8_decode($lib_titulaire));
+					$pdf->Text(20,85,utf8_decode($lib_nom));
+					$pdf->Text(120,85,utf8_decode($lib_classe));
+					$pdf->Text(20,90,utf8_decode($lib_matricule));
+					$pdf->Text(120,90,utf8_decode($lib_effectif));
+					$pdf->Text(20,95,utf8_decode($lib_dateNaissance));
+					$pdf->Text(100,95,utf8_decode($lib_lieuNaissance));
+					$pdf->Text(20,100,utf8_decode($lib_sexe));
+					$pdf->Text(50,100,utf8_decode($lib_redoublant));
+					$pdf->Text(100,100,utf8_decode($lib_titulaire));
 					
 					$pdf->SetFont('Times','B',10);
 					$nom = $eleve[$a]['nom_eleve'];
@@ -1718,25 +1690,25 @@
 					$lieuNaissance = $eleve[$a]['lieu_naissance'];
 					$sexe = $eleve[$a]['sexe'];
 					$redoublant = $eleve[$a]['statut'];
-					$titulaire = $_SESSION['professeurPrincipal'];
+					$titulaire = ''; /*$_SESSION['professeurPrincipal'];*/
 					$image =$eleve[$a]['photo'];
 					
-					$pdf->Text(50,55,utf8_decode($nom));
-					$pdf->Text(140,55,utf8_decode($nomClasse));
-					$pdf->Text(40,60,utf8_decode($matricule));
-					$pdf->Text(150,60,utf8_decode($effectif));
-					$pdf->Text(55,65,utf8_decode($dateNaissance));
-					$pdf->Text(105,65,utf8_decode($lieuNaissance));
-					$pdf->Text(30,70,utf8_decode($sexe));
-					$pdf->Text(70,70,utf8_decode($redoublant));
-					$pdf->Text(135,70,utf8_decode($titulaire));
+					$pdf->Text(50,85,utf8_decode($nom));
+					$pdf->Text(140,85,utf8_decode($nomClasse));
+					$pdf->Text(40,90,utf8_decode($matricule));
+					$pdf->Text(150,90,utf8_decode($effectif));
+					$pdf->Text(55,95,utf8_decode($dateNaissance));
+					$pdf->Text(105,95,utf8_decode($lieuNaissance));
+					$pdf->Text(30,100,utf8_decode($sexe));
+					$pdf->Text(70,100,utf8_decode($redoublant));
+					$pdf->Text(135,100,utf8_decode($titulaire));
 					 
 					// $pdf->Image($image, 30, 40, 10);
 					// $pdf->Image($image, 170, 45, 22, 22);
 					// Titre du Tableau du bulletin
 					
 					// On créé un espace supplémentaire entre le tableau et les info du haut
-					$pdf->Ln(55);
+					$pdf->Ln(40);
 					$pdf->SetFont('Times','B',8);
 					$pdf->Cell(8);
 					$pdf->Cell(40,6, utf8_decode('Matière'),1,0,'C',true);
@@ -1754,68 +1726,58 @@
 					
 					// On ressort une boucle qui liste les groupes définis
 					for($b=0;$b<count($_SESSION['groupe']);$b++){
-						$codeGroupe = $_SESSION['groupe'];
-						$totalGroupe = $codeGroupe[$b].'_total';
-						$coefGroupe = $codeGroupe[$b].'_coef';
-						$minGroupe = $codeGroupe[$b].'_min';
-						$maxGroupe = $codeGroupe[$b].'_max';
-						$apprGroupe = $codeGroupe[$b].'_appreciation';
-						$coteGroupe = $codeGroupe[$b].'_cote';
-						$moyenneGroupe = $codeGroupe[$b].'_moyenne';
-						
-						// Pour chaque groupe, on ressort le code et le nom de la matière
-						$test = $codeGroupe[$b];
-						$nomMatiere = $_SESSION['nom_matiere'][$test];
-						$codeMatiere = $_SESSION['code_matiere'][$test];
-						for($c=0;$c<count($codeMatiere);$c++){
-							$seq1 = $codeMatiere[$c].'_seq1';
-							$competence = $codeMatiere[$c].'_competence';
-							$seqCoef = $codeMatiere[$c].'_coef';
-							$seqTotal = $codeMatiere[$c].'_total';
-							$seqAppr = $codeMatiere[$c].'_appreciation';
-							$seqCote = $codeMatiere[$c].'_cote';
-							$seqMin = $codeMatiere[$c].'_min';
-							$seqMax = $codeMatiere[$c].'_max';
-							$enseignant = $codeMatiere[$c].'_enseignant';
-							
+						$codeGroupe = $_SESSION['groupe'][$b]['code_groupe'];
+						$idGroupe = $_SESSION['groupe'][$b]['groupe'];
+						$nomGroupe = $_SESSION['groupe'][$b]['nom_groupe'];
+						$matieresGroupe = $_SESSION['matiereGroupe'][$idGroupe];
+						for($c=0;$c<count($matieresGroupe);$c++){
+							$codeMatiere = $matieresGroupe[$c]['code_matiere'];
+							$competence = strtolower($codeMatiere.'_competence');
+							$sekence = strtolower($codeMatiere.'_seq');
+							$coef = strtolower($codeMatiere.'_coef');
+							$produit = strtolower($codeMatiere.'_total');
+							$min = strtolower($codeMatiere.'_min');
+							$max = strtolower($codeMatiere.'_max');
+							$appr = strtolower($codeMatiere.'_appreciation');
+							$cote = strtolower($codeMatiere.'_cote');
+							$enseignant = strtolower($codeMatiere.'_enseignant');
+							$nomMatiere = strtoupper($matieresGroupe[$c]['nom_matiere']);
+							// $pdf->Cell(12,6, utf8_decode($eleve[$a][$seq1]),1,0,'C');
+							// $pdf->SetFont('Times','B',8);
 							$pdf->Cell(8);
-							// $matiereEnseignant = strtoupper($nomMatiere[$c]).' / ';
-							// $matiereEnseignant .= $eleve[$a][$enseignant];
-							$pdf->Cell(40,3, utf8_decode(strtoupper($nomMatiere[$c])),'LTR',0,'L');
-							$pdf->Cell(35,6, utf8_decode($eleve[$a][$competence]),'LTR',0,'L');
+							$pdf->Cell(40,3, substr($nomMatiere,0,23),1,0,'L');
 							
-							// Les notes à valeur zéro ne doivent pas apparaitre
-							if($eleve[$a][$seq1]=='0.00' or $eleve[$a][$seq1]==''){
-								$pdf->Cell(12,6, '--',1,0,'C');
-								$pdf->Cell(10,6, '--',1,0,'C');
-								$pdf->SetFont('Times','B',7);
-								$pdf->Cell(15,6, '--',1,0,'C',true);
-							}else{
-								$pdf->Cell(12,6, utf8_decode($eleve[$a][$seq1]),1,0,'C');
-								$pdf->Cell(10,6, utf8_decode($eleve[$a][$seqCoef]),1,0,'C');
-								$pdf->SetFont('Times','B',7);
-								$pdf->Cell(15,6, utf8_decode($eleve[$a][$seqTotal]),1,0,'C',true);
-							}
-							$pdf->SetFont('Times','',7);
-							$pdf->Cell(10,6, utf8_decode($eleve[$a][$seqMin]),1,0,'C');
-							$pdf->Cell(10,6, utf8_decode($eleve[$a][$seqMax]),1,0,'C');
-							$pdf->Cell(22,6, utf8_decode(ucfirst($eleve[$a][$seqAppr])),1,0,'L');
-							$pdf->Cell(10,6, utf8_decode(ucfirst($eleve[$a][$seqCote])),1,0,'L');
+							$pdf->Cell(35,3, utf8_decode(substr($eleve[$a][$competence],0,20)),0,0,'L');
+							$pdf->Cell(12,6, utf8_decode($eleve[$a][$sekence]),1,0,'C');
+							$pdf->Cell(10,6, utf8_decode($eleve[$a][$coef]),1,0,'C');
+							$pdf->Cell(15,6, utf8_decode($eleve[$a][$produit]),1,0,'C');
+							$pdf->Cell(10,6, utf8_decode($eleve[$a][$min]),1,0,'C');
+							$pdf->Cell(10,6, utf8_decode($eleve[$a][$max]),1,0,'C');
+							$pdf->Cell(22,6, utf8_decode($eleve[$a][$appr]),1,0,'C');
+							$pdf->Cell(10,6, utf8_decode($eleve[$a][$cote]),1,0,'C');
 							$pdf->Cell(20,6, utf8_decode(''),1,0,'C');
-							
-							// $pdf->Cell(50,6, utf8_decode(ucfirst($eleve[$a][$trimAppr])),1,0,'L');
-							// On Insère ici le nom de l'enseignant de la matière
+							$pdf->SetFont('Times','',8);
+							// $pdf->Ln(6);
 							$pdf->Ln(3);
 							$pdf->SetFont('Times','I',7);
-							$pdf->Cell(55,3, utf8_decode($eleve[$a][$enseignant]),0,0,'C');
-							
+							$pdf->Cell(8);
+							$pdf->Cell(40,3, utf8_decode($eleve[$a][$enseignant]),1,0,'L');
 							$pdf->SetFont('Times','',7);
+							$pdf->Cell(35,3, utf8_decode(substr($eleve[$a][$competence],20,35)),1,0,'L');
 							$pdf->Ln(3);
+							$pdf->SetFont('Times','',8);
 						}
 						$pdf->Cell(8);
 						$pdf->SetFont('Times','B',8);
-						$pdf->Cell(75,6, utf8_decode(strtoupper('Total du Groupe '.$codeGroupe[$b])),1,0,'L',true);
-						$pdf->Cell(12,6, utf8_decode($eleve[$a][$moyenneGroupe]),1,0,'C',true);
+						$moyenneGroupe = $codeGroupe.'_moyenne';
+						$coefGroupe = $codeGroupe.'_coef';
+						$totalGroupe = $codeGroupe.'_total';
+						$minGroupe = $codeGroupe.'_min';
+						$maxGroupe = $codeGroupe.'_max';
+						$apprGroupe = $codeGroupe.'_appreciation';
+						$coteGroupe = $codeGroupe.'_cote';
+						$pdf->Cell(75,6, utf8_decode(strtoupper('Total du Groupe '.$nomGroupe)),1,0,'L',true);
+						$pdf->Cell(12,6, utf8_decode(utf8_decode($eleve[$a][$moyenneGroupe])),1,0,'C',true);
 						$pdf->Cell(10,6, utf8_decode($eleve[$a][$coefGroupe]),1,0,'C',true);
 						$pdf->Cell(15,6, utf8_decode($eleve[$a][$totalGroupe]),1,0,'C',true);
 						$pdf->Cell(10,6, $eleve[$a][$minGroupe],1,0,'C',true);
@@ -1825,9 +1787,10 @@
 						$pdf->Cell(20,6, '',1,0,'C',true);
 						$pdf->Ln(6);
 						$pdf->SetFont('Times','',7);
+						
 					}
 					$pdf->SetFont('Times','B',9);
-					$pdf->Ln(6);
+					$pdf->Ln(1);
 					$pdf->Cell(8);
 					$pdf->Cell(87,6, utf8_decode('TOTAL'),1,0,'C',true);
 					// $pdf->Cell(12,6, utf8_decode($eleve[$a]['moyenne']),1,0,'C',true);
@@ -1838,7 +1801,7 @@
 					$pdf->Cell(25,6, utf8_decode(ucwords($eleve[$a]['moyenne'])),1,0,'L',true);
 					// $pdf->Cell(10,6, utf8_decode(ucwords($eleve[$a]['cote'])),1,0,'L',true);
 					// $pdf->Cell(20,6, '',1,0,'L',true);
-					$pdf->Ln(10);
+					$pdf->Ln(8);
 					$pdf->Cell(8);
 					
 					$pdf->Cell(53,6,utf8_decode('Discipline'), 1,0,'C',true);
@@ -1916,53 +1879,43 @@
 					$pdf->Ln(6);
 					$pdf->Cell(8);
 					
-					$pdf->Cell(20,6,utf8_decode(''), 0,0,'C');
-					$pdf->Cell(6,6,utf8_decode(''), 0,0,'C');
-					$pdf->Cell(20,6,utf8_decode(''), 0,0,'C');
+					$pdf->Cell(46,6,utf8_decode(''), 0,0,'C');
 					$pdf->Cell(7,6,utf8_decode(''), 0,0,'C');
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
-					$pdf->Cell(17,6,utf8_decode(''), 0,0,'C');
-					$pdf->Cell(10,6,utf8_decode(''), 0,0,'C');
+					$pdf->Cell(27,6,'Rang', 1,0,'C');
+					$RANGG = utf8_decode($eleve[$a]['rang']).' / '.$_SESSION['eleve'][0]['classes'];
+					$pdf->Cell(26,6,$RANGG, 1,0,'C');
+					$pdf->Cell(5, 6, '',0,0,'C');
+					$texte = 'Fait à '.$ville.' le ________________';
+					$pdf->Cell(53,6,utf8_decode(''), 0,0,'C');
+					$pdf->Ln(6);
+					$pdf->Cell(8);
+
+					$pdf->Cell(46,6,utf8_decode(''), 0,0,'C');
+					$pdf->Cell(7,6,utf8_decode(''), 0,0,'C');
+					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
+					$pdf->Cell(27,6,'', 0,0,'C');
+					$RANGG = utf8_decode($eleve[$a]['rang']).' / '.$_SESSION['eleve'][0]['classes'];
 					$pdf->Cell(26,6,'', 0,0,'C');
+					$pdf->Cell(5, 6, '',0,0,'C');
+					$texte = 'Fait à '.$ville.' le ________________';
+					$pdf->Cell(53,6,utf8_decode($texte), 0,0,'C');
+					$pdf->Ln(3);
+					$pdf->Cell(8);
+
+					$pdf->Cell(46,6,utf8_decode('Le Parent'), 0,0,'C');
+					$pdf->Cell(7,6,utf8_decode(''), 0,0,'C');
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
-					$pdf->Cell(30,6,utf8_decode(''), 0,0,'C');
-					$pdf->Cell(23,6,'', 0,0,'C');
-					$pdf->Ln(6);
-					$pdf->Cell(8);
-					
-										
-					$pdf->SetFont('Times','I',9);
-					$pdf->Cell(28,6,utf8_decode('CNA: Compétence Non Acquise.'), 0,0,'C');
-					$pdf->Cell(25,6,utf8_decode(''), 0,0,'C');
+					$pdf->Cell(53,6,'Le Professeur Principal', 0,0,'C');
 					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
-					$pdf->Cell(28,6,utf8_decode('CBA: Compétence Bien Acquise.'), 0,0,'C');
-					$pdf->Cell(25,6,utf8_decode(''), 0,0,'C');
+					$texte = $_SESSION['information']['signataire_fr'];
+					$pdf->Cell(53,6,$texte, 0,0,'C');
 					$pdf->Ln(6);
 					$pdf->Cell(8);
-					$pdf->Cell(28,6,utf8_decode('CMA: Compétence Moyennement Acquise.'), 0,0,'C');
-					$pdf->Cell(25,6,utf8_decode(''), 0,0,'C');
-					$pdf->Cell(5, 6, utf8_decode(''),0,0,'C');
-					$pdf->Cell(28,6,utf8_decode('CTBA: Compétence Très Bien Acquise.'), 0,0,'C');
-					$pdf->Cell(25,6,utf8_decode(''), 0,0,'C');
-					$pdf->Ln(6);
-					$pdf->Cell(8);
-					$pdf->Cell(28,6,utf8_decode('CA: Compétence Acquise.'), 0,0,'C');
-					$pdf->Cell(25,6,utf8_decode(''), 0,0,'C');
-					$pdf->Ln(6);
-					$pdf->Cell(8);
-					
+
 					$pdf->SetFont('Times','B',9);
 					
-					// On doit pouvoir dire Non Classé au Rang et à la Moyenne 
 					
-					$texte = 'Fait à '.$ville.' le ________________';
-					$pdf->Text(135,230, utf8_decode($texte));
-					
-					$pdf->Text(10,250, utf8_decode('Le Parent'));
-					
-					$pdf->Text(50,250, utf8_decode('Le Professeur Principal'));
-					
-					$pdf->Text(150,250, utf8_decode($signataire));
 				}
 				
 				

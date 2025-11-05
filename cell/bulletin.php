@@ -9,6 +9,7 @@
 	$config = new config($db);
 	$note = new Note($db);
 	$gestionnaire = new gestionnaire($db);
+	// echo '<pre>'; print_r($_SESSION); echo '</pre>';
 	
 	if(isset($_SESSION['message'])){
 		echo "<script>alert('".$_SESSION['message']."');</script>";
@@ -43,9 +44,9 @@
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 			
 			

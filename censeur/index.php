@@ -39,14 +39,7 @@
 	
 	<div id="body">
 		<h1>Choisissez une action dans le menu</h1>
-		
-		
 	</div>
-	
-	
-	
-	
-	
 	
 	<?php
 		require('../part/footer.php');
