@@ -1634,9 +1634,9 @@
 		
 		
 		public function getClasseCode($id) {
-			$req = "SELECT nom_classe, code_classe, etat, niveau, id 
+			$req = "SELECT nom_classe, code_classe, etat_classe, niveau_classe, id 
 					FROM classe 
-					WHERE code_classe = '$id'
+					WHERE id = '$id'
 					ORDER BY nom_classe";
 			$sql = $this->_db->query($req);
 			$res=$sql->fetch(PDO::FETCH_ASSOC);
@@ -1646,6 +1646,21 @@
 		
 		
 		
+
+
+		public function getNoteEleve($eleve, $periode){
+			$sql = "SELECT note.id as id, id_eleve, id_matiere, id_classe, id_periode, note,
+							nom, prenom, nom_matiere  
+					FROM note, eleve, matiere
+					WHERE id_eleve = '$eleve'
+						AND id_eleve = eleve.id
+						AND code_matiere = id_matiere
+						AND id_periode = '$periode'
+					ORDER BY id_matiere";
+			$req = $this->_db->query($sql);
+			$resultat = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $resultat;
+		}
 		
 		
 		
@@ -4108,7 +4123,15 @@
 		
 		
 		
-		
+		public function listeSequenceClasse($classe){
+			$sql = "SELECT id_periode  
+					FROM note
+					WHERE id_classe = '$classe'
+					GROUP BY id_periode";
+			$req = $this->_db->query($sql);
+			$resultat = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $resultat;
+		}
 		
 		
 		// Affiche l'appreciation d'une note
@@ -4269,7 +4292,7 @@
 				$adresseParent = $listeEleve[$c]['adresse_parent'];
 				$statut = $listeEleve[$c]['statut'];
 				if(empty($listeEleve[$c]['photo'])){
-					$photo = '/images/eleve/no_name.png';
+					$photo = 'images/eleve/no_name.png';
 				}else{
 					$photo = $listeEleve[$c]['photo'];
 				}
@@ -5055,6 +5078,59 @@
 		}
 
 
+		private function addMoyenneGroupe($classe, $table){
+			$listeEleve = $this->listeEleve($classe, 'non_supprime');
+			$section = $this->getSectionClasse($classe);
+			for($i=0;$i<count($listeEleve);$i++){
+				$idEleve = $listeEleve[$i]['id'];
+				//  On récupère les matières par Groupe
+				$groupe = $this->getGroupeClasse($classe);
+				// print_r($groupe);
+				for($a=0;$a<count($groupe);$a++){
+					$codeGroupe = $groupe[$a]['code_groupe'];
+					$champMoyenne = $codeGroupe.'_moyenne';
+					$champCote = $codeGroupe.'_cote';
+					$champAppr = $codeGroupe.'_appreciation';
+					$sql = "SELECT $champMoyenne
+							FROM $table 
+							WHERE id_eleve = '$idEleve'";
+					$req = $this->_db->query($sql);
+					$resultat = $req->fetch(PDO::FETCH_ASSOC);
+					$moyenneGroupe = $resultat[$champMoyenne];
+					$appreciation = $this->showAppreciation($moyenneGroupe);
+					
+					$cleAppr = 'nom_appreciation_'.$section;
+					$coteGroupe = $appreciation['cote'];
+					$apprGroupe = $appreciation[$cleAppr];
+					
+					$update = $this->_db->prepare("UPDATE $table SET 
+													$champCote =:cote,
+													$champAppr =:appr
+													WHERE id_eleve =:eleve");
+					$update->bindValue(':cote',$coteGroupe);
+					$update->bindValue(':appr',$apprGroupe);
+					$update->bindValue(':eleve',$idEleve);
+					$update->execute();
+				}
+
+				for($b=0;$b<count($groupe);$b++){
+					$codeGroupe = $groupe[$b]['code_groupe'];
+					$champMoyenneGroupe = $codeGroupe.'_moyenne';
+					$champMin = $codeGroupe.'_min';
+					$champMax = $codeGroupe.'_max';
+					$min = $this->getMinMatiere($champMoyenneGroupe,$table);
+					$max = $this->getMaxMatiere($champMoyenneGroupe, $table);
+					$update = $this->_db->prepare("UPDATE $table SET 
+							$champMin =:min,
+							$champMax =:max");
+					$update->bindValue(':min',$min);
+					$update->bindValue(':max', $max);
+					$update->execute();
+				}
+			}
+		}
+
+
 
 
 
@@ -5072,6 +5148,8 @@
 			$infoClasse = $this->getClasse($this->_classe);
 			// On introduit les totaux par groupe ainsi que les moyennes 
 			$this->addTotalGroupe($this->_classe, $table);
+			// On gère les appréciations et cotes par groupe 
+			$this->addMoyenneGroupe($this->_classe, $table);
 			// On gère le classement des élèves
 			$min = $this->getMinMatiere('moyenne', $table);
 			$max = $this->getMaxMatiere('moyenne', $table);
@@ -5095,30 +5173,6 @@
 			$_SESSION['message'] .= '. Vous pouvez imprimer les bulletins de la classe.';
 
 			header('Location: '.$source);
-
-
-
-			// $table = "sequence_".$periode."_".$classe;
-			// 
-			// // print_r($listeEleve);
-			// 			
-			
-			/*$rang = $this->showRangEleve($table);*/
-			/*for($j=0;$j<count($rang['resultat']);$j++){
-				echo "<p>L'élève ".$rang['id'][$j]." a obtenu ".$rang['resultat'][$j]." et est classé "; 
-						echo $rang['rang'][$j].".</p>";
-				$rank = $rang['rang'][$j];
-				$id = $rang['id'][$j];
-				$moy = $rang['resultat'][$j];
-				$sql = "UPDATE $table 
-						SET rang = '$rank'
-						WHERE  moyenne = '$moy'";
-				$req = $this->_db->query($sql);
-			}*/
-			/*
-			
-			
-			*/
 		}
 
 

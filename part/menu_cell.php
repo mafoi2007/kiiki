@@ -51,20 +51,22 @@
 		</ul>
 	</div>
 	
-	<?php /*
+	
 	<div id="sous_menu">
 		<h3><a href="<?php echo $serveur?>cell/note.php">Gestion des Notes</a></h3>
 		<ul>
-			
+			<li><a href="note.php?choix=<?php echo sha1('viewnt'); ?>#body2">Vue globale des Notes Séquentielles</a></li>
+			<li><a href="note.php?choix=<?php echo sha1('adntac'); ?>#body2">Attribuer une note académique à la classe</a></li>
+			<li><a href="note.php?choix=<?php echo sha1('revendic'); ?>#body2">Révendications Séquentielles</a></li>
 		</ul>
-	</div> */?>
+	</div> 
 	
 	
 	<div id="sous_menu">
 		<h3><a href="<?php echo $serveur?>cell/traitement_seq.php">traitements séquentiels</a></h3>
 		<ul>
-			<li><a href="note.php?choix=<?php echo sha1('viewnt'); ?>#body2">Vue globale des Notes Séquentielles</a></li>
-			<li><a href="traitement_seq.php?choix=<?php echo sha1('viewNoteAll'); ?>#body2">Recapitulatif des notes</a></li>
+			
+			<li><a href="traitement_seq.php?choix=<?php echo sha1('viewNoteAll'); ?>#body2">Rapport séquentiel des notes</a></li>
 			<li><a href="traitement_seq.php?choix=<?php echo sha1('traitNote'); ?>#body2">traitement des notes</a></li>
 			<li><a href="traitement_seq.php?choix=<?php echo sha1('traitMoy'); ?>#body2">traitement des moyennes</a></li>
 		</ul>
@@ -119,6 +121,19 @@
 	
 	<div id="sous_menu">
 		<h3><a href="<?php echo $serveur?>cell/archive.php">archives</a></h3>
+		<ul>
+			<li><a href="archive.php?choix=<?php echo sha1('certif');?>#body2">Certificat de scolarité</a></li>
+			<li><a href="archive.php?choix=<?php echo sha1('listeEleve');?>#body2">Liste des élèves</a></li>
+			<li><a href="archive.php?choix=<?php echo sha1('vueEff'); ?>#body2">Vue d'ensemble des effectifs</a></li>
+			<li><a href="archive.php?choix=<?php echo sha1('relNote'); ?>#body2">Relevé de Notes des Enseignants</a></li>
+			<li><a href="archive.php?choix=<?php echo sha1('listePP'); ?>#body2">Liste des Professeurs Principaux</a></li>
+			<li><a href="archive.php?choix=<?php echo sha1('conseil'); ?>#body2">Conseil de classe</a></li>
+		</ul>
+	</div>
+
+
+	<div id="sous_menu">
+		<h3><a href="<?php echo $serveur?>cell/revendication.php">Révendications Séquentielles</a></h3>
 		<ul>
 			<li><a href="archive.php?choix=<?php echo sha1('certif');?>#body2">Certificat de scolarité</a></li>
 			<li><a href="archive.php?choix=<?php echo sha1('listeEleve');?>#body2">Liste des élèves</a></li>

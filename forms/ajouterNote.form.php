@@ -25,7 +25,15 @@
 	<table border='1' width='75%' align='center'>
 		<tr>
 			<th colspan='5'>
-				<textarea name='competence' required>Write Competence</textarea>
+				Compétence évaluée : 
+				<input 
+					type='text' 
+					name = 'competence'
+					id='competence'
+					size='50'
+					maxlength='35'
+					required
+					placeholder='Saisir la compétence ici' />
 			</th>
 		</tr>
 		<?php 

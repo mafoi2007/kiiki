@@ -1435,7 +1435,7 @@
 				}
 			// echo '<pre>';print_r($section);
 			// echo '<pre>';print_r($matiereGroupe);
-			// print_r($_SESSION['section']);
+			// echo '<pre>'; print_r($_SESSION);
 			// echo $_SESSION['professeurPrincipal'];
 
 			header('Location:print_pdf.php');

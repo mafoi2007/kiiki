@@ -154,6 +154,28 @@
 			}
 			
 			
+
+			function goListe(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('eleve').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "note/revendic.ajax.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Classe par exemple
+				sel = document.getElementById('classe');
+				clas = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+clas);
+			}
 			
 			
 			
@@ -187,6 +209,9 @@
 			}
 			elseif($_GET['choix']==sha1('delnt')){
 				include_once('note/delnt.php');
+			}
+			elseif($_GET['choix']==sha1('revendic')){
+				include_once('note/revendic.php');
 			}
 			else{
 				echo "<h3 class='alert'>L'application ne prend pas en charge 
