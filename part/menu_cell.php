@@ -56,7 +56,7 @@
 		<h3><a href="<?php echo $serveur?>cell/note.php">Gestion des Notes</a></h3>
 		<ul>
 			<li><a href="note.php?choix=<?php echo sha1('viewnt'); ?>#body2">Vue globale des Notes Séquentielles</a></li>
-			<li><a href="note.php?choix=<?php echo sha1('adntac'); ?>#body2">Attribuer une note académique à la classe</a></li>
+			<?php /*<li><a href="note.php?choix=<?php echo sha1('adntac'); ?>#body2">Attribuer une note académique à la classe</a></li>*/ ?>
 			<li><a href="note.php?choix=<?php echo sha1('revendic'); ?>#body2">Révendications Séquentielles</a></li>
 		</ul>
 	</div> 
@@ -65,8 +65,7 @@
 	<div id="sous_menu">
 		<h3><a href="<?php echo $serveur?>cell/traitement_seq.php">traitements séquentiels</a></h3>
 		<ul>
-			
-			<li><a href="traitement_seq.php?choix=<?php echo sha1('viewNoteAll'); ?>#body2">Rapport séquentiel des notes</a></li>
+			<?php /*<li><a href="traitement_seq.php?choix=<?php echo sha1('viewNoteAll'); ?>#body2">Rapport séquentiel des notes</a></li> */?>
 			<li><a href="traitement_seq.php?choix=<?php echo sha1('traitNote'); ?>#body2">traitement des notes</a></li>
 			<li><a href="traitement_seq.php?choix=<?php echo sha1('traitMoy'); ?>#body2">traitement des moyennes</a></li>
 		</ul>
@@ -80,9 +79,9 @@
 	<div id="sous_menu">
 		<h3><a href="<?php echo $serveur?>cell/traitement_trim.php">traitements trimestriels</a></h3>
 		<ul>
-			<?php /*<li><a href="traitement_trim.php?choix=<?php echo sha1('etatRempl'); ?>#body2">état de remplissage</a></li> */?>
+			<?php /*<li><a href="traitement_trim.php?choix=<?php echo sha1('etatRempl'); ?>#body2">état de remplissage</a></li> 
 			<li><a href="traitement_trim.php?choix=<?php echo sha1('viewNote'); ?>#body2">visualisation des notes</a></li>
-			<li><a href="traitement_trim.php?choix=<?php echo sha1('viewNoteAll'); ?>#body2">Recapitulatif des notes</a></li>
+			<li><a href="traitement_trim.php?choix=<?php echo sha1('viewNoteAll'); ?>#body2">Recapitulatif des notes</a></li>*/?>
 			<li><a href="traitement_trim.php?choix=<?php echo sha1('traitNote'); ?>#body2">traitement des notes</a></li>
 			<li><a href="traitement_trim.php?choix=<?php echo sha1('traitMoy'); ?>#body2">traitement des moyennes</a></li>
 		</ul>
@@ -94,7 +93,7 @@
 		<ul>
 			<li><a href="traitement_ann.php?choix=<?php echo sha1('traitNote'); ?>#body2">traitement des notes</a></li>
 			<li><a href="traitement_ann.php?choix=<?php echo sha1('traitMoy'); ?>#body2">traitement des moyennes</a></li>
-			<li><a href="traitement_ann.php?choix=<?php echo sha1('viewNoteAll'); ?>#body2">Recapitulatif des Notes</a></li>
+			<?php /*<li><a href="traitement_ann.php?choix=<?php echo sha1('viewNoteAll'); ?>#body2">Recapitulatif des Notes</a></li> */?>
 		</ul>
 	</div>
 	
@@ -107,6 +106,7 @@
 			<li><a href="bulletin.php?choix=<?php echo sha1('bullAnn'); ?>#body2">bulletin annuel</a></li>
 			<li><a href="bulletin.php?choix=<?php echo sha1('rapSeq'); ?>#body2">Rapport Séquentiel</a></li>
 			<li><a href="bulletin.php?choix=<?php echo sha1('rapTrim'); ?>#body2">Rapport Trimestriel</a></li>
+			<li><a href="bulletin.php?choix=<?php echo sha1('rapAnn'); ?>#body2">Rapport Annuel</a></li>
 		</ul>
 	</div>
 	
@@ -128,22 +128,9 @@
 			<li><a href="archive.php?choix=<?php echo sha1('relNote'); ?>#body2">Relevé de Notes des Enseignants</a></li>
 			<li><a href="archive.php?choix=<?php echo sha1('listePP'); ?>#body2">Liste des Professeurs Principaux</a></li>
 			<li><a href="archive.php?choix=<?php echo sha1('conseil'); ?>#body2">Conseil de classe</a></li>
+			<li><a href="archive.php?choix=<?php echo sha1('conseil'); ?>#body2">Bulletins</a></li>
 		</ul>
-	</div>
-
-
-	<div id="sous_menu">
-		<h3><a href="<?php echo $serveur?>cell/revendication.php">Révendications Séquentielles</a></h3>
-		<ul>
-			<li><a href="archive.php?choix=<?php echo sha1('certif');?>#body2">Certificat de scolarité</a></li>
-			<li><a href="archive.php?choix=<?php echo sha1('listeEleve');?>#body2">Liste des élèves</a></li>
-			<li><a href="archive.php?choix=<?php echo sha1('vueEff'); ?>#body2">Vue d'ensemble des effectifs</a></li>
-			<li><a href="archive.php?choix=<?php echo sha1('relNote'); ?>#body2">Relevé de Notes des Enseignants</a></li>
-			<li><a href="archive.php?choix=<?php echo sha1('listePP'); ?>#body2">Liste des Professeurs Principaux</a></li>
-			<li><a href="archive.php?choix=<?php echo sha1('conseil'); ?>#body2">Conseil de classe</a></li>
-		</ul>
-	</div>
-	
+	</div>	
 	
 	<div id="sous_menu">
 		<h3><a href="<?php echo $serveur?>cell/close.php">cloturer l'année</a></h3>

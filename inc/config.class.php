@@ -1649,14 +1649,19 @@
 
 
 		public function getNoteEleve($eleve, $periode){
-			$sql = "SELECT note.id as id, id_eleve, id_matiere, id_classe, id_periode, note,
-							nom, prenom, nom_matiere  
-					FROM note, eleve, matiere
-					WHERE id_eleve = '$eleve'
-						AND id_eleve = eleve.id
-						AND code_matiere = id_matiere
-						AND id_periode = '$periode'
-					ORDER BY id_matiere";
+			$this->_eleve = $this->setUserId($eleve);
+			$this->_sequence = $this->setUserId($periode);
+			$sql = "SELECT note.id as id, id_eleve, nom_complet as nomEleve, 
+							id_matiere, nom_matiere, id_classe, nom_classe, id_periode, note
+							
+					FROM note, eleve, matiere, classe
+					WHERE id_eleve = '$this->_eleve'
+						AND id_periode = '$this->_sequence'
+						AND eleve.id = id_eleve
+						AND matiere.id = id_matiere
+						AND classe.id = id_classe
+					ORDER BY nom_matiere
+					";
 			$req = $this->_db->query($sql);
 			$resultat = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $resultat;
@@ -4071,6 +4076,55 @@
 			}
 
 			$_SESSION['message'] = $phrase;
+			header('Location:'.$source);
+		}
+
+
+
+
+
+
+		/**
+		 * On modifie les notes obtenues par un élève au cours de la séquence
+		 * @param string $source qui est la page de provenance de la requete
+		 * @param array $note qui contient la classe, les matieres, les notes et les annulations
+		 * @param void on renvoie juste un message pour dire que tout s'est bien passé.
+		 */
+		public function modifierNoteEleve($source, $note){
+			echo '<pre>'; print_r($note); echo '</pre>';
+			$this->_eleve = $this->setUserId($note['eleve']);
+			$this->_classe = $this->setUserId($note['classe']);
+			$this->_sequence = $this->setUserId($note['sequence']);
+			$matiere = $note['codeMatiere'];
+			$notes = $note['note'];
+			if(!empty($note['annuler'])){
+				$reset = $note['annuler'];
+			}
+			// On gère en 2 phases :  les notes à modifier et les notes à annuler 
+			for($i=0;$i<count($matiere);$i++){
+				$this->_matiere = $this->setUserId($matiere[$i]);
+				$this->_note = $this->setNote($notes[$i]);
+				$update = $this->_db->prepare("UPDATE note SET 
+												note = :note
+											WHERE id = :id");
+				$update->bindValue(':note', $this->_note);
+				$update->bindValue(':id', $this->_matiere);
+				$update->execute();
+				$_SESSION['message'] = 'Notes Modifiées. ';
+			}
+
+			if($reset){
+				$nbAnnuler = count($reset);
+				$_SESSION['message'] .= ' / '.$nbAnnuler.' note(s) annulée(s).';
+				for($x=0;$x<count($reset);$x++){
+					$this->_note = $this->setNote('');
+					$delete = $this->_db->prepare("UPDATE note SET note = :note
+													WHERE id = :id");
+					$delete->bindValue(':id', $reset[$x]);
+					$delete->bindValue(':note', $this->_note);
+					$delete->execute();
+				}
+			}		
 			header('Location:'.$source);
 		}
 		

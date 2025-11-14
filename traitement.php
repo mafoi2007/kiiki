@@ -1031,6 +1031,18 @@
 		// print_r($_SESSION);
 		header('Location:print_pdf_landscape.php');
 	}
+
+
+
+
+
+	if(isset($_POST['revendic'])){
+		/*echo '<pre>';
+		print_r($_REQUEST);
+		echo '<pre>';*/
+		$values = $_POST;
+		$config->modifierNoteEleve($source, $values);
+	}
 	
 	
 	
