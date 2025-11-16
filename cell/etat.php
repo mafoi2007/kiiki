@@ -67,6 +67,31 @@
 				section = sel.options[sel.selectedIndex].value;
 				xhr.send("section="+section);
 			}
+
+
+
+
+			function ficheAbsence(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('niveau_classe').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "etat/ficheAbsence.ajax.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Classe par exemple
+				sel = document.getElementById('section');
+				section = sel.options[sel.selectedIndex].value;
+				xhr.send("section="+section);
+			}
 	</script>
 
 </head>
@@ -87,6 +112,7 @@
 			<li><h3><a href="etat.php?choix=<?php echo sha1('relNote'); ?>#body2">Relevé de Notes des Enseignants</a></h3></li>
 			<li><h3><a href="etat.php?choix=<?php echo sha1('listePP'); ?>#body2">Liste des Professeurs Principaux</a></h3></li>
 			<li><h3><a href="etat.php?choix=<?php echo sha1('conseil'); ?>#body2">Conseil de classe</a></h3></li>
+			<li><h3><a href="etat.php?choix=<?php echo sha1('ficheAbs'); ?>#body2">Fiche d'Absence</a></h3></li>
 		</ul>
 	</div>
 		<?php 
@@ -105,6 +131,8 @@
 					require_once('etat/listePP.php');
 				}elseif($choix==sha1('conseil')){
 					require_once('etat/conseil.php');
+				}elseif($choix==sha1('ficheAbs')){
+					require_once('etat/ficheAbs.php');
 				}else{
 					echo "<h3 class='alert' align='center'>Choix Non Valide.</h3>";
 				}

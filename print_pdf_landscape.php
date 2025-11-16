@@ -11,38 +11,11 @@
 	session_start();
 	require_once('inc/pdfL.class.php');
 	$pdf = new pdf('L', 'mm', 'A4');
-	
+	$pdf->SetFillColor(155, 150, 149);
 	
 	
 	if(isset($_SESSION['print'])){
-		// On charge les informations d'entête de l'établissement
-		// $ministere = strtoupper(utf8_decode($_SESSION['ministere']));
-		// $pays = $_SESSION['pays'];
-		// $ets = $_SESSION['ets'];
-		// $devise = $_SESSION['devise'];
-		// $contact = $_SESSION['contact'];
-		// $as = $_SESSION['as'];
 		
-		
-		/*$ministere = $_SESSION['ministere'];
-		$pays = $_SESSION['pays'];
-		$ets = $_SESSION['ets'];
-		$devise = $_SESSION['devise'];
-		$contact = $_SESSION['contact'];
-		$as = $_SESSION['as'];
-		$ville = ucwords($_SESSION['arrondissement']);
-		$titreSignataire = ucfirst($_SESSION['titre_signataire']);
-		$signataire = ucfirst($_SESSION['signataire']);
-		$nomChef = $_SESSION['chef_ets'];
-		$ministereAnglais = $_SESSION['ministere_anglais'];
-		$paysAnglais = $_SESSION['pays_anglais'];
-		$etsAnglais = $_SESSION['ets_anglais'];
-		$deviseAnglais = $_SESSION['devise_anglais'];
-		// $asAnglais = $_SESSION['as_anglais'];
-		$ville = ucwords($_SESSION['arrondissement']);
-		$titreSignataire = ucfirst($_SESSION['titre_signataire']);
-		$signataire = ucfirst($_SESSION['signataire']);
-		$nomChef = $_SESSION['chef_ets'];*/
 		/**********************************************************************
 		***********************************************************************
 		*******	Impression/Visualisation des  Notes Séquentielles *************
@@ -50,7 +23,7 @@
 		**********************************************************************/
 		
 		if($_SESSION['print']=='VisualiserNoteSequentielle'){
-			$pdf->SetFillColor(155, 150, 149);
+			
 			$classe = $_SESSION['classe'];
 			$eleve = $_SESSION['eleve'];
 			$matiere = $_SESSION['matiere'];
@@ -173,6 +146,74 @@
 		
 		
 		
+
+		if($_SESSION['print']=='ficheAbsence'){
+			$pdf->addPage();
+			$pdf->Entete();
+			$section = $_SESSION['classe']['section'];
+			$titre['fr'] = "Fiche hebdomadaire d'absences";
+			$titre['en'] = "Weekly Absence Paper";
+			$pdf->Titre($titre[$section]);
+			$eleve = $_SESSION['classe']['eleve'];
+			$className['fr'] = "Classe : ".$eleve[0]['nom_classe'];
+			$className['en'] = "Class : ".$eleve[0]['nom_classe'];
+			$pdf->Ln(10);
+			$pdf->SetFont('Times','B',14);
+			$pdf->Cell(20);
+			$pdf->Cell(25,6,$className[$section],0,0,'C');
+			$pdf->Ln(15);
+
+			$titreNum['fr'] = "N°";
+			$titreNum['en'] = "N°";
+			$titreNameEleve['fr'] = "Nom de l'élève";
+			$titreNameEleve['en'] = "Student's Name";
+
+			
+
+			$pdf->SetFont('Times','B',12);
+			$pdf->Cell(12,18,utf8_decode($titreNum[$section]), 1, 0, 'C',true);
+			$pdf->Cell(60,18,utf8_decode($titreNameEleve[$section]), 1, 0, 'C',true);
+			for($i=1;$i<=4;$i++){
+				$titreSemaine['fr'] = "Semaine ";
+				$titreSemaine['en'] = "Week ";
+				$pdf->Cell(50,6,utf8_decode($titreSemaine[$section]." ".$i), 1, 0, 'C',true);
+				
+				// $pdf->Cell(50,3,utf8_decode("ddd"), 1, 0, 'C',true);
+			}
+			$pdf->Ln(6);
+			$pdf->Cell(72);
+			for($x=1;$x<=4;$x++){
+				$texte['fr'] = "Du ........ au ........";
+				$texte['en'] = "From ........ to ........";
+				$pdf->Cell(50,6,utf8_decode($texte[$section]), 1, 0, 'C',true);
+			}			
+			$pdf->Ln(6);
+			$pdf->Cell(72);
+			for($j=1;$j<=4;$j++){
+				$days['fr'] = array('L', 'M', 'M', 'J', 'V');
+				$days['en'] = array('M', 'T', 'W', 'T', 'F');
+				for($k=0;$k<count($days[$section]);$k++){
+					$pdf->Cell(10,6,$days[$section][$k],1,0,'C');
+				}
+			}
+			$pdf->Ln(6);
+			$x = 1;
+			for($a=0;$a<count($eleve);$a++){
+				$pdf->SetFont('Times','',10);
+				$pdf->Cell(12,6,utf8_decode($x), 1, 0, 'C');
+				$pdf->Cell(60,6,substr(utf8_decode($eleve[$a]['nom_complet']),0,30), 1, 0, 'L');
+				$x++;
+				for($b=0;$b<4;$b++){
+					for($c=0;$c<5;$c++){
+						$pdf->Cell(10,6,utf8_decode(""), 1, 0, 'C');
+					}
+				}
+				$pdf->Ln(6);
+			}
+
+			$fileName='fff.pdf';
+			$pdf->Output($fileName, 'I');
+		}
 		
 		
 		

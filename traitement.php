@@ -1163,7 +1163,28 @@
 		
 		
 		
-		
+		if($_POST['to_print']=='ficheAbsence'){
+			$classe = $_POST['classe'];
+				if($classe=='null'){
+					$_SESSION['message'] = 'Vous devez choisir une classe.';
+					header('Location:'.$source);
+				}else{
+					$listeEleve = $config->listeEleve($_POST['classe'], 'non_supprime', $as );
+					$nbValue = count($listeEleve); // Si ça vaut 0, y'a pas d'élèves dans la classe.
+					if($nbValue===0){
+						$_SESSION['message'] = 'Classe sans élèves.';
+						header('Location:'.$source);
+					}else{
+						$section = $config->getSectionClasse($classe);
+						$_SESSION['classe']['information'] = $_SESSION['information'];
+						$_SESSION['classe']['eleve'] = $listeEleve;
+						$_SESSION['classe']['section'] = $section;
+						$_SESSION['classe']['stat'] = $config->listeEleveStat($_POST['classe'], 'non_supprime', $as);
+						$_SESSION['print'] = $_POST['to_print'];
+						header('Location:print_pdf_landscape.php');
+					}
+				}			
+		}
 		
 		
 		/*---------------------------------------------------------

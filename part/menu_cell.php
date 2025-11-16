@@ -9,6 +9,7 @@
 			<li><a href="etat.php?choix=<?php echo sha1('relNote'); ?>#body2">Relevé de Notes des Enseignants</a></li>
 			<li><a href="etat.php?choix=<?php echo sha1('listePP'); ?>#body2">Liste des Professeurs Principaux</a></li>
 			<li><a href="etat.php?choix=<?php echo sha1('conseil'); ?>#body2">Conseil de classe</a></li>
+			<li><a href="etat.php?choix=<?php echo sha1('ficheAbs'); ?>#body2">Fiche d'Absence</a></li>
 		</ul>
 	</div>
 	
