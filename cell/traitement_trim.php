@@ -27,7 +27,7 @@
 			href="../images/homme.png" />
 	<link type="text/javascript" 
 			src="../javascript/js.js" />
-	<title><?php echo $_SESSION['sexeUser'].' '.$_SESSION['nomUser'];?> : Traitements Trimestriels</title>
+	<title><?php echo $_SESSION['user']['nom_complet_enseignant'];?> : Traitements Trimestriels</title>
 	<script>
 			function goView(){
 				var xhr = getXhr()
@@ -174,9 +174,9 @@
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 			
 			
@@ -202,9 +202,9 @@
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 			
 			
@@ -249,14 +249,14 @@
 		<ul>
 			<?php /*<li><h3><a 
 				href="traitement_trim.php?choix=<?php echo sha1('etatRempl'); ?>#body2">
-				Etat de remplissage</a></h3></li> */ ?>
+				Etat de remplissage</a></h3></li> 
 			<li><h3><a 
 				href="traitement_trim.php?choix=<?php echo sha1('viewNote'); ?>#body2">
 				Visualisation des Notes</a></h3></li>
 			
 			<li><h3><a 
 				href="traitement_trim.php?choix=<?php echo sha1('viewNoteAll'); ?>#body2">
-				Recapitulatif des Notes</a></h3></li>
+				Recapitulatif des Notes</a></h3></li> */ ?>
 			<li><h3><a 
 				href="traitement_trim.php?choix=<?php echo sha1('traitNote'); ?>#body2">
 				Traitement des Notes</a></h3></li>

@@ -7,8 +7,8 @@
 	
 	<select name='trimestre'>
 		<?php 
-		if(isset($_POST['clas'])){
-			$cls = $_POST['clas'];
+		if(isset($_POST['classe'])){
+			$cls = $_POST['classe'];
 			$listeDepartement = $note->trimestresTraites($cls);
 			for($j=0;$j<count($listeDepartement);$j++){
 				echo "<option value='";

@@ -25,7 +25,7 @@
 	<link rel="stylesheet" type="text/css" href="../styles/style.css" />
 	<link rel ="shortcut icon" type="image/x-icon" href="../images/homme.png" />
 	<link type="text/javascript" src="../javascript/js.js" />
-	<title>Bienvenue <?php echo $_SESSION['login']; ?></title>
+	<title><?php echo $_SESSION['user']['nom_complet_enseignant']; ?>: Bulletins</title>
 		<script>
 			function goBullSeq(){
 				var xhr = getXhr()
@@ -121,9 +121,9 @@
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 			
 			

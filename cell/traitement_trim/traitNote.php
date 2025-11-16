@@ -1,6 +1,6 @@
 <h1 class='bien'>traitement des notes trimestrielles</h1>
 		<form method='post' action='../traitement.php' target ='_blank'>
-			Classe : <select name='clas' id='clas' onChange='goTraitNt()'>
+			Classe : <select name='classe' id='classe' onChange='goTraitNt()'>
 				<option value='null'>-Classe-</option>
 				<?php 
 					$regions = $note->viewClasseNote();
@@ -12,10 +12,7 @@
 				?>
 			</select>
 			
-			Trimestre : <div id='trimestre' style = 'display:inline'>
-				<select name='trimestre'>
-					<option value='null'>-choisir un trimestre-</option>
-				</select>
+			<div id='trimestre' style = 'display:inline'>
 			</div>
 			
 		</form>

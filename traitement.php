@@ -812,12 +812,12 @@
 		/*echo '<pre>';
 		print_r($_REQUEST);*/
 		$trimestre = $_POST['trimestre'];
-		$classe = $_POST['clas'];
+		$classe = $_POST['classe'];
 		if($classe=='null' or $trimestre=='null'){
 			$_SESSION['message'] = 'La Classe et/ou le Trimestre doivent être renseignés.';
 			header('Location:'.$source);
 		}else{
-			$note->traiterNoteTrimestre($source, $trimestre, $classe);
+			$config->traiterNoteTrimestre($source, $trimestre, $classe);
 		}
 	}
 	
@@ -830,12 +830,12 @@
 	
 	
 	if(isset($_REQUEST['TraiterMoyenneTrimestrielle'])){
-		$source = $_SERVER['HTTP_REFERER'];
+		// $source = $_SERVER['HTTP_REFERER'];
 		$trimestre = $_POST['trimestre'];
-		$classe = $_POST['clas'];
+		$classe = $_POST['classe'];
 		echo '<pre>';
 		print_r($_REQUEST);
-		$note->traiterMoyenneTrimestre($source, $trimestre, $classe);
+		$config->traiterMoyenneTrimestre($source, $trimestre, $classe);
 		echo '</pre>';
 	}
 	
@@ -1456,22 +1456,32 @@
 		
 		elseif($_POST['to_print']=='BulletinTrimestriel'){
 			echo '<pre>';print_r($_POST);echo '</pre>';
+			$_SESSION['print'] ='BullTrimestriel';
+			// echo $_SESSION['print'];
 			$_SESSION['trimestre'] = $_POST['trimestre'];
-			$_SESSION['code_classe'] = $_POST['clas'];
-			$nom_classe = $config->viewNomClasse($_POST['clas']);
-			$_SESSION['nom_classe'] = $nom_classe['nom_classe'];
-			$_SESSION['print'] = 'BullTrimestriel';
-			$section = $config->verifSectionClasse($_POST['clas']);
+			$_SESSION['classe'] = $_POST['classe'];
+			$_SESSION['nomClasse'] = $config->viewNomClasse($_POST['classe']);
+			$section = $config->verifSectionClasse($_POST['classe']);
 			$_SESSION['section'] = $section;
-			$_SESSION['eleve'] = $note->tableTrimestre($_POST['trimestre'],$_POST['clas']);
-			$_SESSION['eleve2'] = $note->tableTrimestreMerite($_POST['trimestre'],$_POST['clas']);
-			$_SESSION['statistique'] = $note->statTrimestre($_POST['trimestre'], $_POST['clas']);
-			$_SESSION['groupe'] = $note->getGroupeClasse($_POST['clas']);
-			// $_SESSION['rang'] = $note->showRangEleve($_POST['periode'],$_POST['classe']);
-			for($x=0;$x<count($_SESSION['groupe']);$x++){
-				$gpCode = $_SESSION['groupe'][$x];
-				$listeMatiere = $note->getMatiereGroupe($gpCode,
-														$_SESSION['code_classe']);
+			$eleve = $config->moyTrimestreClasse($_POST['trimestre'], 
+												$_POST['classe']);
+			$eleve2 = $config->moyTrimestreClasseMerite($_POST['trimestre'], 
+												$_POST['classe']);
+			$tableBulletin = $config->trimestreClasse($_POST['trimestre'],
+												$_POST['classe']);
+			$tableStat = $config->statTrimestre($_POST['trimestre'], 
+												$_POST['classe']);
+			$nbGroupe = $config->afficheGroupe($_POST['classe']);
+			for($w=0;$w<count($nbGroupe);$w++){
+				$nomGpe = $nbGroupe[$w]['groupe'];
+				$matiereGroupe[$nomGpe] = $config->getmatiereGroupe($nbGroupe[$w]['groupe'],
+														$_POST['classe']);
+			}
+			$groupes = $config->getGroupeClasse($_POST['classe']);
+			for($x=0;$x<count($groupes);$x++){
+				$gpCode = $groupes[$x]['code_groupe'];
+				$listeMatiere = $config->getMatiereGroupe($gpCode,
+														$_SESSION['classe']);
 				$j=0;
 				while($j<count($listeMatiere)){
 					$codeMatiere[$gpCode][] = $listeMatiere[$j]['id_matiere'];
@@ -1482,21 +1492,63 @@
 			$_SESSION['code_matiere'] = $codeMatiere;
 			$_SESSION['nom_matiere'] = $nomMatiere;
 			
-			// On extrait le Prof Principal de la Classe
-			$classePrincipale = $config->classePrincipale();
-			for($a=0;$a<count($classePrincipale);$a++){
-				if($classePrincipale[$a]['code_classe']==$_SESSION['code_classe']){
-					$_SESSION['professeurPrincipal'] = $classePrincipale[$a]['sexe'].' ';
-					$_SESSION['professeurPrincipal'] .= strtoupper($classePrincipale[$a]['nom']).' ';
-					$_SESSION['professeurPrincipal'] .= ucwords($classePrincipale[$a]['prenom']).' ';
-				}
-			}
-			
-			
-			// echo '<pre>';print_r($_SESSION['eleve']);echo '</pre>';
-			// echo '<pre>';print_r($_SESSION['eleve']);echo '</pre>';
-			// echo '<pre>';print_r($_SESSION['eleve']);echo '</pre>';
+			$_SESSION['eleve'] = $eleve;
+			$_SESSION['eleve2'] = $eleve2;
+			$_SESSION['bulletin'] = $tableBulletin;
+			$_SESSION['statistique'] = $tableStat;
+			$_SESSION['matiereGroupe'] = $matiereGroupe;
+			$nom_classe = $config->getClasse($_POST['classe']);
+			$_SESSION['nom_classe'] = $nom_classe['nom_classe'];
+			$_SESSION['groupe'] = $config->getGroupeClasse($_POST['classe']);
+			// echo '<pre>';print_r($section);
+			// echo '<pre>';print_r($matiereGroupe);
+			// echo '<pre>'; print_r($_SESSION);
+			// echo $_SESSION['professeurPrincipal'];
+
 			header('Location:print_pdf.php');
+
+
+			// $_SESSION['trimestre'] = $_POST['trimestre'];
+			// $_SESSION['code_classe'] = $_POST['classe'];
+			// $nom_classe = $config->viewNomClasse($_POST['classe']);
+			// $_SESSION['nom_classe'] = $nom_classe['nom_classe'];
+			// $_SESSION['print'] = 'BullTrimestriel';
+			// $section = $config->verifSectionClasse($_POST['classe']);
+			// $_SESSION['section'] = $section;
+			// $_SESSION['eleve'] = $note->tableTrimestre($_POST['trimestre'],$_POST['classe']);
+			// $_SESSION['eleve2'] = $note->tableTrimestreMerite($_POST['trimestre'],$_POST['classe']);
+			// $_SESSION['statistique'] = $note->statTrimestre($_POST['trimestre'], $_POST['classe']);
+			// $_SESSION['groupe'] = $note->getGroupeClasse($_POST['classe']);
+			// // $_SESSION['rang'] = $note->showRangEleve($_POST['periode'],$_POST['classe']);
+			// for($x=0;$x<count($_SESSION['groupe']);$x++){
+			// 	$gpCode = $_SESSION['groupe'][$x];
+			// 	$listeMatiere = $note->getMatiereGroupe($gpCode,
+			// 											$_SESSION['code_classe']);
+			// 	$j=0;
+			// 	while($j<count($listeMatiere)){
+			// 		$codeMatiere[$gpCode][] = $listeMatiere[$j]['id_matiere'];
+			// 		$nomMatiere[$gpCode][] = $listeMatiere[$j]['nom_matiere'];
+			// 		$j++;
+			// 	}
+			// }
+			// $_SESSION['code_matiere'] = $codeMatiere;
+			// $_SESSION['nom_matiere'] = $nomMatiere;
+			
+			// // On extrait le Prof Principal de la Classe
+			// $classePrincipale = $config->classePrincipale();
+			// for($a=0;$a<count($classePrincipale);$a++){
+			// 	if($classePrincipale[$a]['code_classe']==$_SESSION['code_classe']){
+			// 		$_SESSION['professeurPrincipal'] = $classePrincipale[$a]['sexe'].' ';
+			// 		$_SESSION['professeurPrincipal'] .= strtoupper($classePrincipale[$a]['nom']).' ';
+			// 		$_SESSION['professeurPrincipal'] .= ucwords($classePrincipale[$a]['prenom']).' ';
+			// 	}
+			// }
+			
+			
+			// // echo '<pre>';print_r($_SESSION['eleve']);echo '</pre>';
+			// // echo '<pre>';print_r($_SESSION['eleve']);echo '</pre>';
+			// // echo '<pre>';print_r($_SESSION['eleve']);echo '</pre>';
+			// header('Location:print_pdf.php');
 		}
 		
 		

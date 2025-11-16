@@ -11,9 +11,7 @@
 					}
 				?>
 			</select>
-			
 			<div id='sekence' style = 'display:inline'>
-				
 			</div>
 			
 		</form>

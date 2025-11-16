@@ -257,14 +257,14 @@
 			
 			<li><h3><a 
 				href="traitement_seq.php?choix=<?php echo sha1('viewNoteAll'); ?>#body2">
-				Recapitulatif des Notes</a></h3></li>
+				Recapitulatif des Notes</a></h3></li> */ ?>
 			<li><h3><a 
 				href="traitement_seq.php?choix=<?php echo sha1('traitNote'); ?>#body2">
 				Traitement des Notes</a></h3></li>
 			<li><h3><a 
 				href="traitement_seq.php?choix=<?php echo sha1('traitMoy'); ?>#body2">
 				Traitement des Moyennes</a></h3></li>
-		</ul> */ ?>
+		</ul>
 	</div>
 	
 	

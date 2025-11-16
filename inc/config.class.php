@@ -4467,9 +4467,8 @@
 
 
 
-		private function getRankMatiere($codeMatiere, $table){
+		private function getRankMatiere($codeMatiere, $table, $champMatiere){
 			$champCible = strtolower($codeMatiere.'_rank');
-			$champMatiere = strtolower($codeMatiere.'_seq');
 			$sql = "SELECT $champMatiere, id_eleve
 					FROM $table
 					WHERE $champMatiere >0
@@ -4580,7 +4579,34 @@
 				$champRank =  strtolower($codeMatiere.'_rank');
 				$min = $this->getMinMatiere($champCible,$table);
 				$max = $this->getMaxMatiere($champCible, $table);
-				$rank  = $this->getRankMatiere($codeMatiere, $table);
+				$rank  = $this->getRankMatiere($codeMatiere, $table, $champCible);
+				print_r($rank);
+				$requete  = $this->_db->prepare("UPDATE $table SET 
+							$champMin =:min,
+							$champMax = :max
+							");
+				$requete->bindValue(':min', $min);
+				$requete->bindValue(':max', $max);
+				$requete->execute();
+			}
+		}
+
+
+
+
+		private function addRankMinMaxTrimestre($classe, $table){
+			$listeMatiere = $this->listeMatiereClasse($classe);
+			// echo '<pre>'; print_r($listeMatiere); echo '</pre>';
+			for($i=0;$i<count($listeMatiere);$i++){
+				$idMatiere = $listeMatiere[$i]['id'];
+				$codeMatiere = $listeMatiere[$i]['code_matiere'];
+				$champCible = strtolower($codeMatiere.'_trim');
+				$champMin = strtolower($codeMatiere.'_min');
+				$champMax = strtolower($codeMatiere.'_max');
+				$champRank =  strtolower($codeMatiere.'_rank');
+				$min = $this->getMinMatiere($champCible,$table);
+				$max = $this->getMaxMatiere($champCible, $table);
+				$rank  = $this->getRankMatiere($codeMatiere, $table, $champCible);
 				print_r($rank);
 				$requete  = $this->_db->prepare("UPDATE $table SET 
 							$champMin =:min,
@@ -5002,6 +5028,21 @@
 
 
 
+		public function classesTraiteesTrim(){
+			$sql = "SELECT classe, nom_classe 
+					FROM bull_trim, classe 
+					WHERE classe = classe.id
+					GROUP BY nom_classe ORDER BY section, niveau_classe, nom_classe";
+			$req = $this->_db->query($sql);
+			while($res = $req->fetch(PDO::FETCH_ASSOC)){
+				$resultat[] = $res;
+			}
+			return $resultat;
+		}
+
+
+
+
 		public function sequencesTraitees($classe){
 			$sql = "SELECT DISTINCT sequence 
 					FROM bull_seq
@@ -5010,6 +5051,18 @@
 			while($res = $req->fetch(PDO::FETCH_ASSOC)){
 				$resultat[] = $res;
 			}
+			return $resultat;
+		}
+
+
+
+
+		public function trimestresTraites($classe){
+			$sql = "SELECT DISTINCT trim 
+					FROM bull_trim
+					WHERE classe='$classe'";
+			$req = $this->_db->query($sql);
+			$resultat = $req->fetchAll(PDO::FETCH_ASSOC);
 			return $resultat;
 		}
 
@@ -5232,9 +5285,222 @@
 
 
 
+
+
+
+
+		// On introduit le professeur titulaire dans la table du bulletin
+		public function putTitulaire($table, $classe, $champ){
+			$sql = "SELECT prof, classe, nom_complet_enseignant, nom_classe, sexe
+					FROM classe_principale, enseignant, classe
+					WHERE classe='$classe'
+						AND prof = enseignant.id
+						AND classe = classe.id";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			$nomTitulaire = $res['sexe'].' '.$res['nom_complet_enseignant'];
+			$update = $this->_db->prepare("UPDATE $table SET $champ =:titulaire");
+			$update->bindValue(':titulaire', $nomTitulaire);
+			$update->execute();
+		}
+
+
+
+
+
+
+
+
+
+		public function traiterMoyenneTrimestre($source, $trimestre, $classe){
+			$this->_sequence = $this->setUserId($trimestre);
+			$this->_classe = $this->setUserId($classe);
+			$table = 'trimestre_'.$this->_sequence.'_'.$this->_classe;
+			$infoClasse = $this->getClasse($this->_classe);
+			// print_r($infoClasse);
+			$section = $infoClasse['section'];
+			// On introduit les totaux par groupe ainsi que les moyennes
+			$this->addTotalGroupe($this->_classe, $table);
+			// On gère les appréciations et cotes par groupe 
+			$this->addMoyenneGroupe($this->_classe, $table);
+			// On gère le classement des élèves
+			$min = $this->getMinMatiere('moyenne', $table);
+			$max = $this->getMaxMatiere('moyenne', $table);
+			$count = "SELECT count(moyenne) as moyenne 
+					FROM $table 
+					WHERE moyenne > '0'";
+			$requete = $this->_db->query($count);
+			$resultat = $requete->fetch(PDO::FETCH_ASSOC);
+			$this->getRank($table);
+			$update = $this->_db->prepare("UPDATE $table SET 
+							min =:min,
+							max =:max,
+							classes = :classes
+							");
+			$update->bindValue(':min',$min);
+			$update->bindValue(':max', $max);
+			$update->bindValue(':classes', $resultat['moyenne']);
+			$update->execute();
+			// On positionne le titulaire de la classe
+			$this->putTitulaire($table, $this->_classe, 'titulaire');
+			// On introduit les heures d'absence 
+			// On renvoie le message de fin
+			$_SESSION['message'] = 'Moyennes de la classe de '.$infoClasse['nom_classe'];
+			$_SESSION['message'] .= ' traitées pour le trimestre '.$this->_sequence;
+			$_SESSION['message'] .= '. Vous pouvez imprimer les bulletins de la classe.';
+			header('Location: '.$source);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			// $table = "trimestre_".$trimestre."_".$classe;
+			// $listeEleve = $this->listeEleve($classe, 'non_supprime');
+			// $section = $this->getSection($classe);
+			// // print_r($listeEleve);
+			
+			// // On fait un traitement pour chaque élève de la classe 
+			// for($i=0;$i<count($listeEleve);$i++){
+			// 	$idEleve = $listeEleve[$i]['id'];
+			// 	$nom = strtoupper($listeEleve[$i]['nom']);
+			// 	$prenom = ucwords($listeEleve[$i]['prenom']);
+			// 	$nomComplet = $nom.' '.$prenom;
+			// 	// echo '<p>'.$i. ' '.$nomComplet.'</p>';
+				
+			// 	// On récupère les matières par Groupe 
+			// 	$groupe = $this->getGroupeClasse($classe);
+			// 	// print_r($groupe);	
+			// 	for($a=0;$a<count($groupe);$a++){
+			// 		$matieres = $this->getMatiereGroupe($groupe[$a],$classe);
+			// 		// print_r($matieres);
+			// 		for($b=0;$b<count($matieres);$b++){
+			// 			$codeGroupe = $groupe[$a];
+			// 			$champMatiere = $matieres[$b]['id_matiere'].'_total';
+			// 			$champCoef = $matieres[$b]['id_matiere'].'_coef';
+			// 			$champEnseignant = $matieres[$b]['id_matiere'].'_enseignant';
+			// 			$nomEnseignant = strtoupper($matieres[$b]['nom']).' ';
+			// 			$nomEnseignant .= ucwords($matieres[$b]['prenom']);
+			// 			// echo $champEnseignant.' = '.$nomEnseignant.' <br/>';
+			// 			$sql_gp_note = "SELECT $champMatiere 
+			// 							FROM $table 
+			// 							WHERE id_eleve = '$idEleve'";
+			// 			// echo $sql_gp_note;
+			// 			$req_gp_note = $this->_db->query($sql_gp_note);
+			// 			$res_gp_note = $req_gp_note->fetch(PDO::FETCH_ASSOC);
+			// 			$champTotalMatiere[$codeGroupe][$champMatiere] = $res_gp_note[$champMatiere];
+			// 			$sql_gp_coef = "SELECT $champCoef 
+			// 							FROM $table 
+			// 							WHERE id_eleve = '$idEleve'";
+			// 			// echo $sql_gp_coef;
+			// 			$req_gp_coef = $this->_db->query($sql_gp_coef);
+			// 			$res_gp_coef = $req_gp_coef->fetch(PDO::FETCH_ASSOC);
+			// 			$champTotalCoef[$codeGroupe][$champCoef] = $res_gp_coef[$champCoef];
+			// 		}
+			// 		$SommeCoef[$a] = array_sum($champTotalCoef[$codeGroupe]);
+			// 		$SommePoint[$a] = array_sum($champTotalMatiere[$codeGroupe]);
+			// 		if($SommeCoef[$a]!=0){$moyenneGroupe[$a] = $SommePoint[$a] / $SommeCoef[$a];}else{$moyenneGroupe[$a]='';}
+					
+			// 		$app[$a] = $this->showAppreciation($moyenneGroupe[$a]);
+			// 		$apprec[$a] = $app[$a]['cote'];
+			// 		$champGroupeTotal = $codeGroupe.'_total';
+			// 		$champGroupeCoef = $codeGroupe.'_coef';
+			// 		$champGroupeMoyenne = $codeGroupe.'_moyenne';
+			// 		$champGroupeCote = $codeGroupe.'_cote';
+					
+			// 		$sql_upd = "UPDATE $table 
+			// 					SET $champGroupeTotal = '$SommePoint[$a]',
+			// 					 $champGroupeCoef = '$SommeCoef[$a]',
+			// 					 $champGroupeMoyenne = '$moyenneGroupe[$a]',
+			// 					 $champEnseignant = '$nomEnseignant',
+			// 					 $champGroupeCote = '$apprec[$a]'
+			// 					WHERE id_eleve = '$idEleve'";
+			// 		$req_upd = $this->_db->query($sql_upd);
+			// 	}
+			// 	$totalPoint = array_sum($SommePoint);
+			// 	$totalCoef = array_sum($SommeCoef);
+			// 	/*Pour être classé, le total des Coef doit être supérieur ou égale à 70% des coef 
+			// 	définis dans la classe */
+			// 	$CoefDefinis = $this->getCoefClasse($classe);
+			// 	$classementPossible = $CoefDefinis * 40 / 100;
+			// 	if($totalCoef>=$classementPossible){
+			// 		$moyenne = $totalPoint / $totalCoef;
+			// 		$appr = $this->showAppreciation($moyenne);
+			// 		if($section=='fr'){$appreciation = $appr['nom_appreciation']; $cote = $appr['cote'];} 
+			// 		elseif($section=='en'){$appreciation = $appr['nom_appreciation_anglais']; $cote = $appr['cote'];}
+			// 		// $appreciation = $appr['nom_appreciation'];
+			// 	}
+			// 	else{
+			// 		$moyenne = 0;
+			// 		$appreciation= '--';
+			// 		$cote = '-';
+			// 	}
+			// 	$sql_upd2 = "UPDATE $table 
+			// 				SET total_point = '$totalPoint',
+			// 					total_coef = '$totalCoef',
+			// 					moyenne = '$moyenne',
+			// 					appreciation = '$appreciation',
+			// 					cote = '$cote'
+			// 				WHERE id_eleve='$idEleve'";
+			// 	$req_upd2 = $this->_db->query($sql_upd2);
+				
+			// 	$sql = "SELECT count(moyenne) as classes 
+			// 			FROM $table 
+			// 			WHERE moyenne !='0.00'";
+			// 	$req = $this->_db->query($sql);
+			// 	$res = $req->fetch(PDO::FETCH_ASSOC);
+			// 	$classes = $res['classes'];
+			// 	$sql_upd3 = "UPDATE $table 
+			// 					SET classes = '$classes'";
+			// 	$req_upd3 = $this->_db->query($sql_upd3);
+			// }
+			// $rang = $this->showRangEleve($table);
+			// for($j=0;$j<count($rang['resultat']);$j++){
+			// 	echo "<p>L'élève ".$rang['id'][$j]." a obtenu ".$rang['resultat'][$j]." et est classé "; 
+			// 			echo $rang['rang'][$j].".</p>";
+			// 	$rank = $rang['rang'][$j];
+			// 	$id = $rang['id'][$j];
+			// 	$moy = $rang['resultat'][$j];
+			// 	$sql = "UPDATE $table 
+			// 			SET rang = '$rank'
+			// 			WHERE  moyenne = '$moy'";
+			// 	$req = $this->_db->query($sql);
+			// }
+			// $_SESSION['message'] = 'Moyennes de la classe de '.$classe;
+			// $_SESSION['message'] .= ' traitées pour le Trimestre '.$trimestre;
+			// $_SESSION['message'] .= '. Vous pouvez imprimer les bulletins de la classe.';
+			// header('Location: '.$source);
+		}
+
+
+
+
 		// Quelles informations y'a t-il dans la table moy_sequence_periode_cls ?
 		public function moySequenceClasse($periode, $classe){
 			$table = 'sequence_'.$periode.'_'.$classe;
+			$sql = "SELECT * FROM `$table`";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+
+
+
+
+		// Quelles informations y'a t-il dans la table moy_sequence_periode_cls ?
+		public function moyTrimestreClasse($periode, $classe){
+			$table = 'trimestre_'.$periode.'_'.$classe;
 			$sql = "SELECT * FROM `$table`";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
@@ -5255,9 +5521,36 @@
 
 
 
+
+
+		// Quelles informations y'a t-il dans la table moy_sequence_periode_cls ?
+		// Par Odre de Mérite
+		public function moyTrimestreClasseMerite($periode, $classe){
+			$table = 'trimestre_'.$periode.'_'.$classe;
+			$sql = "SELECT * FROM $table ORDER BY moyenne DESC";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
+
+
+
 		// Quelles informations y'a t-il dans la table sequence_periode_cls ?
 		public function sequenceClasse($periode, $classe){
 			$table = 'sequence_'.$periode.'_'.$classe;
+			$sql = "SELECT * FROM $table";
+			$req = $this->_db->query($sql);
+			$res = $req->fetchAll(PDO::FETCH_ASSOC);{
+				$resultat[] = $res;
+			}
+			return $resultat;
+		}
+
+
+
+		// Quelles informations y'a t-il dans la table sequence_periode_cls ?
+		public function trimestreClasse($periode, $classe){
+			$table = 'trimestre_'.$periode.'_'.$classe;
 			$sql = "SELECT * FROM $table";
 			$req = $this->_db->query($sql);
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);{
@@ -5449,21 +5742,182 @@
 
 
 
-
-		/*public function sequencesTraitees($classe){
-			$sql = "SELECT DISTINCT sequence 
-					FROM bull_seq
-					WHERE classe='$classe'";
-			$req = $this->_db->query($sql);
-			while($res = $req->fetch(PDO::FETCH_ASSOC)){
-				$resultat[] = $res;
+		public function statTrimestre($periode, $classe){
+			$table = 'trimestre_'.$periode.'_'.$classe;
+			
+			/*/Pour les statistiques de la séquence, on va d'abord ressortir
+			les effectifs genrés. */
+			$liste = $this->listeEleve($classe, 'non_supprime');
+			for($i=0;$i<count($liste);$i++){
+				$sexe[$i] = $liste[$i]['sexe'];
 			}
-			return $resultat;
-		}*/
+			$genre = array_count_values($sexe);
+			if(!$genre['F']){$effFille = 0;} else{$effFille = $genre['F'];}
+			if(!$genre['M']){$effMasc = 0;} else{$effMasc = $genre['M'];}
+			$effTotal = $effMasc + $effFille;
+			
+			/*Maintenant, on ressort les effectifs des élèves réellement
+			classés, c'est à dire qui ont au moins une moyenne supérieure
+			à zéro. */
+			$sql1 = "SELECT count(moyenne) as evalMasc 
+					FROM $table 
+					WHERE moyenne >'0.00' AND sexe = 'M'";
+			/*$req = $this->_db->query($sql);
+			while($res = $req->fetch(PDO::FETCH_ASSOC)){*/
+			$req1 = $this->_db->query($sql1);
+			$res1 = $req1->fetch(PDO::FETCH_ASSOC);
+			
+			$sql2 = "SELECT count(moyenne) as evalFille 
+					FROM $table 
+					WHERE moyenne >'0.00' AND sexe = 'F'";
+			
+			$req2 = $this->_db->query($sql2);
+			$res2 = $req2->fetch(PDO::FETCH_ASSOC);
+			
+			$evalTotal = $res1['evalMasc'] + $res2['evalFille'];
+			
+			/*Maintenant, on ressort les effectifs des élèves 
+			qui ont au moins une moyenne supérieure à 10.
+			 */
+			$sql3 = "SELECT count(moyenne) as moyMasc 
+					FROM $table 
+					WHERE moyenne >='10.00' AND sexe = 'M'";
+			$req3 = $this->_db->query($sql3);
+			$res3 = $req3->fetch(PDO::FETCH_ASSOC);
+			
+			$sql4 = "SELECT count(moyenne) as moyFille 
+					FROM $table 
+					WHERE moyenne >='10.00' AND sexe = 'F'";
+			$req4 = $this->_db->query($sql4);
+			$res4 = $req4->fetch(PDO::FETCH_ASSOC);
+			
+			/*Maintenant, on ressort les effectifs des élèves 
+			qui ont la sous moyenne.
+			 */
+			$sql5 = "SELECT count(moyenne) as sousMoyMasc 
+					FROM $table 
+					WHERE moyenne <10 AND moyenne >'0.00' AND sexe = 'M'";
+			$req5 = $this->_db->query($sql5);
+			$res5 =$req5->fetch(PDO::FETCH_ASSOC);
+			
+			$sql6 = "SELECT count(moyenne) as sousMoyFille 
+					FROM $table 
+					WHERE moyenne <10 AND moyenne > '0.00' AND sexe = 'F'";
+			$req6 = $this->_db->query($sql6);
+			$res6 =$req6->fetch(PDO::FETCH_ASSOC);
+			
+			
+			
+			$moyTotal = $res3['moyMasc'] + $res4['moyFille'];
+			$sousMoyTotal = $res5['sousMoyMasc'] + $res6['sousMoyFille'];
+			
+			if($res1['evalMasc']!=0){
+				$tauxMasc = $res3['moyMasc']*100/$res1['evalMasc'];
+			}else{
+				$tauxMasc = '';
+			}
 
+			if($res2['evalFille']!=0){
+				$tauxFille = $res4['moyFille']*100/$res2['evalFille'];
+			}else{
+				$tauxFille = '';
+			}
 
-
-
+			
+			
+			$sql = "SELECT count(moyenne) as moyTotal 
+					FROM $table 
+					WHERE moyenne >='10.00'";
+			$req = $this->_db->query($sql) ;
+			$res =$req->fetch(PDO::FETCH_ASSOC);
+			if($evalTotal!=0){
+				$tauxTotal = $res['moyTotal']*100/$evalTotal;
+			}else{
+				$tauxTotal = '';
+			}
+			
+			$sqlNFM = "SELECT MAX(moyenne) as maxMasc 
+					FROM $table 
+					WHERE sexe = 'M' AND moyenne > '0.00'";
+			$reqNFM = $this->_db->query($sqlNFM) ;
+			$resNFM =$reqNFM->fetch(PDO::FETCH_ASSOC);
+			
+			$sqlNFF = "SELECT MAX(moyenne) as maxFille 
+					FROM $table 
+					WHERE sexe = 'F' AND moyenne >'0.00'";
+			$reqNFF = $this->_db->query($sqlNFF) ;
+			$resNFF =$reqNFF->fetch(PDO::FETCH_ASSOC);
+			
+			$sqlNFT = "SELECT MAX(moyenne) as maxTotal 
+					FROM $table 
+					WHERE moyenne > '0.00'";
+			$reqNFT = $this->_db->query($sqlNFT) ;
+			$resNFT =$reqNFT->fetch(PDO::FETCH_ASSOC);
+			
+			$sql10 = "SELECT MIN(moyenne) as minMasc 
+					FROM $table 
+					WHERE sexe = 'M' AND moyenne >'0.00'";
+			$req10 = $this->_db->query($sql10) ;
+			$res10 =$req10->fetch(PDO::FETCH_ASSOC);
+			
+			$sql11 = "SELECT MIN(moyenne) as minFille 
+					FROM $table 
+					WHERE sexe = 'F' AND moyenne >'0.00'";
+			$req11 = $this->_db->query($sql11) ;
+			$res11 =$req11->fetch(PDO::FETCH_ASSOC);
+			
+			$sql12 = "SELECT MIN(moyenne) as minTotal 
+					FROM $table 
+					WHERE moyenne >'0.00'";
+			$req12 = $this->_db->query($sql12) ;
+			$res12 =$req12->fetch(PDO::FETCH_ASSOC);
+			
+			$sql20 = "SELECT AVG(moyenne) as moyGenMasc 
+					FROM $table 
+					WHERE sexe='M' AND moyenne>'0.00'";
+			$req20 = $this->_db->query($sql20) ;
+			$res20 =$req20->fetch(PDO::FETCH_ASSOC);
+			
+			$sql21 = "SELECT AVG(moyenne) as moyGenFille 
+					FROM $table 
+					WHERE sexe='F' AND moyenne>'0.00'";
+			$req21 = $this->_db->query($sql21) ;
+			$res21 = $req21->fetch(PDO::FETCH_ASSOC);
+			
+			$sql22 = "SELECT AVG(moyenne) as moyGenTotal 
+					FROM $table 
+					WHERE moyenne>'0.00'";
+			$req22 = $this->_db->query($sql22) ;
+			$res22 = $req22->fetch(PDO::FETCH_ASSOC);
+			
+			
+			$stat['effMasc'] = $effMasc;
+			$stat['effFille'] = $effFille;
+			$stat['effTotal'] = $effTotal;
+			$stat['evalMasc'] = $res1['evalMasc'];
+			$stat['evalFille'] = $res2['evalFille'];
+			$stat['evalTotal'] = $evalTotal;
+			$stat['moyMasc'] = $res3['moyMasc'];
+			$stat['moyFille'] = $res4['moyFille'];
+			$stat['moyTotal'] = $moyTotal;
+			$stat['sousMoyMasc'] = $res5['sousMoyMasc'];
+			$stat['sousMoyFille'] = $res6['sousMoyFille'];
+			$stat['sousMoyTotal'] = $sousMoyTotal;
+			// $stat['tauxMasc'] = $tauxMasc;
+			$stat['tauxMasc'] = substr($tauxMasc,0,5);
+			$stat['tauxFille'] = substr($tauxFille,0,5);
+			$stat['tauxTotal'] = substr($tauxTotal,0,5);
+			$stat['noteForteMasc'] = $resNFM['maxMasc'];
+			$stat['noteForteFille'] = $resNFF['maxFille'];
+			$stat['noteForteTotal'] = $resNFT['maxTotal'];
+			$stat['noteFaibleMasc'] = $res10['minMasc'];
+			$stat['noteFaibleFille'] = $res11['minFille'];
+			$stat['noteFaibleTotal'] = $res12['minTotal'];
+			$stat['moyGenMasc'] = substr($res20['moyGenMasc'],0,5);
+			$stat['moyGenFille'] = substr($res21['moyGenFille'],0,5);
+			$stat['moyGenTotal'] = substr($res22['moyGenTotal'],0,5);
+			return $stat;
+		}
 
 
 
@@ -5483,6 +5937,502 @@
 			$res = $req->fetchAll(PDO::FETCH_ASSOC);
 			
 			return $res;
+		}
+
+
+
+
+
+
+
+
+
+
+		private function prepaTableTrimestre($periode, $classe, $table){
+			// echo '<pre>'; print_r($infoClasse); echo '</pre>';
+			$sql_prepa = "CREATE TABLE $table (";
+			$sql_prepa .= "id int(11) auto_increment primary key, ";
+			$sql_prepa .= "id_eleve int(11) not null, ";
+			$sql_prepa .= "rne TEXT  null, ";
+			$sql_prepa .= "nom_eleve TEXT not null, ";
+			$sql_prepa .= "sexe TEXT null, ";
+			$sql_prepa .= "date_en date null, ";
+			$sql_prepa .= "date_fr TEXT null, ";
+			$sql_prepa .= "lieu_naissance TEXT null, ";
+			$sql_prepa .= "adresse_parent TEXT null, ";
+			$sql_prepa .= "statut TEXT null, ";
+			$sql_prepa .= "photo TEXT null, ";
+			$listeMatiere = $this->listeMatiereClasse($classe);
+			
+			for($a=0;$a<count($listeMatiere);$a++){
+				$matiere = strtolower($listeMatiere[$a]['code_matiere']);
+				$req_creation_0 = "`".$matiere."_seq1` DECIMAL(4,2) NULL, ";
+				$req_creation_1 = "`".$matiere."_seq2` DECIMAL(4,2) NULL, ";
+				$req_creation_2 = "`".$matiere."_trim` DECIMAL(4,2) NULL, ";
+				$req_creation_3 = "`".$matiere."_coef` decimal(4,2) NULL, ";
+				$req_creation_4 = "`".$matiere."_total` decimal(5,2) NULL, ";
+				$req_creation_5 = "`".$matiere."_competence_a` TEXT NULL, ";
+				$req_creation_6 = "`".$matiere."_competence_b` TEXT NULL, ";
+				$req_creation_7 = "`".$matiere."_min` decimal(4,2) NULL, ";
+				$req_creation_8 = "`".$matiere."_max` decimal(4,2) NULL, ";
+				$req_creation_9 = "`".$matiere."_appreciation` TEXT  null, ";
+				$req_creation_10 = "`".$matiere."_cote` TEXT  null, ";
+				$req_creation_11 = "`".$matiere."_enseignant` TEXT  null, ";
+				$req_creation_12 = "`".$matiere."_rank` int(11) null, ";
+
+				$sql_prepa .= $req_creation_0;
+				$sql_prepa .= $req_creation_1;
+				$sql_prepa .= $req_creation_2;
+				$sql_prepa .= $req_creation_3;
+				$sql_prepa .= $req_creation_4;
+				$sql_prepa .= $req_creation_5;
+				$sql_prepa .= $req_creation_6;
+				$sql_prepa .= $req_creation_7;
+				$sql_prepa .= $req_creation_8;
+				$sql_prepa .= $req_creation_9;
+				$sql_prepa .= $req_creation_10;
+				$sql_prepa .= $req_creation_11;
+				$sql_prepa .= $req_creation_12;
+			}
+			$groupe = $this->getGroupeClasse($classe);
+			// echo '<pre>'; print_r($groupe); echo '</pre>';
+			for($b=0;$b<count($groupe);$b++){
+				$gp = $groupe[$b]['code_groupe'];
+				$sql_prepa .= $gp."_total float(5,2) NULL, ";
+				$sql_prepa .= $gp."_coef float(4,2) NULL, ";
+				$sql_prepa .= $gp."_moyenne float(4,2) NULL, ";
+				$sql_prepa .= $gp."_min float(4,2) NULL, ";
+				$sql_prepa .= $gp."_max float(4,2) NULL, ";
+				$sql_prepa .= $gp."_appreciation TEXT NULL, ";
+				$sql_prepa .= $gp."_cote TEXT NULL, ";
+				$sql_prepa .= $gp."_rank int(11) NULL, ";
+			}
+			$sql_prepa .= "total_point float(5,2) NULL, ";
+			$sql_prepa .= "total_coef float(4,2) NULL, ";
+			$sql_prepa .= "moyenne float(4,2) NULL, ";
+			$sql_prepa .= "min float(4,2) NULL, ";
+			$sql_prepa .= "max float(4,2) NULL, ";
+			$sql_prepa .= "appreciation TEXT NULL, ";
+			$sql_prepa .= "cote TEXT NULL, ";
+			$sql_prepa .= "classes int(11), ";
+			$sql_prepa .= "rang TEXT null, ";
+			$sql_prepa .= "absence_total int(11) null, ";
+			$sql_prepa .= "absence_non_just int(11) null, ";
+			$sql_prepa .= "absence_just int(11) null, ";
+			$sql_prepa .= "titulaire TEXT null ";
+			$sql_prepa .= ")";
+			$sql_del = "DROP TABLE IF EXISTS $table";
+			$this->_db->query($sql_del); 
+			$this->_db->query($sql_prepa);
+		}
+
+
+
+
+
+
+
+
+
+		private function addDataTrimestre($classe, $periode, $table){
+			$listeEleve = $this->listeEleve($classe, 'non_supprime');
+			$section = $this->getSectionClasse($classe);
+			for($c=0;$c<count($listeEleve);$c++){
+				$idEleve = $listeEleve[$c]['id'];
+				$sequenceImpaire = $periode[0];
+				$sequencePaire = $periode[1];
+
+				$sequence_1 = $this->viewNoteSequentielleEleve($classe, $sequenceImpaire, $idEleve);
+				$sequence_2 = $this->viewNoteSequentielleEleve($classe, $sequencePaire, $idEleve);
+				// echo '<pre>'; print_r($sequence_2); echo '</pre>';
+				// On introduit les notes de la Séquence impaire
+				if(!empty($sequence_1)){
+					for($d=0;$d<count($sequence_1);$d++){
+						$mat = $sequence_1[$d]['code_matiere'];
+						$idMatiere = $sequence_1[$d]['id_matiere'];
+						$competence = $this->getCompetence($classe, $idMatiere, $sequenceImpaire);
+						$note = $sequence_1[$d]['note'];
+						$champSequence = $mat.'_seq1';
+						$champCompetence = $mat.'_competence_a';
+						$champEnseignant = $mat.'_enseignant';
+						$enseignant = $this->getEnseignantMatiere($idMatiere, $classe);
+						$updSeq1 = $this->_db->prepare("UPDATE `$table` SET 
+													`$champSequence` =:sequence,
+													$champCompetence =:competence,
+													$champEnseignant =:enseignant
+													WHERE id_eleve = :eleve");
+						$updSeq1->bindValue(':sequence',$note);
+						$updSeq1->bindValue(':competence',$competence['competence']);
+						$updSeq1->bindValue(':eleve',$idEleve);
+						$updSeq1->bindValue(':enseignant',$enseignant);
+						$updSeq1->execute();
+					}
+				}
+				// On introduit les notes de la Séquence paire
+				if(!empty($sequence_2)){
+					for($e=0;$e<count($sequence_2);$e++){
+						$mat = $sequence_2[$e]['code_matiere'];
+						$idMatiere = $sequence_2[$e]['id_matiere'];
+						$competence = $this->getCompetence($classe, $idMatiere, $sequencePaire);
+						$note = $sequence_2[$e]['note'];
+						$champSequence = $mat.'_seq2';
+						$champCompetence = $mat.'_competence_b';
+						$champEnseignant = $mat.'_enseignant';
+						$enseignant = $this->getEnseignantMatiere($idMatiere, $classe);
+						$updSeq2 = $this->_db->prepare("UPDATE `$table` SET 
+													`$champSequence` =:sequence,
+													$champCompetence =:competence,
+													$champEnseignant =:enseignant
+													WHERE id_eleve = :eleve");
+						$updSeq2->bindValue(':sequence',$note);
+						$updSeq2->bindValue(':competence',$competence['competence']);
+						$updSeq2->bindValue(':eleve',$idEleve);
+						$updSeq2->bindValue(':enseignant',$enseignant);
+						$updSeq2->execute();
+					}
+				}
+			}
+		}
+
+
+
+		// // La Note minimale de la matière pour un trimestre
+		// public function minNoteMatiereGeneraleTrimestre($table,$matiere){
+		// 	$champ = $matiere.'_trim';
+		// 	$sql = "SELECT min($champ) as noteMin 
+		// 			FROM $table
+		// 			WHERE $champ > 0";
+		// 	$req = $this->_db->query($sql);
+		// 	$res = $req->fetch(PDO::FETCH_ASSOC);
+		// 	return $res['noteMin'];
+		// }
+
+
+
+
+
+		// // La Note maximale de la matière pour un trimestre
+		// public function maxNoteMatiereGeneraleTrimestre($table, $matiere){
+		// 	$champ = $matiere.'_trim';
+		// 	$sql = "SELECT max($champ) as noteMax 
+		// 			FROM $table, eleve
+		// 			WHERE $champ > 0";
+		// 	$req = $this->_db->query($sql);
+		// 	$res = $req->fetch(PDO::FETCH_ASSOC);
+		// 	return $res['noteMax'];
+		// }
+
+
+
+
+
+		// On calcule la note trimestrielle d'une matière
+		protected function calculNoteTrimestre($trimestre, $classe, $eleve){
+			$table = "trimestre_".$trimestre."_".$classe;
+			$listeMatiere = $this->listeMatiereClasse($classe);
+			$section = $this->getSectionClasse($classe);
+			for($a=0;$a<count($listeMatiere);$a++){
+				$idMatiere = $listeMatiere[$a]['id_matiere'];
+				$codeMatiere = strtolower($listeMatiere[$a]['code_matiere']);
+				$coefMatiere = $listeMatiere[$a]['coef'];
+				$champSeq1 = $codeMatiere.'_seq1';
+				$champSeq2 = $codeMatiere.'_seq2';
+				$champTrim = $codeMatiere.'_trim';
+				$champCoef = $codeMatiere.'_coef';
+				$champTotal = $codeMatiere.'_total';
+				$champCote = $codeMatiere.'_cote';
+				$champAppreciation = $codeMatiere.'_appreciation';
+
+				$sql = "SELECT $champSeq1, $champSeq2
+						FROM $table
+						WHERE id_eleve = '$eleve'";
+				$requete = $this->_db->query($sql);
+				$res = $requete->fetchAll(PDO::FETCH_ASSOC);
+				// echo '<pre>';print_r($res);
+				for($b=0;$b<count($res);$b++){
+					if(empty($res[$b][$champSeq1]) or empty($res[$b][$champSeq2])){
+						$trim = $res[$b][$champSeq1] + $res[$b][$champSeq2];
+						$noteTri = $this->setNote($trim);
+						if(empty($noteTri)){
+							$totalTri = NULL;
+							$coefTri = NULL;
+							$appr = NULL;
+							$cote = NULL;
+						}
+						else{
+							$coefTri = $listeMatiere[$a]['coef'];
+							$totalTri = $noteTri*$coefTri;
+							$appreciation = $this->showAppreciation($noteTri);
+							$cle = 'nom_appreciation_'.$section;
+							$appr = strtoupper($appreciation[$cle]);
+							$cote = strtoupper($appreciation['cote']);
+						}
+					}else{
+						$trim = ($res[$b][$champSeq1] + $res[$b][$champSeq2]) / 2;
+						$noteTri = $this->setNote($trim);
+						$coefTri = $listeMatiere[$a]['coef'];
+						$totalTri = $noteTri*$coefTri;
+						$appreciation = $this->showAppreciation($noteTri);
+						$cle = 'nom_appreciation_'.$section;
+						$appr = strtoupper($appreciation[$cle]);
+						$cote = strtoupper($appreciation['cote']);
+					}
+					$update = $this->_db->prepare("UPDATE $table SET 
+											$champTrim = :noteTri,
+											$champCoef = :coef, 
+											$champTotal = :total,
+											$champCote =:cote,
+											$champAppreciation =:appr
+											WHERE id_eleve =:eleve");
+					$update->bindValue(':noteTri',$noteTri);
+					$update->bindValue(':coef',$coefTri);
+					$update->bindValue(':total',$totalTri);
+					$update->bindValue(':cote',$cote);
+					$update->bindValue(':appr',$appr);
+					$update->bindValue(':eleve', $eleve);
+					$update->execute();
+				}
+			}
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+		/**
+		 * @param string $source la page d'origine 
+		 * @param int $trimestre qui est le trimestre de traitement
+		 * @param int $classe qui est la classe à traiter 
+		 * L'objet de la fonction est d'intervenir une fois qu'on a cliqué sur 
+		 * le bouton traiter Note Trimstrielles
+		 */
+		public function traiterNoteTrimestre($source, $trimestre, $classe){
+			$this->_periode = $this->setUserId($trimestre);
+			$this->_classe = $this->setUserId($classe);
+			$infoClasse = $this->getClasse($this->_classe);
+			$table = 'trimestre_'.$this->_periode.'_'.$this->_classe;
+			// On crée la table et on y ajoute les noms des élèves
+			$this->prepaTableTrimestre($this->_periode, $this->_classe,$table);
+			$this->addEleveTable($this->_classe, $table);
+			// On intègre les notes séquentielles de l'élève au besoin
+			if($this->_periode==1){
+				$sequence[0] = 1;
+				$sequence[1] = 2;
+			}elseif($this->_periode==2){
+				$sequence[0] = 3;
+				$sequence[1] = 4;
+			}elseif($this->_periode==3){
+				$sequence[0] = 5;
+				$sequence[1] = 6;
+			}
+			$this->addDataTrimestre($this->_classe, $sequence, $table);
+
+			// On produit les Notes Trimestrielles par matière
+			$listeEleve = $this->listeEleve($classe, 'non_supprime');
+			for($i=0;$i<count($listeEleve);$i++){
+				$idEleve = $listeEleve[$i]['id'];
+				$this->calculNoteTrimestre($this->_periode, $classe, $idEleve);
+			}
+			// On génère les minimum, maximum et rang pour chaque matière présente
+			$this->addRankMinMaxTrimestre($this->_classe, $table);
+			// On introduit les heures d'absence
+			// On enregistre le traitement
+			$req_traite = "INSERT INTO bull_trim(pret, classe, trim) ";
+			$req_traite .= "VALUES('oui', '$this->_classe', '$this->_periode')";
+			$req_traite_del = "DELETE FROM bull_trim";
+			$req_traite_del .= " WHERE classe='$this->_classe' 
+									AND trim='$this->_periode'";
+			$exec_traite_del = $this->_db->query($req_traite_del);
+			$exec_traite = $this->_db->query($req_traite);
+			// Quand tout se termine, on affiche le message
+			$_SESSION['message'] = 'Notes du trimestre '.$this->_periode;
+			$_SESSION['message'] .= ' traitées pour la '.$infoClasse['nom_classe'];
+			header('Location:'.$source);
+
+
+
+			
+			
+			// // Après avoir crée la table, on insère les noms des élèves dans 
+			// // la table créée.
+			
+			// for($c=0;$c<count($listeEleve);$c++){
+			// 	$req_3 = $this->_db->query($sql_insert);
+			// 	/*En fonction du trimestre on récupère les notes séquentielles pour 
+			// 	faire les calculs et appliquer un coefficient ainsi que les 
+			// 	moyennes par matières et appréciation qui s'imposent */
+			// 	if($trimestre==1){
+			// 		$sequence_1 = $this->viewNoteSequentielleEleve($classe,
+			// 														1, 
+			// 														$idEleve);
+			// 		$sequence_2 = $this->viewNoteSequentielleEleve($classe,
+			// 														2, 
+			// 														$idEleve);
+			// 		// print_r($sequence_2);
+			// 		// On introduit les Notes de la Séquence 1 
+			// 		for($d=0;$d<count($sequence_1);$d++){
+			// 			
+			// 		}
+			// 		// On introduit les Notes de la Séquence 2
+			// 		for($e=0;$e<count($sequence_2);$e++){
+			// 			
+			// 		}
+			// 		 
+			// 		
+			// 		$req_traite = "INSERT INTO bull_trim(pret, classe, trim) ";
+			// 		$req_traite .= "VALUES('oui', '$classe', '$trimestre')";
+			// 		$req_traite_del = "DELETE FROM bull_trim";
+			// 		$req_traite_del .= " WHERE classe='$classe' 
+			// 								AND trim='$trimestre'";
+			// 		$exec_traite_del = $this->_db->query($req_traite_del);
+			// 		$exec_traite = $this->_db->query($req_traite);
+					
+			// 		// On Introduit les heures d'Absence qu'il faut  
+			// 		$absences = $this->calculAbsenceTrimestre($idEleve,1);
+			// 		$sql_10 = "UPDATE $table SET 
+			// 					absence_total = '".$absences['total']."',
+			// 					absence_non_just = '".$absences['non_justif']."',
+			// 					absence_just = '".$absences['justif']."'
+			// 					WHERE id_eleve = '$idEleve'";
+			// 		$this->_db->query($sql_10);
+			// 		// print_r($absences);
+					
+			// 		$_SESSION['message'] = "Notes du Trimestre ";
+			// 		$_SESSION['message'] .= $trimestre." traitées";
+			// 		header('Location: '.$source);
+			// 	}
+			// 	elseif($trimestre==2){
+			// 		// On introduit les notes de la 3ème Séquence 
+			// 		$sequence_3 = $this->viewNoteSequentielleEleve($classe,
+			// 														3,
+			// 														$idEleve);					
+			// 		for($d=0;$d<count($sequence_3);$d++){
+			// 			$mat = $sequence_3[$d]['id_matiere'];
+			// 			$note = $sequence_3[$d]['note_simple'];
+			// 			$prof = $sequence_3[$d]['sexe_enseignant']." ";
+			// 			$prof .= strtoupper($sequence_3[$d]['nom_enseignant'])." ";
+			// 			$prof .= ucwords($sequence_3[$d]['prenom_enseignant']);
+			// 			/*$sql_upd = "UPDATE $table SET ";
+			// 			$sql_upd .= $mat."_seq1 = '$note',";
+			// 			$sql_upd .= $mat."_enseignant = '$prof'";
+			// 			$sql_upd .= " WHERE id_eleve = '$idEleve'; ";*/
+						
+			// 			$sql_upd = "UPDATE $table SET ";
+			// 			$sql_upd .= $mat."_seq1 = '$note',";
+			// 			$sql_upd .= $mat."_enseignant = '$prof'";
+			// 			$sql_upd .= " WHERE id_eleve = '$idEleve'; ";
+			// 			$req_4 = $this->_db->query($sql_upd);
+			// 		}
+					
+			// 		// On introduit les notes de la 4ème Séquence 
+			// 		$sequence_4 = $this->viewNoteSequentielleEleve($classe,
+			// 														4, 
+			// 														$idEleve);
+			// 		for($e=0;$e<count($sequence_4);$e++){
+			// 			$mat1 = $sequence_4[$e]['id_matiere'];
+			// 			$note1 = $sequence_4[$e]['note_simple'];
+			// 			$prof1 = $sequence_4[$e]['sexe_enseignant']." ";
+			// 			$prof1 .= strtoupper($sequence_4[$e]['nom_enseignant'])." ";
+			// 			$prof1 .= ucwords($sequence_4[$e]['prenom_enseignant']);
+			// 			$sql_upd1 = "UPDATE $table SET ";
+			// 			$sql_upd1 .= $mat1."_seq2 = '$note1',";
+			// 			$sql_upd1 .= $mat1."_enseignant = '$prof1'";
+			// 			$sql_upd1 .= " WHERE id_eleve = '$idEleve'; ";
+			// 			$req_5 = $this->_db->query($sql_upd1);
+			// 		}
+					
+			// 		// On produit les Notes Trimestrielles par matière 
+			// 		$this->calculNoteTrimestre(2, $classe, $idEleve);
+			// 		$req_traite = "INSERT INTO bull_trim(pret, classe, trim) ";
+			// 		$req_traite .= "VALUES('oui', '$classe', '$trimestre')";
+			// 		$req_traite_del = "DELETE FROM bull_trim";
+			// 		$req_traite_del .= " WHERE classe='$classe' 
+			// 								AND trim='$trimestre'";
+			// 		$exec_traite_del = $this->_db->query($req_traite_del);
+			// 		$exec_traite = $this->_db->query($req_traite);
+					
+			// 		// On Introduit les heures d'Absence qu'il faut  
+			// 		$absences = $this->calculAbsenceTrimestre($idEleve,2);
+			// 		$sql_10 = "UPDATE $table SET 
+			// 					absence_total = '".$absences['total']."',
+			// 					absence_non_just = '".$absences['non_justif']."',
+			// 					absence_just = '".$absences['justif']."'
+			// 					WHERE id_eleve = '$idEleve'";
+			// 		$this->_db->query($sql_10);
+			// 		// print_r($absences);
+					
+			// 		$_SESSION['message'] = "Notes du Trimestre ";
+			// 		$_SESSION['message'] .= $trimestre." traitées";
+			// 		header('Location: '.$source);
+			// 	}
+			// 	elseif($trimestre==3){
+			// 		// On introduit les notes de la 5ème Séquence 
+			// 		$sequence_5 = $this->viewNoteSequentielleEleve($classe,
+			// 														5,
+			// 														$idEleve);					
+			// 		for($d=0;$d<count($sequence_5);$d++){
+			// 			$mat = $sequence_5[$d]['id_matiere'];
+			// 			$note = $sequence_5[$d]['note_simple'];
+			// 			$prof = $sequence_5[$d]['sexe_enseignant']." ";
+			// 			$prof .= strtoupper($sequence_5[$d]['nom_enseignant'])." ";
+			// 			$prof .= ucwords($sequence_5[$d]['prenom_enseignant']);
+			// 			$sql_upd = "UPDATE $table SET ";
+			// 			$sql_upd .= $mat."_seq1 = '$note',";
+			// 			$sql_upd .= $mat."_enseignant = '$prof'";
+			// 			$sql_upd .= " WHERE id_eleve = '$idEleve'; ";
+			// 			$req_4 = $this->_db->query($sql_upd);
+			// 		}
+					
+			// 		// On duplique les Notes de la Séquence 5 à la Séquence 6 
+			// 		$sequence_6 = $this->viewNoteSequentielleEleve($classe,
+			// 														6, 
+			// 														$idEleve);
+			// 		for($e=0;$e<count($sequence_6);$e++){
+			// 			$mat1 = $sequence_6[$e]['id_matiere'];
+			// 			$note1 = $sequence_6[$e]['note_simple'];
+			// 			$prof1 = $sequence_6[$e]['sexe_enseignant']." ";
+			// 			$prof1 .= strtoupper($sequence_6[$e]['nom_enseignant'])." ";
+			// 			$prof1 .= ucwords($sequence_6[$e]['prenom_enseignant']);
+			// 			$sql_upd1 = "UPDATE $table SET ";
+			// 			$sql_upd1 .= $mat1."_seq2 = '$note1',";
+			// 			$sql_upd1 .= $mat1."_enseignant = '$prof1'";
+			// 			$sql_upd1 .= " WHERE id_eleve = '$idEleve'; ";
+			// 			$req_5 = $this->_db->query($sql_upd1);
+			// 		}
+					
+			// 		// On produit les Notes Trimestrielles par matière 
+			// 		$this->calculNoteTrimestre(3, $classe, $idEleve);
+			// 		$req_traite = "INSERT INTO bull_trim(pret, classe, trim) ";
+			// 		$req_traite .= "VALUES('oui', '$classe', '$trimestre')";
+			// 		$req_traite_del = "DELETE FROM bull_trim";
+			// 		$req_traite_del .= " WHERE classe='$classe' 
+			// 								AND trim='$trimestre'";
+			// 		$exec_traite_del = $this->_db->query($req_traite_del);
+			// 		$exec_traite = $this->_db->query($req_traite);
+					
+			// 		// On Introduit les heures d'Absence qu'il faut  
+			// 		$absences = $this->calculAbsenceTrimestre($idEleve,3);
+			// 		$sql_10 = "UPDATE $table SET 
+			// 					absence_total = '".$absences['total']."',
+			// 					absence_non_just = '".$absences['non_justif']."',
+			// 					absence_just = '".$absences['justif']."'
+			// 					WHERE id_eleve = '$idEleve'";
+			// 		$this->_db->query($sql_10);
+			// 		// print_r($absences);
+					
+			// 		$_SESSION['message'] = "Notes du Trimestre ";
+			// 		$_SESSION['message'] .= $trimestre." traitées";
+			// 		header('Location: '.$source);
+			// 	}
+								
+			// }
 		}
 
 

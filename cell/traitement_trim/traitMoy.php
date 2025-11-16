@@ -1,9 +1,9 @@
 <h1 class='bien'>traitement des moyennes trimestrielles</h1>
 		<form method='post' action='../traitement.php' target ='_blank'>
-			Classe : <select name='clas' id='clas' onChange='goTraitMoy()'>
+			Classe : <select name='classe' id='classe' onChange='goTraitMoy()'>
 				<option value='null'>-Classe-</option>
 				<?php 
-					$regions = $note->classesTraiteesTrim();
+					$regions = $config->classesTraiteesTrim();
 					for($i=0;$i<count($regions);$i++){
 						echo "<option value='";
 						echo $regions[$i]['classe'];
