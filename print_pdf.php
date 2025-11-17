@@ -493,22 +493,14 @@
 		********** 		IMPRESSION DU CERTIFICAT DE SCOLARITE 	*******
 		***************************************************************
 		**************************************************************/
-		elseif($_SESSION['print']=='certificatScol'){
+		elseif($_SESSION['print']=='certificatScolarite'){
 			$eleve = $_SESSION['eleve'];
 			$classe = $_SESSION['classe'];
 			$information = $_SESSION['information'];
 			$pdf->SetFillColor(155, 150, 149);
-			// La page doit s'afficher en fonction de la section 
-			if($classe['section']=='en'){
-				$pdf->addPage();
-				$pdf->Entete();
-				$pdf->certificatScolariteEn($eleve, $information);
-			}
-			elseif($classe['section']=='fr'){
-				$pdf->addPage();
-				$pdf->Entete();
-				$pdf->certificatScolariteFr($eleve, $information);
-			}
+			$pdf->addPage();
+			$pdf->Entete();
+			$pdf->certificatScolarite($eleve, $information, $classe['section']);
 			$fileName = 'Certificat_Scolarite_';
 			$fileName .= str_replace(' ','_', $eleve['nom_complet']);
 			$pdf->Output($fileName, 'I');

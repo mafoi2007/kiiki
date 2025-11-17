@@ -1070,7 +1070,7 @@
 		------------------------------------------------------------
 		-----------------------------------------------------------*/
 		/* Pour l'année scolaire en cours */
-		if($_POST['to_print']=='certificatScol'){
+		if($_POST['to_print']=='certificatScolarite'){
 			if(!$_POST['eleve']){
 				$_SESSION['message'] = 'Vous devez choisir un élève';
 				header('Location:'.$source);

@@ -1,4 +1,4 @@
-<h1 class='bien'>certificat de scolarité</h1>
+<h1 class='bien'>archive des certificats de scolarités</h1>
 	<form method='post' action='../traitement.php' target='_blank'>
 		Année Précédente :
 			<select name='oldYear' id='oldYear' onChange='findName()'>

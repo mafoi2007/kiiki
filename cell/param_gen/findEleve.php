@@ -8,7 +8,6 @@
 			id='eleve' 
 			onKeyup='findEleve()' />
 	</p>
-	<div id='resultat' style = 'display:inline'>
-				
+	<div id='resultat' style = 'display:inline'>	
 	</div>
 </form>

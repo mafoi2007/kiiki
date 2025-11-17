@@ -2,7 +2,7 @@
 	session_start();
 	require_once('../../inc/connect.inc.php');
 	$config = new Config($db);
-	// print_r($_POST);
+	print_r($_POST);
 	
 	if(isset($_POST['oldYear'])){
 		$annee = $_POST['oldYear'];
