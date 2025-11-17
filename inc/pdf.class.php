@@ -225,7 +225,7 @@
 			$this->SetFont('Times','',14);
 			$this->Cell(70, 7, utf8_decode("For the school Year: "), 0,0,'L');
 			$this->SetFont('Times','BI',14);
-			$this->Cell(100, 7, utf8_decode($annee_scolaire),0,0,'L');
+			$this->Cell(100, 7, utf8_decode($_SESSION['information']['annee_scolaire']),0,0,'L');
 			$this->Ln(10);
 			$this->SetFont('Times','',14);
 			$enFoi = utf8_decode("In witness whereof, the present school certificate is issued to serve and attest as may be ");

@@ -1080,6 +1080,7 @@
 				$_SESSION['eleve'] = $eleve;
 				$_SESSION['classe']['section'] = $section;
 				$_SESSION['print'] = $print;
+				// echo '<pre>'; print_r($_SESSION['information']);
 				// echo var_dump($eleve);
 				header('Location:print_pdf.php');
 			}
