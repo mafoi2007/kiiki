@@ -1411,8 +1411,8 @@
 			header('Location:print_pdf.php');
 		}
 		elseif($_POST['to_print']=='BulletinSequentiel'){
-			print_r($_POST);
-			$_SESSION['print'] ='BullSeq';
+			// print_r($_POST);
+			$_SESSION['print'] ='BulletinSequentiel';
 			// echo $_SESSION['print'];
 			$_SESSION['sequence'] = $_POST['sekence'];
 			$_SESSION['classe'] = $_POST['classe'];
@@ -1456,10 +1456,8 @@
 			$nom_classe = $config->getClasse($_POST['classe']);
 			$_SESSION['nom_classe'] = $nom_classe['nom_classe'];
 			$_SESSION['groupe'] = $config->getGroupeClasse($_POST['classe']);
-			// echo '<pre>'; print_r($_SESSION['eleve']);
 				// On extrait le Prof Principal de la Classe
 				$classePrincipale = $config->classePrincipale();
-				// echo '<pre>';print_r($classePrincipale); echo '</pre>';
 				for($a=0;$a<count($classePrincipale);$a++){
 					if($classePrincipale[$a]['code_classe']==$_SESSION['classe']){
 						$_SESSION['professeurPrincipal'] = $classePrincipale[$a]['sexe'].' ';
@@ -1467,18 +1465,13 @@
 						$_SESSION['professeurPrincipal'] .= ucwords($classePrincipale[$a]['prenom']).' ';
 					}
 				}
-			// echo '<pre>';print_r($section);
-			// echo '<pre>';print_r($matiereGroupe);
-			// echo '<pre>'; print_r($_SESSION);
-			// echo $_SESSION['professeurPrincipal'];
-
 			header('Location:print_pdf.php');
 		}
 		
 		
 		elseif($_POST['to_print']=='BulletinTrimestriel'){
 			echo '<pre>';print_r($_POST);echo '</pre>';
-			$_SESSION['print'] ='BullTrimestriel';
+			$_SESSION['print'] ='BulletinTrimestriel';
 			// echo $_SESSION['print'];
 			$_SESSION['trimestre'] = $_POST['trimestre'];
 			$_SESSION['classe'] = $_POST['classe'];

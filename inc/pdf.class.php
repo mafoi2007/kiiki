@@ -1080,7 +1080,7 @@
 					// $this->Cell(12,6, utf8_decode($eleve[$a][$seq1]),1,0,'C');
 					// $this->SetFont('Times','B',8);
 					$this->Cell(8);
-					$this->Cell(40,3, substr($nomMatiere,0,23),1,0,'L');
+					$this->Cell(40,3, substr($nomMatiere,0,23),'TLR',0,'L');
 							
 					$this->SetFont('Times','',5);
 					$competenceEvaluee = strtolower(utf8_decode(substr($eleve[$competence],0,45)));
@@ -1102,7 +1102,7 @@
 					$this->Ln(3);
 					$this->SetFont('Times','I',7);
 					$this->Cell(8);
-					$this->Cell(40,3, utf8_decode($eleve[$enseignant]),0,0,'L');
+					$this->Cell(40,3, utf8_decode($eleve[$enseignant]),'LRB',0,'L');
 					/*$this->SetFont('Times','',7);
 					$this->Cell(35,3, utf8_decode(substr($eleve[$a][$competence],20,35)),1,0,'L');*/
 					$this->Ln(3);

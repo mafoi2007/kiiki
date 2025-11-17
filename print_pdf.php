@@ -842,7 +842,7 @@
 		***********************************************************************
 		**********************************************************************/
 		
-		elseif($_SESSION['print']=='BullSeq'){
+		elseif($_SESSION['print']=='BulletinSequentiel'){
 			$eleve = $_SESSION['eleve'];
 			$ville = strtoupper($_SESSION['information']['ville']);
 			$pdf->pvSequentielAlpha($_SESSION['section']);
@@ -865,7 +865,7 @@
 		**********	Génération du Bulletin trimestriel					*******
 		***********************************************************************
 		**********************************************************************/
-		elseif($_SESSION['print']=='BullTrimestriel'){
+		elseif($_SESSION['print']=='BulletinTrimestriel'){
 			$eleve = $_SESSION['eleve'];
 			$ville = strtoupper($_SESSION['information']['ville']);
 			$pdf->pvTrimestrielAlpha($_SESSION['section']);
