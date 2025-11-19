@@ -1089,20 +1089,11 @@
 		
 		
 		/* Pour une ancienne année scolaire */
-		if($_POST['to_print']=='certificatScolOld'){
-			$eleve = $config->getEleveOld($_POST['eleve'],$_POST['oldYear']);
-			// // $section = $config->getSectionClasse($eleve['classe']);
-			// // echo var_dump($section);
-			$classe = $config->getClasse($eleve['classe']);
-			// echo '<pre>';print_r($classe);
-			
+		if($_POST['to_print']=='certificatScolariteOld'){
+			$eleve = $config->getEleveOld($_POST['eleve'], $_POST['oldYear']);
+			// echo '<pre>';print_r($eleve);
 			$_SESSION['eleve'] = $eleve;
-			$_SESSION['eleve']['libelle_annee'] = $eleve['a_s'];
-			$_SESSION['eleve']['date_fr'] = $eleve['date_naissance'];
-			$_SESSION['eleve']['nom_classe'] = $classe['nom_classe'];
-			$_SESSION['classe']['section'] = $section;
 			$_SESSION['print'] = $print;
-			// print_r($_SESSION['eleve']);
 			header('Location:print_pdf.php');
 		}
 		

@@ -12,7 +12,7 @@
 			<input 
 				type='hidden' 
 				name='to_print' 
-				value='certificatScolOld' 
+				value='certificatScolariteOld' 
 			/>
 			<input 
 				type='submit' 

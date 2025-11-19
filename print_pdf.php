@@ -509,24 +509,15 @@
 		
 		
 		
-		elseif($_SESSION['print']=='certificatScolOld'){
+		elseif($_SESSION['print']=='certificatScolariteOld'){
 			$eleve = $_SESSION['eleve'];
-			$classe = $_SESSION['classe'];
 			$information = $_SESSION['information'];
 			$pdf->SetFillColor(155, 150, 149);
-			// La page doit s'afficher en fonction de la section 
-			if($classe['section']=='en'){
-				$pdf->addPage();
-				$pdf->Entete();
-				$pdf->certificatScolariteEn($eleve, $information);
-			}
-			elseif($classe['section']=='fr'){
-				$pdf->addPage();
-				$pdf->Entete();
-				$pdf->certificatScolariteFr($eleve, $information);
-			}
-			$fileName = 'Certificat_Scolarite_';
-			$fileName .= str_replace(' ','_', $eleve['nom_complet']);
+			$pdf->addPage();
+			$pdf->Entete();
+			$pdf->certificatScolariteOld($eleve, $information, $eleve['classe']['section']);
+			$fileName = 'Certificat_Scolarite_.pdf';
+			// $fileName .= str_replace(' ','_', $eleve['nom_complet']);
 			$pdf->Output($fileName, 'I');
 		}
 		

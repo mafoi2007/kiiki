@@ -967,14 +967,23 @@
 		
 		
 		public function getEleveOld($id, $annee) {
+			$this->_id = $this->setUserId($id);
 			$tableEleve = $annee.'_eleve';
-			$idChamp = $tableEleve.'.'.$id;
+			$idChamp = $tableEleve.'.id';
 			$sql = "SELECT * 
-					FROM `".$tableEleve."`
-					WHERE id= ".$id."";
+					FROM `$tableEleve`
+					WHERE id = '$this->_id'";
 			$req = $this->_db->query($sql);
 			$res = $req->fetch(PDO::FETCH_ASSOC);
-			return $res;
+			$resultat['eleve'] = $res;
+			$idClasse = $res['classe'];
+			$sqlClasse = "SELECT * 
+							FROM classe 
+							WHERE id = '$idClasse'";
+			$reqClasse = $this->_db->query($sqlClasse);
+			$resClasse = $reqClasse->fetch(PDO::FETCH_ASSOC);
+			$resultat['classe'] = $resClasse;
+			return $resultat;
 		}
 		
 		
