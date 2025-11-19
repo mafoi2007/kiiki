@@ -300,6 +300,219 @@
 			$this->SetFont('Times','BI',14);
 			$this->Cell(100,25, $signataire[$section].',');
 		}
+
+
+
+
+
+
+
+
+
+		public function listeEleve($classe, $section){
+			$titre['fr'] = "liste des eleves de la ".$classe['eleve'][0]['nom_classe'];
+			$titre['en'] = "student list of ".$classe['eleve'][0]['nom_classe'];
+			$this->Titre($titre[$section]);
+			$libSexe['fr'] = 'Sexe';
+			$libMasc['fr'] = 'Masculin'; 
+			$libFem['fr'] = 'Feminin';
+			$libTot['fr'] = 'Total';
+			$libRed['fr'] = 'Redoublant';
+			$libNouv['fr'] = 'Nouveau';
+			$libSexe['en'] = 'Sex';
+			$libMasc['en'] = 'Male'; 
+			$libFem['en'] = 'Female';
+			$libTot['en'] = 'Global';
+			$libRed['en'] = 'Repeater';
+			$libNouv['en'] = 'New';
+
+			$libNumber['fr'] = 'N°';
+			$libMatricule['fr'] = 'Matricule';
+			$libNom['fr'] = 'Nom Complet';
+			$libStatut['fr'] = 'Statut';
+			$libDate['fr'] = 'Date et Lieu de Naissance';
+			$libNumber['en'] = 'N°';
+			$libMatricule['en'] = 'National Id';
+			$libNom['en'] = 'Student Name';
+			$libStatut['en'] = 'Status';
+			$libDate['en'] = 'Date and place of birth';
+
+			$this->SetFont('Times','',8);
+			$this->Cell(60);
+			$this->Cell(14, 7, $libSexe[$section], 1, 0 , 'C', true);
+			$this->Cell(12, 7, $libFem[$section], 1, 0 , 'C', true);
+			$this->Cell(14, 7, $libMasc[$section], 1, 0 , 'C', true);
+			$this->Cell(10, 7, $libTot[$section], 1, 0 , 'C', true);
+			$this->Ln(7);
+			$this->SetFont('Times','',8);
+			$this->Cell(60);
+			$this->Cell(14, 7, $libRed[$section], 1, 0 , 'C');
+			$this->Cell(12, 7,  $classe['stat']['FR'], 1, 0 , 'C');
+			$this->Cell(14, 7,  $classe['stat']['GR'], 1, 0 , 'C');
+			$this->Cell(10, 7,  $classe['stat']['R'], 1, 0 , 'C');
+			$this->Ln(7);
+			$this->SetFont('Times','',8);
+			$this->Cell(60);
+			$this->Cell(14, 7, $libNouv[$section], 1, 0 , 'C');
+			$this->Cell(12, 7,  $classe['stat']['FN'], 1, 0 , 'C');
+			$this->Cell(14, 7,  $classe['stat']['GN'], 1, 0 , 'C');
+			$this->Cell(10, 7,  $classe['stat']['N'], 1, 0 , 'C');
+			$this->Ln(7);
+			$this->SetFont('Times','',8);
+			$this->Cell(60);
+			$this->Cell(14, 7, $libTot[$section], 1, 0 , 'C');
+			$this->Cell(12, 7,  $classe['stat']['F'], 1, 0 , 'C');
+			$this->Cell(14, 7,  $classe['stat']['G'], 1, 0 , 'C');
+			$this->Cell(10, 7,  $classe['stat']['T'], 1, 0 , 'C');
+			$this->Ln(10);
+
+			$this->SetFont('Times','B',10);
+			// Je positionne l'entete du tableau
+			$this->Cell(10, 6, $this->convert($libNumber[$section]), 1, 0 , 'C',true);
+			$this->Cell(28, 6, $this->convert($libMatricule[$section]), 1, 0 , 'C',true);
+			$this->Cell(75, 6, $this->convert($libNom[$section]), 1, 0 , 'C',true);
+			$this->Cell(9, 6, $this->convert($libSexe[$section]), 1, 0 , 'C',true);
+			$this->Cell(13, 6, $this->convert($libStatut[$section]), 1, 0 , 'C',true);
+			$this->Cell(55, 6, $this->convert($libDate[$section]), 1, 0 , 'C',true);
+			$this->SetFont('Times','',10);
+			$this->Ln(6);
+			$a = 1;
+			for($i=0;$i<count($classe['eleve']);$i++){
+				$this->Cell(10, 6, $a, 1, 0 , 'C');
+				$this->Cell(28, 6, $this->convert($classe['eleve'][$i]['rne']), 1, 0 , 'C');
+				$this->Cell(75, 6, $this->convert($classe['eleve'][$i]['nom_complet']), 1, 0 , 'L');
+				$this->Cell(9, 6, $this->convert($classe['eleve'][$i]['sexe']), 1, 0 , 'C');
+				$this->Cell(13, 6, $this->convert($classe['eleve'][$i]['statut']), 1, 0 , 'C');
+				$dateNaiss = $classe['eleve'][$i]['date_fr'].' at '.ucwords($classe['eleve'][$i]['lieu_naissance']);
+				$this->Cell(55, 6, $this->convert($dateNaiss), 1, 0 , 'L');
+				$this->Ln(6);
+				$a++;
+			}
+
+			$faitA['fr'] = "Fait à ".ucwords($_SESSION['information']['ville'])." le ".DATE('d / m / Y');
+			$faitA['en'] = "Done at ".ucwords($_SESSION['information']['ville'])." the ".DATE('d / m / Y');
+			$signataire['fr'] = $classe['information']['signataire_fr'];
+			$signataire['en'] = $classe['information']['signataire_en'];
+
+			$this->Cell(110);
+			$this->Cell(70,10, $faitA[$section],0,0,'C');
+			$this->Cell(20);
+			$this->Ln(5);
+			$this->SetFont('Arial','BI',10);
+			$this->Cell(110);
+			$this->Cell(70,10, $signataire[$section],0,0,'C');
+			$this->Cell(20);
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+		public function listeEleveOld($annee, $classe, $section){
+			$titre['fr'] = "liste des eleves de la ".$classe['classe']['nom_classe'];
+			$titre['en'] = "student list of ".$classe['classe']['nom_classe'];
+			$this->Titre($titre[$section]);
+			$libSexe['fr'] = 'Sexe';
+			$libMasc['fr'] = 'Masculin'; 
+			$libFem['fr'] = 'Feminin';
+			$libTot['fr'] = 'Total';
+			$libRed['fr'] = 'Redoublant';
+			$libNouv['fr'] = 'Nouveau';
+			$libSexe['en'] = 'Sex';
+			$libMasc['en'] = 'Male'; 
+			$libFem['en'] = 'Female';
+			$libTot['en'] = 'Global';
+			$libRed['en'] = 'Repeater';
+			$libNouv['en'] = 'New';
+			$libAnnee['fr'] = "Année Scolaire : ".$classe['eleve'][0]['a_s'];
+			$libAnnee['en'] = "School Year : ".$classe['eleve'][0]['a_s'];
+
+			$libNumber['fr'] = 'N°';
+			$libMatricule['fr'] = 'Matricule';
+			$libNom['fr'] = 'Nom Complet';
+			$libStatut['fr'] = 'Statut';
+			$libDate['fr'] = 'Date et Lieu de Naissance';
+			$libNumber['en'] = 'N°';
+			$libMatricule['en'] = 'National Id';
+			$libNom['en'] = 'Student Name';
+			$libStatut['en'] = 'Status';
+			$libDate['en'] = 'Date and place of birth';
+
+			// $this->SetFont('Times','',8);
+			// $this->Cell(60);
+			// $this->Cell(14, 7, $libSexe[$section], 1, 0 , 'C', true);
+			// $this->Cell(12, 7, $libFem[$section], 1, 0 , 'C', true);
+			// $this->Cell(14, 7, $libMasc[$section], 1, 0 , 'C', true);
+			// $this->Cell(10, 7, $libTot[$section], 1, 0 , 'C', true);
+			// $this->Ln(7);
+			// $this->SetFont('Times','',8);
+			// $this->Cell(60);
+			// $this->Cell(14, 7, $libRed[$section], 1, 0 , 'C');
+			// $this->Cell(12, 7,  $classe['stat']['FR'], 1, 0 , 'C');
+			// $this->Cell(14, 7,  $classe['stat']['GR'], 1, 0 , 'C');
+			// $this->Cell(10, 7,  $classe['stat']['R'], 1, 0 , 'C');
+			// $this->Ln(7);
+			// $this->SetFont('Times','',8);
+			// $this->Cell(60);
+			// $this->Cell(14, 7, $libNouv[$section], 1, 0 , 'C');
+			// $this->Cell(12, 7,  $classe['stat']['FN'], 1, 0 , 'C');
+			// $this->Cell(14, 7,  $classe['stat']['GN'], 1, 0 , 'C');
+			// $this->Cell(10, 7,  $classe['stat']['N'], 1, 0 , 'C');
+			// $this->Ln(7);
+			// $this->SetFont('Times','',8);
+			// $this->Cell(60);
+			// $this->Cell(14, 7, $libTot[$section], 1, 0 , 'C');
+			// $this->Cell(12, 7,  $classe['stat']['F'], 1, 0 , 'C');
+			// $this->Cell(14, 7,  $classe['stat']['G'], 1, 0 , 'C');
+			// $this->Cell(10, 7,  $classe['stat']['T'], 1, 0 , 'C');
+			// $this->Ln(10);
+			$this->Cell(100);
+			$this->Cell(45, 6, $this->convert($libAnnee[$section]));
+			$this->Ln(10);
+			$this->SetFont('Times','B',10);
+			// Je positionne l'entete du tableau
+			$this->Cell(10, 6, $this->convert($libNumber[$section]), 1, 0 , 'C',true);
+			$this->Cell(28, 6, $this->convert($libMatricule[$section]), 1, 0 , 'C',true);
+			$this->Cell(75, 6, $this->convert($libNom[$section]), 1, 0 , 'C',true);
+			$this->Cell(9, 6, $this->convert($libSexe[$section]), 1, 0 , 'C',true);
+			$this->Cell(13, 6, $this->convert($libStatut[$section]), 1, 0 , 'C',true);
+			$this->Cell(55, 6, $this->convert($libDate[$section]), 1, 0 , 'C',true);
+			$this->SetFont('Times','',10);
+			$this->Ln(6);
+			$a = 1;
+			for($i=0;$i<count($classe['eleve']);$i++){
+				$this->Cell(10, 6, $a, 1, 0 , 'C');
+				$this->Cell(28, 6, $this->convert($classe['eleve'][$i]['rne']), 1, 0 , 'C');
+				$this->Cell(75, 6, $this->convert($classe['eleve'][$i]['nom_complet']), 1, 0 , 'L');
+				$this->Cell(9, 6, $this->convert($classe['eleve'][$i]['sexe']), 1, 0 , 'C');
+				$this->Cell(13, 6, $this->convert($classe['eleve'][$i]['statut']), 1, 0 , 'C');
+				$dateNaiss = $classe['eleve'][$i]['date_naissance'].' at '.ucwords($classe['eleve'][$i]['lieu_naissance']);
+				$this->Cell(55, 6, $this->convert($dateNaiss), 1, 0 , 'L');
+				$this->Ln(6);
+				$a++;
+			}
+
+			$faitA['fr'] = "Fait à ".ucwords($_SESSION['information']['ville'])." le ".DATE('d / m / Y');
+			$faitA['en'] = "Done at ".ucwords($_SESSION['information']['ville'])." the ".DATE('d / m / Y');
+			$signataire['fr'] = $classe['information']['signataire_fr'];
+			$signataire['en'] = $classe['information']['signataire_en'];
+
+			$this->Cell(110);
+			$this->Cell(70,10, utf8_decode($faitA[$section]),0,0,'C');
+			$this->Cell(20);
+			$this->Ln(5);
+			$this->SetFont('Arial','BI',10);
+			$this->Cell(110);
+			$this->Cell(70,10, $signataire[$section],0,0,'C');
+			$this->Cell(20);
+		}
 		
 		
 		

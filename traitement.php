@@ -1141,16 +1141,25 @@
 			$listeEleve = $config->listeEleveOld($_POST['classe'],'non_supprime',$_POST['oldYear']);
 			$section = $config->getSectionClasse($_POST['classe']);
 			$infoClasse = $config->getClasse($_POST['classe']);
-			
-			$_SESSION['classe']['stat'] = $config->listeEleveStat($_POST['classe'], 'non_supprime', $as);
 			$_SESSION['classe']['classe'] = $infoClasse;
 			$_SESSION['classe']['eleve'] = $listeEleve;
 			$_SESSION['classe']['section'] = $section;
 			$_SESSION['classe']['information'] = $_SESSION['information'];
+			$_SESSION['print'] = $print;
+			echo $_POST['oldYear'];
+			header('Location:print_pdf.php');
+			// $_SESSION['classe']['stat'] = $config->listeEleveStat($_POST['classe'], 'non_supprime', $_POST['oldYear']);
+			echo '<pre>'; print_r($_SESSION['classe']);
+			/*
+			
+			
+			
+			
+			
 			// echo '<pre>'; print_r($listeEleve); echo '</pre>';
 			
-			$_SESSION['print'] = $print;
-			header('Location:print_pdf.php');		
+			
+			*/		
 		}
 		
 		
