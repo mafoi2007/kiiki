@@ -64,14 +64,14 @@
 					}
 				}
 				// Ici on va voir comment faire du POST
-				xhr.open("POST", "bulletin/ajaxRapSeq.php", true);
+				xhr.open("POST", "bulletin/rapSeq.ajax.php", true);
 				// Ne pas oublier xa pour le POST 
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				// Ne pas oublier de poster les arguments 
 				// C'est-à-dire l'id de la Classe par exemple
-				sel = document.getElementById('clas');
-				clas = sel.options[sel.selectedIndex].value;
-				xhr.send("clas="+clas);
+				sel = document.getElementById('classe');
+				classe = sel.options[sel.selectedIndex].value;
+				xhr.send("classe="+classe);
 			}
 			
 			
