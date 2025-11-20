@@ -1576,53 +1576,7 @@
 			$listeMatiere = $config->listeMatiereClasse($_POST['classe']);
 			$contenu = $config->moySequenceClasse($_POST['sekence'], $_POST['classe']);
 			$tableStat = $config->statSequence($_POST['sekence'], $_POST['classe']);
-			// echo "<pre>"; print_r($tableStat); echo "</pre>";
-			// $section = $config->getSectionClasse($_POST['classe']);
-			// 
-			// echo var_dump($infoClasse);
-			// $nbGroupe = $config->afficheGroupe($_POST['classe']);
-			// for($w=0;$w<count($nbGroupe);$w++){
-			// 	$nomGpe = $nbGroupe[$w]['groupe'];
-			// 	$matiereGroupe[$nomGpe] = $config->getMatiereGroupe($nbGroupe[$w]['groupe'],
-			// 											$_POST['classe']);
-			// 	$infoGroupe[] = $nomGpe;
-			// }
-			// $eleve = $config->moySequenceClasse($_POST['sequence'], 
-			// 									$_POST['classe']);
-			// $tableStat = $config->statSequence($_POST['sequence'], 
-			// 									$_POST['classe']);
-			// // $_SESSION['print'] =
-			// // $_SESSION['sequence'] = $_POST['sequence'];
-			// // $_SESSION['classe'] = $_POST['classe'];
-			// // $_SESSION['nom_sequence'] = "Séquence ".$_POST['sequence'];
-			// // $_SESSION['nom_sequence_anglais'] = "Sequence ".$_POST['sequence'];
-			// // $_SESSION['nomClasse'] = $config->viewNomClasse($_POST['classe']);
-			// // $_SESSION['nom_classe'] = $_SESSION['nomClasse']['nom_classe'];
-			// // $_SESSION['code_classe'] = $_SESSION['nomClasse']['code_classe'];
-			// // $_SESSION['section'] = $config->getSectionClasse($_POST['classe']);
-			// // /*On appelle la table qui contient les notes et moyennes séquentielles générées*/
-			// // 
-			
-			
-			// // for($w=0;$w<count($nbGroupe);$w++){
-			// // 	
-			// // 	
-			// // 	
-			// // }							
-			// // 
-			
-			// // 
-			// // 
-			// // $_SESSION['matiere'] = $matiereGroupe;
-			// // 
-			
-			// // echo '<pre>';print_r($_SESSION['stat']); echo '</pre>';
-			// // echo '<pre>';print_r($infoGroupe); echo '</pre>';
-			// $_SESSION['stat'] = $tableStat;
-			// $_SESSION['eleve'] = $eleve;
-			// $_SESSION['groupe'] = $infoGroupe;
-			// $_SESSION['infoClasse'] = $infoClasse;
-			// $_SESSION['section'] = $section;
+			$_SESSION['classe']['periode'] = $_POST['sekence'];
 			$_SESSION['classe']['stat'] = $tableStat;
 			$_SESSION['classe']['eleve'] = $contenu;
 			$_SESSION['classe']['matiere'] = $listeMatiere;
@@ -1640,39 +1594,17 @@
 		
 		
 		elseif($_POST['to_print']=='RapportTrimestriel'){
-			echo "<pre>";
-				print_r($_POST);
-			echo "</pre>";
-			
+			// echo "<pre>"; print_r($_POST); echo "</pre>";
+			$infoClasse = $config->getClasse($_POST['classe']);
+			$listeMatiere = $config->listeMatiereClasse($_POST['classe']);
+			$contenu = $config->moyTrimestreClasse($_POST['trimestre'], $_POST['classe']);
+			$tableStat = $config->statTrimestre($_POST['trimestre'], $_POST['classe']);
+			$_SESSION['classe']['periode'] = $_POST['trimestre'];
+			$_SESSION['classe']['stat'] = $tableStat;
+			$_SESSION['classe']['eleve'] = $contenu;
+			$_SESSION['classe']['matiere'] = $listeMatiere;
+			$_SESSION['classe']['classe'] = $infoClasse;
 			$_SESSION['print'] = $_POST['to_print'];
-			$_SESSION['trimestre'] = $_POST['trimestre'];
-			$_SESSION['classe'] = $_POST['clas'];
-			$_SESSION['nom_trimestre'] = "Trimestre ".$_POST['trimestre'];
-			$_SESSION['nom_trimestre_anglais'] = "Term ".$_POST['trimestre'];
-			$_SESSION['nomClasse'] = $config->viewNomClasse($_POST['clas']);
-			$_SESSION['nom_classe'] = $_SESSION['nomClasse']['nom_classe'];
-			$_SESSION['code_classe'] = $_SESSION['nomClasse']['code_classe'];
-			$_SESSION['section'] = $_POST['section'];
-			/*On appelle la table qui contient les notes et moyennes trimestrielles générées*/
-			$eleve = $note->tableTrimestre($_POST['trimestre'], 
-												$_POST['clas']);
-			$nbGroupe = $note->afficheGroupe($_POST['clas']);
-			for($w=0;$w<count($nbGroupe);$w++){
-				$nomGpe = $nbGroupe[$w]['groupe'];
-				$matiereGroupe[$nomGpe] = $note->getMatiereGroupe($nbGroupe[$w]['groupe'],
-														$_POST['clas']);
-				$infoGroupe[] = $nomGpe;
-			}
-			$tableStat = $note->statTrimestre($_POST['trimestre'], 
-												$_POST['clas']);
-			$_SESSION['stat'] = $tableStat;
-			$_SESSION['groupe'] = $infoGroupe;
-			$_SESSION['matiere'] = $matiereGroupe;
-			$_SESSION['eleve'] = $eleve;
-			
-			
-			// echo '<pre>';print_r($_SESSION['stat']); echo '</pre>';
-			// echo '<pre>';print_r($infoGroupe); echo '</pre>';
 			header('Location:print_pdf_landscape.php');
 		}
 		
