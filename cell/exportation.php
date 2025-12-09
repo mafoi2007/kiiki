@@ -223,6 +223,9 @@
 				href="exportation.php?choix=<?php echo sha1('listeEleve'); ?>#body2">
 				Liste des Elèves</a></h3></li>
 			<li><h3><a 
+				href="exportation.php?choix=<?php echo sha1('releveNumerique'); ?>#body2">
+				Relevé de Notes Numériques</a></h3></li>
+			<li><h3><a 
 				href="exportation.php?choix=<?php echo sha1('listeEleveAll'); ?>#body2">
 				Liste Globale des Elèves</a></h3></li>
 			<li><h3><a 
@@ -241,6 +244,8 @@
 				include_once('exportation/listeEleveAll.php');
 			}elseif($_GET['choix']==sha1('notesAnnuelles')){
 				include_once('exportation/notesAnnuelles.php');
+			}elseif($_GET['choix']==sha1('releveNumerique')){
+				include_once('exportation/releveNumerique.php');
 			}else{
 				echo "<h3 class='alert'>L'application ne prend pas en charge 
 				votre choix.</h3>";

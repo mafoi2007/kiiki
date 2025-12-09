@@ -8,12 +8,12 @@
 					$i = 1;
 					for($i=0;$i<count($listeClasses);$i++){
 						echo "<option 
-							value='".$listeClasses[$i]['code_classe']."'>";
+							value='".$listeClasses[$i]['id']."'>";
 						echo $listeClasses[$i]['nom_classe']."</option>\n";
 						
 					}
 				?>
-				<option selected>-classe-</option>
+				<option selected value='null'>-classe-</option>
 			</select>
 			<input type='hidden' name='to_export' value='listeEleve' />
 			<input type='submit' name='export' value='Exporter' />

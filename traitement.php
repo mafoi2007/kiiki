@@ -868,38 +868,122 @@
 	*****************  EXPORTATION EXCEL   *************************
 	***************************************************************/
 	if(isset($_POST['export'])){
+		$style_bordure = [
+    		'border' => 'left,right,top,bottom',
+    		'border-style' => 'thin',
+    		'border-color' => '#000000'
+		];
 		echo '<pre>';
 		print_r($_POST);
 		echo '</pre>';
 		// Liste des Elèves par classe
 		if($_POST['to_export']=='listeEleve'){
-			$object = $_POST['classe'];
-			$liste = $config->listeEleve($object,'non_supprime');
-			$info = $config->getNavigateur();
-			$fileName="downloads/";
-			$fileName .= "listeEleve_".$object.".xlsx";
-			
-			$titre[] = array('N°','Matricule','Nom et Prénom','Sexe','Statut',
-								'Date de Naissance','Lieu de Naissance');
-			$a = 1;
-			for($i=0;$i<count($liste);$i++){
-				$sousTitre = array($a,$liste[$i]['rne'],$liste[$i]['nom'].' '.$liste[$i]['prenom'],
-									$liste[$i]['sexe'],$liste[$i]['statut'],$liste[$i]['date_fr'],
-									$liste[$i]['lieu_naissance']);
-				$titre[] = $sousTitre;
-				$a++;
+			$classe = (int) $_POST['classe'];
+			if($classe==0){
+				$_SESSION['message'] = 'Choisir une classe';
+				header('Location:'.$_SERVER['HTTP_REFERER']);
+			}else{
+				$liste = $config->listeEleve($classe,'non_supprime');
+				$getClasse = $config->getClasse($classe);
+				$nomClasse = str_replace(' ', '_', strtolower($getClasse['nom_classe']));
+				$fileName = "downloads/";
+				$fileName .= 'liste_eleve_'.$nomClasse.'.xlsx';
+				$titre[] = array('N°', 'Matricule', 'Noms et Prénom', 'Sexe', 'Statut',
+									'Date de Naissance', 'Lieu de Naissance', 'Nom du Père', 
+									'Nom de la Mère', 'Contact');
+				$a = 1;
+				for($i=0;$i<count($liste);$i++){
+					$sousTitre = array( 
+										$a, 
+										$liste[$i]['rne'],
+										$liste[$i]['nom_complet'],
+										$liste[$i]['sexe'],
+										$liste[$i]['statut'],
+										$liste[$i]['date_naissance'],
+										$liste[$i]['lieu_naissance'],
+										$liste[$i]['nom_pere'],
+										$liste[$i]['nom_mere'],
+										$liste[$i]['adresse_parent']
+					);
+					$titre[] = $sousTitre;
+					$a++;
+				}
+				$writer->WriteSheet($titre);
+				$writer->writeToFile($fileName);
+				$_SESSION['message'] = "Exportation Réussie. Vérifiez ".addslashes($fileName);
+				header('Location:downloads/');
 			}
-			$writer->writeSheet($titre);
-			$writer->writeToFile($fileName);
-			$_SESSION['message'] = "Exportation Réussie. ";
-			$_SESSION['message'] .= "Vérifiez ".addslashes($fileName);
-			header('Location:downloads/');
+		}
+
+
+
+		// Relevé des Notes Numériques à remplir
+		if($_POST['to_export']=='releveNumerique'){
+			$classe = (int) $_POST['classe'];
+			if($classe==0){
+				$_SESSION['message'] = 'Choisir une classe';
+				header('Location:'.$_SERVER['HTTP_REFERER']);
+			}else{
+				$liste = $config->listeEleve($classe,'non_supprime');
+				$getClasse = $config->getClasse($classe);
+				$nomClasse = str_replace(' ', '_', strtolower($getClasse['nom_classe']));
+				$fileName = "downloads/";
+				$fileName .= 'releve_numerique_'.$nomClasse.'.xlsx';
+				$style_bordure = [
+									'border' => 'left,right,top,bottom',
+									'border-style' => 'thin',
+									'border-color' => '#000000',
+									// 'fill'=>'#FFFF00'
+				];
+				$header = ["N"=>'integer',
+							"code Interne"=>'integer',
+							"Nom de l'élève"=>"string",
+							'Note /20'=>'decimal'];
+				$widths = [5,15,60,10];
+				$writer->writeSheetHeader('NoteSequence', $header, ['widths'=>$widths], $style_bordure);
+				$a = 1;
+				// $writer->WriteSheetRow('NoteSequence', ["N°", "code interne", "nom de l'élève", "Note /20"], $style_bordure);
+				for($x=0;$x<count($liste);$x++){
+					$num = $a;
+					$matricule = $liste[$x]['id'];
+					$nomEleve = $liste[$x]['nom_complet'];
+					$writer->WriteSheetRow('NoteSequence', [$num, $matricule, $nomEleve, ''], $style_bordure);
+					$a++;
+				}
+				$writer->writeToFile($fileName);
+				$_SESSION['message'] = "Exportation Réussie. Vérifiez ".addslashes($fileName);
+				header('Location:downloads/');
+				/*$titre[] = array('N°', 'Matricule', 'Noms et Prénom', 'Sexe', 'Statut',
+									'Date de Naissance', 'Lieu de Naissance', 'Nom du Père', 
+									'Nom de la Mère', 'Contact');
+				$a = 1;*/
+				/*for($i=0;$i<count($liste);$i++){
+					$sousTitre = array( 
+										$a, 
+										$liste[$i]['rne'],
+										$liste[$i]['nom_complet'],
+										$liste[$i]['sexe'],
+										$liste[$i]['statut'],
+										$liste[$i]['date_naissance'],
+										$liste[$i]['lieu_naissance'],
+										$liste[$i]['nom_pere'],
+										$liste[$i]['nom_mere'],
+										$liste[$i]['adresse_parent']
+					);
+					$titre[] = $sousTitre;
+					$a++;
+				}*/
+				/*$writer->WriteSheet($titre);
+				$writer->writeToFile($fileName);
+				$_SESSION['message'] = "Exportation Réussie. Vérifiez ".addslashes($fileName);
+				header('Location:downloads/');*/
+			}
 		}
 		
 		
 		// Liste Globale des Elèves 
 		if($_POST['to_export']=='listeEleveAll'){
-			$liste = $config->listeEleveAll('non_supprime');
+			/*$liste = $config->listeEleveAll('non_supprime');
 			// echo '<pre>'; print_r($liste);
 			$fileName="downloads/";
 			$fileName .= "Liste_Globale_des_Eleves.xlsx";
@@ -918,13 +1002,13 @@
 			$writer->writeToFile($fileName);
 			$_SESSION['message'] = 'Listes Globales exportées.';
 			$_SESSION['message'] .= ' Verifiez '.addslashes($fileName);
-			header('Location:downloads/');
+			header('Location:downloads/');*/
 		}
 		
 		
 		// Notes Annuelles des Elèves 
 		if($_POST['to_export']=='notesAnnuelles'){
-			if($_POST['classe']=='null'){
+			/*if($_POST['classe']=='null'){
 				$_SESSION['message'] = 'Choisir une Classe';
 				header('Location:'.$source);
 			}else{
@@ -969,7 +1053,7 @@
 				$_SESSION['message'] = 'Notes Annuelles exportées. ';
 				$_SESSION['message'] .= 'Vérifiez '.addslashes($fileName);
 				header('Location:downloads/');
-			}
+			}*/
 		}
 	}
 	
