@@ -2,12 +2,14 @@
 	session_start();
 	require_once('inc/connect.inc.php');
 	require_once('xlsx_writer/xlsxwriter.class.php');
+	// require_once('xlsx_writer/SimpleXLSX.class.php');
 	
 	$config = new config($db);
 	$gestionnaire = new gestionnaire($db);
 	$note = new note($db);
 	$source = $_SERVER['HTTP_REFERER'];
 	$writer = new XLSXWriter();
+	// $reader = new SimpleXLSX();
 	
 	$_SESSION['appName'] = appName;
 	$_SESSION['appVersion'] = appVersion;
@@ -281,7 +283,14 @@
 	
 	
 	
-	
+	//On ajoute la photo des élèves 
+		if(isset($_POST['addPhotoEleve'])){
+			// echo '<h1>Les Eleves</h1>';
+			// echo '<pre>'; print_r($_POST); echo '</pre>';
+			// echo '<h1>Les Photos</h1>';
+			// echo '<pre>'; print_r($_FILES); echo '</pre>';
+			$config->enregistrerImageEleve($source, $_POST['eleve'], $_FILES);
+		}
 	
 	
 	
@@ -938,45 +947,28 @@
 				$header = ["N"=>'integer',
 							"code Interne"=>'integer',
 							"Nom de l'élève"=>"string",
-							'Note /20'=>'decimal'];
+							'Note /20'=>'number',
+							'Compétence'=>'string'];
 				$widths = [5,15,60,10];
-				$writer->writeSheetHeader('NoteSequence', $header, ['widths'=>$widths], $style_bordure);
+				$writer->writeSheetHeader('NoteSequence', 
+											$header, 
+											['widths'=>$widths],
+											['column_formats'=>[
+												'Note /20'=>'0.00'
+												]], 
+											$style_bordure);
 				$a = 1;
 				// $writer->WriteSheetRow('NoteSequence', ["N°", "code interne", "nom de l'élève", "Note /20"], $style_bordure);
 				for($x=0;$x<count($liste);$x++){
 					$num = $a;
 					$matricule = $liste[$x]['id'];
 					$nomEleve = $liste[$x]['nom_complet'];
-					$writer->WriteSheetRow('NoteSequence', [$num, $matricule, $nomEleve, ''], $style_bordure);
+					$writer->WriteSheetRow('NoteSequence', [$num, $matricule, $nomEleve, '',''], $style_bordure);
 					$a++;
-				}
+				}				
 				$writer->writeToFile($fileName);
 				$_SESSION['message'] = "Exportation Réussie. Vérifiez ".addslashes($fileName);
 				header('Location:downloads/');
-				/*$titre[] = array('N°', 'Matricule', 'Noms et Prénom', 'Sexe', 'Statut',
-									'Date de Naissance', 'Lieu de Naissance', 'Nom du Père', 
-									'Nom de la Mère', 'Contact');
-				$a = 1;*/
-				/*for($i=0;$i<count($liste);$i++){
-					$sousTitre = array( 
-										$a, 
-										$liste[$i]['rne'],
-										$liste[$i]['nom_complet'],
-										$liste[$i]['sexe'],
-										$liste[$i]['statut'],
-										$liste[$i]['date_naissance'],
-										$liste[$i]['lieu_naissance'],
-										$liste[$i]['nom_pere'],
-										$liste[$i]['nom_mere'],
-										$liste[$i]['adresse_parent']
-					);
-					$titre[] = $sousTitre;
-					$a++;
-				}*/
-				/*$writer->WriteSheet($titre);
-				$writer->writeToFile($fileName);
-				$_SESSION['message'] = "Exportation Réussie. Vérifiez ".addslashes($fileName);
-				header('Location:downloads/');*/
 			}
 		}
 		
@@ -1419,6 +1411,61 @@
 				// echo '<pre>';print_r($_SESSION['eleve']);echo '</pre>';
 				header('Location:print_pdf_landscape.php');
 			}			
+		}
+
+
+
+
+
+
+
+
+
+		elseif($_POST['to_print']=='RecapMatiere'){
+			echo '<pre>';
+			print_r($_REQUEST);
+			echo '<pre>';
+			
+			$matiere = $_POST['matiere'];
+			$trimestre = $_POST['trimestre'];
+			if($matiere=='null' or $trimestre=='null'){
+				$_SESSION['message'] = 'Valeurs Nulles Transmises';
+				header('Location:'.$source);
+			}else{
+				$nomMatiere = $config->getMatiereInfo($matiere);
+				$listeClasse = $config->listeClasseMatiere($nomMatiere['id']);
+				// echo '<pre>'; print_r($nomMatiere);
+				// echo '<pre>'; print_r($listeClasse);
+				// // print_r($listeClasse);
+				
+				$_SESSION['codeMatiere'] = $nomMatiere['code_matiere'];
+				$_SESSION['idMatiere'] = $nomMatiere['id'];
+				$_SESSION['nomMatiere'] = $nomMatiere['nom_matiere'];
+				$_SESSION['trimestre'] = $trimestre;
+				for($i=0;$i<count($listeClasse);$i++){
+					$codeClasse[] = $listeClasse[$i]['id_classe'];
+					$nomClasse[] = $listeClasse[$i]['nom_classe'];
+					$coefClasse[] = $listeClasse[$i]['coef'];
+					$statClasse[] = $config->StatClasse($matiere, $trimestre, $listeClasse[$i]['id_classe']);
+				}
+				
+				for($a=0;$a<count($statClasse);$a++){
+					if($statClasse[$a]['error']=='on'){
+						$_SESSION['message'] = 'Certaines classes ne sont pas traitées.';
+						header('Location:'.$source);
+					}
+				}
+				
+				
+				$_SESSION['codeClasse'] = $codeClasse;
+				$_SESSION['nomClasse'] = $nomClasse;
+				$_SESSION['coefClasse'] = $coefClasse;
+				$_SESSION['stat'] = $statClasse;
+				$_SESSION['print'] = 'statMatiere';
+				
+				print_r($statClasse);
+				// header('Location:print_pdf_landscape.php');
+			}
 		}
 		
 		
@@ -1939,6 +1986,23 @@
 				header('Location:'.$source);
 			}*/
 		
+	}
+
+
+
+
+
+
+
+
+	if(isset($_POST['importNote'])){
+		// echo '<pre>';
+		// print_r($_POST);
+		// echo '</pre>';
+		// echo '<pre>'; print_r($_FILES); echo '</pre>';
+		$info = $_POST;
+		$fichier = $_FILES['uploadedFile'];
+		$config->importNoteSequence($source, $info, $fichier);
 	}
 	
 	

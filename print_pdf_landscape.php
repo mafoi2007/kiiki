@@ -460,6 +460,157 @@
 			$nomFichier .= $_SESSION['nom_classe'].'.pdf';
 			$pdf->Output($nomFichier, 'I');
 		}
+
+
+
+
+
+
+
+		elseif($_SESSION['print']=='statMatiere'){
+			$pdf->addPage();
+			$pdf->Entete();
+			// On met le titre du document 
+			$matiere = $_SESSION['codeMatiere'];
+			$titre = "Statistiques des Notes de ";
+			$titre .= strtoupper($_SESSION['nomMatiere']);
+			
+			$pdf->Titre($titre);
+			
+			
+			// Informations diverses
+			$pdf->SetFont('Times','B',14);
+			// $classe = strtoupper($_SESSION['liste'][0]['nom_classe']);
+			$texte_1 = 'Période Concernée : Trimestre '.$_SESSION['trimestre'];
+			
+			$pdf->Cell(20,10,utf8_decode($texte_1), 0,0,'L');
+			// $pdf->Cell(80,10,utf8_decode($texte_2), 0,0,'R');
+			
+			$pdf->Ln(15);
+			
+			$pdf->SetFont('Arial','B',10);
+			// Je positionne l'entete du tableau
+			$pdf->SetFillColor(200,205,180);
+			$pdf->Cell(10, 14, utf8_decode('N°'), 1, 0 , 'C', true);
+			$pdf->Cell(20, 14, 'Classe', 1, 0 , 'C', true);
+			$pdf->Cell(10, 14, 'Coef', 1, 0 , 'C', true);
+			$pdf->Cell(30, 7, 'Effectif', 1, 0 , 'C',true);
+			$pdf->Cell(30, 7, utf8_decode('Evalué'), 1, 0 , 'C',true);
+			$pdf->Cell(30, 7, 'Nb Moyennes', 1, 0 , 'C',true);
+			$pdf->Cell(30, 7, utf8_decode('% Réussite'), 1, 0 , 'C',true);
+			$pdf->Cell(30, 7, 'Forte Note', 1, 0 , 'C',true);
+			$pdf->Cell(30, 7, 'Faible Note', 1, 0 , 'C',true);
+			$pdf->Cell(45, 7, utf8_decode('Moyenne Générale'), 1, 0 , 'C',true);
+			
+			$pdf->Ln(7);
+			$pdf->Cell(10, 7, '', 0, 0 , 'C');
+			$pdf->Cell(20, 7, '', 0, 0 , 'C');
+			$pdf->Cell(10, 7, '', 0, 0 , 'C');
+			// Effectif de la classe
+			$pdf->Cell(10, 7, 'M', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'F', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'T', 1, 0 , 'C',true);
+			// Effectif évalué
+			$pdf->Cell(10, 7, 'M', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'F', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'T', 1, 0 , 'C',true);
+			// Nombre de Moyennes
+			$pdf->Cell(10, 7, 'M', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'F', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'T', 1, 0 , 'C',true);
+			// Taux de Réussite
+			$pdf->Cell(10, 7, 'M', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'F', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'T', 1, 0 , 'C',true);
+			// Forte Note
+			$pdf->Cell(10, 7, 'M', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'F', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'T', 1, 0 , 'C',true);
+			// Faible Note
+			$pdf->Cell(10, 7, 'M', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'F', 1, 0 , 'C');
+			$pdf->Cell(10, 7, 'T', 1, 0 , 'C',true);
+			// Moyenne Générale
+			$pdf->Cell(15, 7, 'M', 1, 0 , 'C');
+			$pdf->Cell(15, 7, 'F', 1, 0 , 'C');
+			$pdf->Cell(15, 7, 'T', 1, 0 , 'C',true);
+			
+			// On insère maintenant les données
+			$pdf->Ln(7);
+			
+			
+			$a = 1;
+			// On boucle les classes concernées par la Matière ici 
+			for($i=0;$i<count($_SESSION['codeClasse']);$i++){
+				$class = $_SESSION['stat'][$i];
+				$pdf->Cell(10, 7, $a, 1, 0 , 'C', true);
+				$pdf->Cell(20, 7, $_SESSION['codeClasse'][$i], 1, 0 , 'C', true);
+				$pdf->Cell(10, 7, $_SESSION['coefClasse'][$i],1,0,'C');
+				$pdf->Cell(10, 7, $class['effM'],1,0,'C');
+				$pdf->Cell(10,7,$class['effF'],1,0,'C');
+				$pdf->Cell(10,7,$class['effT'],1,0,'C',true);
+				$pdf->Cell(10,7,$class['evalM'],1,0,'C');
+				$pdf->Cell(10,7,$class['evalF'],1,0,'C');
+				$pdf->Cell(10,7,$class['evalT'],1,0,'C',true);
+				$pdf->Cell(10,7,$class['moyM'],1,0,'C');
+				$pdf->Cell(10,7,$class['moyF'],1,0,'C');
+				$pdf->Cell(10,7,$class['moyT'],1,0,'C',true);
+				$pdf->Cell(10,7,$class['tauxM'],1,0,'C');
+				$pdf->Cell(10,7,$class['tauxF'],1,0,'C');
+				$pdf->Cell(10,7,$class['tauxT'],1,0,'C',true);
+				$pdf->Cell(10,7,$class['maxM'],1,0,'C');
+				$pdf->Cell(10,7,$class['maxF'],1,0,'C');
+				$pdf->Cell(10,7,$class['maxT'],1,0,'C',true);
+				$pdf->Cell(10,7,$class['minM'],1,0,'C');
+				$pdf->Cell(10,7,$class['minF'],1,0,'C');
+				$pdf->Cell(10,7,$class['minT'],1,0,'C',true);
+				$pdf->Cell(15,7,$class['mgM'],1,0,'C');
+				$pdf->Cell(15,7,$class['mgF'],1,0,'C');
+				$pdf->Cell(15,7,$class['mgT'],1,0,'C',true);
+				$pdf->Ln(7);
+				$a++;
+			}
+			
+			// Les notes envoyées par la BD
+			$x = 1;
+			/*for($a=0;$a<$_SESSION['nbLn'];$a++){
+				$pdf->Ln(7);
+				$pdf->Cell(10, 6, $x, 1, 0 , 'C');
+				$pdf->Cell(70, 6, utf8_decode($_SESSION['ligne'][$a]['nom']), 1, 0 , 'L');
+				$pdf->Cell(14, 6, $_SESSION['ligne'][$a]['sexe'], 1, 0 , 'C');
+				$pdf->Cell(14, 6, $_SESSION['ligne'][$a]['statut'], 1, 0 , 'C');
+				$col = $_SESSION['nbCol'];
+				
+				for($u=0;$u<$_SESSION['nbCol'];$u++){
+					$mat = $_SESSION['nomCol'][$u];
+					$pdf->Cell(13, 6, $_SESSION['ligne'][$a][$mat], 1, 0 , 'C');
+				}				
+				$x++;
+			}*/
+			
+			$pdf->SetFont('Arial','',10);
+			$i = 1;
+			// Par boucle je récupère la liste envoyée dans une variable de session
+			/*for($a=0;$a<count($_SESSION['liste']);$a++){
+				$pdf->Ln(7);
+				$pdf->Cell(10, 6, $i, 1, 0 , 'C');
+				$pdf->Cell(21, 6, $_SESSION['liste'][$a]['matricule'], 1, 0 , 'C');
+				$pdf->Cell(12, 6, $_SESSION['liste'][$a]['sexe'], 1, 0 , 'C');
+				$nom = strtoupper($_SESSION['liste'][$a]['nom']);
+				$nom .= ' '.ucwords($_SESSION['liste'][$a]['prenom']);
+				$pdf->Cell(70, 6, $nom, 1, 0 , 'L');
+				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
+				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
+				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
+				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
+				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
+				$pdf->Cell(12, 6, ' ', 1, 0 , 'C');
+				$i++;
+			}*/
+			$nomFichier = 'Statistique_'.$_SESSION['nomMatiere'].'_Trimestre_'.$_SESSION['trimestre'];
+			$nomFichier .= '.pdf';
+			$pdf->Output($nomFichier, 'I');
+		}
 		
 		
 		

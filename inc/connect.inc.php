@@ -16,9 +16,9 @@
 	define("serveur", 'localhost');
 	define("utilisateur", 'root');
 	define("pass", '');
-	define("database", 'cywibra');
+	define("database", 'kiiki');
 	define("appName", "Noteplus"); 
-	define("appVersion", "2.1");
+	define("appVersion", "2.1.0");
 	define("appSlogan", "Votre partenaire educatif");
 	define("appContact", 675400828);
 	
@@ -42,7 +42,7 @@
 	
 	
 	$serveur = "http://".$_SERVER['SERVER_NAME'];
-	$serveur .= ":".$_SERVER['SERVER_PORT']."/cywibra/";
+	$serveur .= ":".$_SERVER['SERVER_PORT']."/kiiki/";
  ?>
  
 		<script>

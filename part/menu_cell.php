@@ -56,6 +56,7 @@
 	<div id="sous_menu">
 		<h3><a href="<?php echo $serveur?>cell/note.php">Gestion des Notes</a></h3>
 		<ul>
+			<li><a href="note.php?choix=<?php echo sha1('importnt'); ?>#body2">Importer des Notes Séquentielles</a></li>
 			<li><a href="note.php?choix=<?php echo sha1('viewnt'); ?>#body2">Vue globale des Notes Séquentielles</a></li>
 			<?php /*<li><a href="note.php?choix=<?php echo sha1('adntac'); ?>#body2">Attribuer une note académique à la classe</a></li>*/ ?>
 			<li><a href="note.php?choix=<?php echo sha1('revendic'); ?>#body2">Révendications Séquentielles</a></li>
@@ -108,6 +109,7 @@
 			<li><a href="bulletin.php?choix=<?php echo sha1('rapSeq'); ?>#body2">Rapport Séquentiel</a></li>
 			<li><a href="bulletin.php?choix=<?php echo sha1('rapTrim'); ?>#body2">Rapport Trimestriel</a></li>
 			<li><a href="bulletin.php?choix=<?php echo sha1('rapAnn'); ?>#body2">Rapport Annuel</a></li>
+			<li><a href="bulletin.php?choix=<?php echo sha1('recapMatiere'); ?>#body2">PV des Notes par matière</a></li> 
 		</ul>
 	</div>
 	

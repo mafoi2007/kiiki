@@ -151,6 +151,32 @@
 				clas = sel.options[sel.selectedIndex].value;
 				xhr.send("clas="+clas);
 			}
+
+
+
+
+
+			function recapMatiere(){
+				var xhr = getXhr()
+				// On définit ce qu'on va faire quand on aura la reponse 
+				xhr.onreadystatechange = function(){
+					// On ne fait klk choz que si on a tt rxu et ke le serveur est ok
+					if(xhr.readyState==4 && xhr.status==200){
+						leselect = xhr.responseText;
+						// On se sert de l'innerHTML pour rajouter les options à la liste
+						document.getElementById('trimestre').innerHTML = leselect;
+					}
+				}
+				// Ici on va voir comment faire du POST
+				xhr.open("POST", "bulletin/recapMatiere.ajax.php", true);
+				// Ne pas oublier xa pour le POST 
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				// Ne pas oublier de poster les arguments 
+				// C'est-à-dire l'id de la Classe par exemple
+				sel = document.getElementById('matiere');
+				matiere = sel.options[sel.selectedIndex].value;
+				xhr.send("matiere="+matiere);
+			}
 		</script>
 </head>
 
@@ -184,6 +210,9 @@
 			<li><h3><a 
 				href="bulletin.php?choix=<?php echo sha1('rapTrim'); ?>#body2">
 				Rapport Trimestriel</a></h3></li>
+			<li><h3><a 
+				href="bulletin.php?choix=<?php echo sha1('recapMatiere'); ?>#body2">
+				PV des Notes par Matière</a></h3></li>
 		</ul>
 	</div>
 	
@@ -205,6 +234,8 @@
 				include_once('bulletin/rapSeq.php');
 			}elseif($_GET['choix']==sha1('rapTrim')){
 				include_once('bulletin/rapTrim.php');
+			}elseif($_GET['choix']==sha1('recapMatiere')){
+				include_once('bulletin/recapMatiere.php');
 			}else{
 				echo "<h3 class='alert'>L'application ne prend pas en charge 
 				votre choix.</h3>";

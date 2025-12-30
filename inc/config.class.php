@@ -1283,6 +1283,97 @@
 			return $res;
 		}
 		
+		
+		
+		// On sauvegarde les photos des élèves 
+		public function enregistrerImageEleve($source, $eleve, $photo){
+			$this->eleve = $eleve; 
+			// echo '<h1>Before</h1>';
+			// echo '<pre>';print_r($photo);echo '</pre>';
+			for($i=0;$i<count($this->eleve);$i++){
+				$image['name'] = $photo['photoEleve']['name'][$i];
+				$image['full_path'] = $photo['photoEleve']['full_path'][$i];
+				$image['type'] = $photo['photoEleve']['type'][$i];
+				$image['tmp_name'] = $photo['photoEleve']['tmp_name'][$i];
+				$image['error'] = $photo['photoEleve']['error'][$i];
+				$image['size'] = $photo['photoEleve']['size'][$i];
+				$dossier = 'images/eleve/';
+				$info[] = $this->saveImage($image, $dossier, $this->eleve[$i]);
+			}
+
+			// echo '<pre>'; print_r($info); echo '</pre>';
+			$x = 0; // Il comptera le nombre d'images ajoutées 
+			for($j=0;$j<count($info);$j++){
+				if($info[$j]['success']==1){
+					$x++;
+					$insert = $this->_db->prepare('UPDATE eleve SET 
+											photo =:photo
+											WHERE id = :id');
+					$insert->bindValue(':photo', $info[$j]['fileName']);
+					$insert->bindValue(':id', $info[$j]['eleve']);
+					$insert->execute();
+				}
+			}
+			if($x==0){
+				$_SESSION['message'] = 'Vous navez rien enregistré.';
+			}elseif($x==1){
+				$_SESSION['message'] = $x.' image a été enregistrée.';
+			}else{
+				$_SESSION['message'] = $x.' images ont été enregistrées';
+			}
+			header('Location:'.$source);
+		}
+		
+		
+		
+		
+		
+		// On sauvegarde une image à la fois 
+		public function saveImage($photo, $dossier, $nom){
+			$this->image = $photo;
+			$erreur = $this->image['error'];
+			if($erreur==0){
+				$extensionAutorisee = array('jpg', 'jpeg', 'png', 'gif');
+				$extension = strtolower(pathinfo($this->image['name'], PATHINFO_EXTENSION));
+				if(in_array($extension,$extensionAutorisee)){
+					$nomFichier = $nom.'.'.$extension;
+					if(move_uploaded_file($this->image['tmp_name'], $dossier.$nomFichier)){
+						// Rien à dire ici
+						$goodSend = true;
+						$student = $nom;
+					}else{
+						$messageErr = "Image non enregistree pour raison inconnue.";
+					}
+				}else{
+					$messageErr = 'Format d image non autorisé';
+				}
+			}else{
+				if($erreur==8){
+					$messageErr = "Une erreur a stoppé l envoi de l image.";
+				}elseif($erreur==7){
+					$messageErr = "Le disque semble protégé en écriture."; 
+				}elseif($erreur==6){
+					$messageErr = "Le dossier temporaire que vous voulez utiliser est manquant.";
+				}elseif($erreur==4){
+					$messageErr = "Aucune image n a été téléchargée.";
+				}elseif($erreur==3){
+					$messageErr = "Image partiellement envoyé."; 
+				}elseif($erreur==2){
+					$messageErr = "image trop lourde pour le serveur."; 
+				}elseif($erreur==1){
+					$messageErr = "L image depasse la taille maximale autorisée."; 
+				}
+			}
+			if(isset($messageErr)){$infoImage['message'] = $messageErr;}else{$infoImage['message'] = '';}
+			if(isset($goodSend)){$infoImage['success'] = $goodSend;}else{$infoImage['success'] = '';}
+			if(isset($student)){$infoImage['eleve'] = $student;}else{$infoImage['eleve'] = '';}
+			$infoImage['fileName'] = $dossier.$nomFichier;
+			return $infoImage;
+		}
+		
+		
+		
+		
 		// Les statistiques des élèves par niveau 
 		public function statEleveNiveau($niveau, $etat, $as){
 			$sqlM = "SELECT count(*) as masculin
@@ -1684,7 +1775,7 @@
 		 public function getMatiereInfo($id){
 			 $req = "SELECT id, nom_matiere, code_matiere, etat 
 					FROM matiere 
-					WHERE code_matiere='$id'
+					WHERE id='$id'
 					ORDER BY nom_matiere";
 			 $sql = $this->_db->query($req);
 			 $res = $sql->fetch(PDO::FETCH_ASSOC);
@@ -2660,6 +2751,34 @@
 			$res=$req->fetchAll(PDO::FETCH_ASSOC);
 			return $res;
 		}
+
+
+
+
+
+
+
+
+		// On liste les Classes dont l'id_matiere correspond au parmètre passé
+		public function listeClasseMatiere($matiere){
+			$this->_matiere = $this->setUserId($matiere);
+			echo $this->_matiere;
+			$sql = "SELECT id_classe, coef, nom_classe, id_matiere, nom_matiere
+					FROM prof_classe, classe, matiere 
+					WHERE id_matiere = '$this->_matiere'
+						AND classe.id = id_classe
+						AND matiere.id = id_matiere
+					ORDER BY niveau_classe";
+			/*$this->_matiere = $this->setuserId($matiere);
+			$sql = "SELECT id_classe, nom_classe, coef 
+					FROM prof_classe, classe
+					WHERE code_classe = id_classe
+						AND id_matiere = '$this->_matiere'
+					ORDER BY niveau_classe DESC";*/
+			$req = $this->_db->query($sql);
+			$res=$req->fetchAll(PDO::FETCH_ASSOC);
+			return $res;
+		}
 		
 		
 		
@@ -3037,6 +3156,169 @@
 					RENAME `$nouvelle`";
 			$req = $this->_db->query($sql);
 		}
+
+
+
+
+
+
+
+
+		private function evalueMatiere($table, $matiere, $sexe){
+			$champ = $matiere.'_total';
+			$sql = "SELECT COUNT($champ) as somme 
+					FROM $table 
+					WHERE sexe='$sexe' 
+						AND $champ >0";
+			$req = $this->_db->query($sql);
+			$res = $req->fetch(PDO::FETCH_ASSOC);
+			return $res['somme'];
+		}
+
+
+
+
+
+
+		public function tableExists(string $name):bool{
+			$sql = "SHOW TABLES LIKE :table";
+			$req = $this->_db->prepare($sql);
+			$req->bindValue(':table', $name);
+			$req->execute();
+			// $req->execute(['table'=>$name]);
+			if($req->rowCount() > 0){
+				$erreur = false;
+			}else{
+				$erreur = true;
+			}
+			return $erreur;
+		}
+
+
+
+
+
+
+
+
+		// Les Statistiques relatives à une classe pour une matière donnée 
+		public function statClasse($matiere, $periode, $classe){
+			// Effectif de la Classe
+			$eff = $this->listeEleveStat($classe, 'non_supprime', '');
+			$nbGarcon = $eff['G'];
+			$nbFille = $eff['F'];
+			$nbEleve = $eff['T'];
+			// Il s'agit de quelle matière ?
+			$this->matiere = $this->getMatiere($matiere);
+			// Effectif Evalué
+			$table = 'trimestre_'.$periode.'_'.$classe;
+			$verif = $this->tableExists($table);
+			if($verif==false){
+				$effectif = array('error'=>'on');
+			}else{
+				$effectif = array('error'=>'off');
+			}
+			return $effectif;
+			
+			echo var_dump($verif);
+			/*if($this->tableExists($table)===false){
+				$_SESSION['message'] = 'Certaines classes ne sont pas traitées.';
+				$error = 'on';
+			}else{
+				$error = 'off';
+			}
+			$effectif = array(
+							'error'=>$error
+			);*/
+			// return $effectif;
+			// $nbGarconEvalue = $this->evalueMatiere($table, $this->matiere['code_matiere'], 'M');
+			// if(!$nbGarconEvalue){$nbGarconEvalue = '';}
+			// echo var_dump($nbGarconEvalue);
+			// // 
+			// $nbFilleEvalue = 5/*$this->nbGenreEvalueMatiereTrimestre($classe,
+			// 										$matiere, 
+			// 										'F',
+			// 										$periode)*/;
+			// $nbEleveEvalue = $nbGarconEvalue + $nbFilleEvalue;
+			
+			// // Effectif Evalué ayant eu la moyenne
+			// $nbGarconMoyenne = 5/*$this->nbGenreMoyenneMatiereTrimestre($classe, 
+			// 										$matiere, 
+			// 										'M', 
+			// 										$periode)*/;
+			// $nbFilleMoyenne = 5/*$this->nbGenreMoyenneMatiereTrimestre($classe, 
+			// 										$matiere, 
+			// 										'F', 
+			// 										$periode)*/;
+			// $nbEleveMoyenne = $nbGarconMoyenne + $nbFilleMoyenne;
+			
+			// // Taux de réussite
+			// $tauxGarcon = round($nbGarconMoyenne*100/$nbGarconEvalue, 2);
+			// $tauxFille = round($nbFilleMoyenne*100/$nbFilleEvalue, 2);
+			// $tauxGlobal = round($nbEleveMoyenne*100/$nbEleveEvalue, 2);
+			
+			// // Notes Maximales et Minimales
+			// $maxNoteGarcon = 5/*$this->maxNoteMatiereTrimestre($classe, 
+			// 										$matiere, 
+			// 										'M', 
+			// 										$periode)*/;
+			// $maxNoteFille = 5/*$this->maxNoteMatiereTrimestre($classe, 
+			// 										$matiere, 
+			// 										'F', 
+			// 										$periode)*/;
+			// $maxNoteEleve = 5/*$this->maxNoteMatiereGeneraleTrimestre('trimestre_'.$periode.'_'.$classe, 
+			// 										$matiere)*/;
+			// $minNoteGarcon = 5/*$this->minNoteMatiereTrimestre($classe, 
+			// 										$matiere, 
+			// 										'M', 
+			// 										$periode)*/;
+			// $minNoteFille = 5/*$this->minNoteMatiereTrimestre($classe, 
+			// 										$matiere, 
+			// 										'F', 
+			// 										$periode)*/;
+			// $minNoteEleve =5/*$this->minNoteMatiereGeneraleTrimestre('trimestre_'.$periode.'_'.$classe, 
+			// 										$matiere)*/;
+			
+			// $moyNoteGarcon = 5/*$this->moyNoteMatiereTrimestre($classe,
+			// 										$matiere,
+			// 										'M',
+			// 										$periode)*/;
+			// $moyNoteFille = 5/*$this->moyNoteMatiereTrimestre($classe,
+			// 										$matiere,
+			// 										'F',
+			// 										$periode)*/;
+			// $moyNoteEleve = 5/*$this->moyNoteMatiereGeneraleTrimestre($classe,
+			// 										$matiere,
+			// 										$periode)*/;
+													
+													
+			// $effectif = array(
+			// 					'effM'=>$nbGarcon,
+			// 					'effF'=>$nbFille,
+			// 					'effT'=>$nbEleve,
+			// 					'evalM'=>$nbGarconEvalue,
+			// 					'evalF'=>$nbFilleEvalue,
+			// 					'evalT'=>$nbEleveEvalue,
+			// 					'moyM'=>$nbGarconMoyenne,
+			// 					'moyF'=>$nbFilleMoyenne,
+			// 					'moyT'=>$nbEleveMoyenne,
+			// 					'tauxM'=>$tauxGarcon,
+			// 					'tauxF'=>$tauxFille,
+			// 					'tauxT'=>''/*$tauxGlobal*/,
+			// 					'maxM'=>''/*$maxNoteGarcon*/,
+			// 					'maxF'=>''/*$maxNoteFille*/,
+			// 					'maxT'=>''/*$maxNoteEleve*/,
+			// 					'minM'=>''/*$minNoteGarcon*/,
+			// 					'minF'=>''/*$minNoteFille*/,
+			// 					'minT'=>''/*$minNoteEleve*/,
+			// 					'mgM'=>round($moyNoteGarcon,2),
+			// 					'mgF'=>round($moyNoteFille,2),
+			// 					'err'=>'Erreur',
+			// 					'mgT'=>round($moyNoteEleve,2));
+
+			// return $effectif;
+		}
+		
 		
 		
 		
@@ -4624,6 +4906,44 @@
 				$requete->bindValue(':min', $min);
 				$requete->bindValue(':max', $max);
 				$requete->execute();
+			}
+		}
+
+
+
+
+
+
+		private function addHeureAbsence($classe, $periode, $typePeriode){
+			$nomTable = $typePeriode.'_'.$periode.'_'.$classe;
+			/*if($typePeriode=='trimestre'){}elseif($typePeriode=='mensuel'){}*/
+			$listeEleve = $this->listeEleve($classe, 'non_supprime');
+			for($i=0;$i<count($listeEleve);$i++){
+				// echo "<h1>Nom de l'élève : ".$listeEleve[$i]['nom_complet']."</h1>";
+				$idEleve = $listeEleve[$i]['id'];
+				$absEleve = $this->viewAbsenceEleve($idEleve);
+				if(!empty($absEleve)){
+					// echo '<pre>'; print_r($absEleve); echo '</pre>';
+					for($x=0;$x<count($absEleve);$x++){
+						$absenceEleveNJ[$idEleve][] = $absEleve[$x]['nombre_heure'];
+						$absenceEleveJ[$idEleve][] = $absEleve[$x]['justification'];
+					}
+					$nonJustif = array_sum($absenceEleveNJ[$idEleve]);
+					$justif = array_sum($absenceEleveJ);
+					$nj = $nonJustif - $justif;
+					$update = $this->_db->prepare("UPDATE $nomTable SET 
+													absence_total =:absence,
+													absence_non_just =:absenceNJ,
+													absence_just =:absenceJ 
+													WHERE id_eleve =:eleve");
+					$update->bindValue(':absence',$nonJustif);
+					$update->bindValue(':absenceNJ',$nj);
+					$update->bindValue(':absenceJ',$justif);
+					$update->bindValue(':eleve',$idEleve);
+					$update->execute();
+					// echo "<p>Heures Non Just ".$nonJustif." et Heures Just : ".$justif."</p>";
+				}
+				
 			}
 		}
 		
@@ -6252,6 +6572,7 @@
 			// On génère les minimum, maximum et rang pour chaque matière présente
 			$this->addRankMinMaxTrimestre($this->_classe, $table);
 			// On introduit les heures d'absence
+			$this->addHeureAbsence($this->_classe, $this->_periode, 'trimestre');
 			// On enregistre le traitement
 			$req_traite = "INSERT INTO bull_trim(pret, classe, trim) ";
 			$req_traite .= "VALUES('oui', '$this->_classe', '$this->_periode')";
@@ -6264,184 +6585,6 @@
 			$_SESSION['message'] = 'Notes du trimestre '.$this->_periode;
 			$_SESSION['message'] .= ' traitées pour la '.$infoClasse['nom_classe'];
 			header('Location:'.$source);
-
-
-
-			
-			
-			// // Après avoir crée la table, on insère les noms des élèves dans 
-			// // la table créée.
-			
-			// for($c=0;$c<count($listeEleve);$c++){
-			// 	$req_3 = $this->_db->query($sql_insert);
-			// 	/*En fonction du trimestre on récupère les notes séquentielles pour 
-			// 	faire les calculs et appliquer un coefficient ainsi que les 
-			// 	moyennes par matières et appréciation qui s'imposent */
-			// 	if($trimestre==1){
-			// 		$sequence_1 = $this->viewNoteSequentielleEleve($classe,
-			// 														1, 
-			// 														$idEleve);
-			// 		$sequence_2 = $this->viewNoteSequentielleEleve($classe,
-			// 														2, 
-			// 														$idEleve);
-			// 		// print_r($sequence_2);
-			// 		// On introduit les Notes de la Séquence 1 
-			// 		for($d=0;$d<count($sequence_1);$d++){
-			// 			
-			// 		}
-			// 		// On introduit les Notes de la Séquence 2
-			// 		for($e=0;$e<count($sequence_2);$e++){
-			// 			
-			// 		}
-			// 		 
-			// 		
-			// 		$req_traite = "INSERT INTO bull_trim(pret, classe, trim) ";
-			// 		$req_traite .= "VALUES('oui', '$classe', '$trimestre')";
-			// 		$req_traite_del = "DELETE FROM bull_trim";
-			// 		$req_traite_del .= " WHERE classe='$classe' 
-			// 								AND trim='$trimestre'";
-			// 		$exec_traite_del = $this->_db->query($req_traite_del);
-			// 		$exec_traite = $this->_db->query($req_traite);
-					
-			// 		// On Introduit les heures d'Absence qu'il faut  
-			// 		$absences = $this->calculAbsenceTrimestre($idEleve,1);
-			// 		$sql_10 = "UPDATE $table SET 
-			// 					absence_total = '".$absences['total']."',
-			// 					absence_non_just = '".$absences['non_justif']."',
-			// 					absence_just = '".$absences['justif']."'
-			// 					WHERE id_eleve = '$idEleve'";
-			// 		$this->_db->query($sql_10);
-			// 		// print_r($absences);
-					
-			// 		$_SESSION['message'] = "Notes du Trimestre ";
-			// 		$_SESSION['message'] .= $trimestre." traitées";
-			// 		header('Location: '.$source);
-			// 	}
-			// 	elseif($trimestre==2){
-			// 		// On introduit les notes de la 3ème Séquence 
-			// 		$sequence_3 = $this->viewNoteSequentielleEleve($classe,
-			// 														3,
-			// 														$idEleve);					
-			// 		for($d=0;$d<count($sequence_3);$d++){
-			// 			$mat = $sequence_3[$d]['id_matiere'];
-			// 			$note = $sequence_3[$d]['note_simple'];
-			// 			$prof = $sequence_3[$d]['sexe_enseignant']." ";
-			// 			$prof .= strtoupper($sequence_3[$d]['nom_enseignant'])." ";
-			// 			$prof .= ucwords($sequence_3[$d]['prenom_enseignant']);
-			// 			/*$sql_upd = "UPDATE $table SET ";
-			// 			$sql_upd .= $mat."_seq1 = '$note',";
-			// 			$sql_upd .= $mat."_enseignant = '$prof'";
-			// 			$sql_upd .= " WHERE id_eleve = '$idEleve'; ";*/
-						
-			// 			$sql_upd = "UPDATE $table SET ";
-			// 			$sql_upd .= $mat."_seq1 = '$note',";
-			// 			$sql_upd .= $mat."_enseignant = '$prof'";
-			// 			$sql_upd .= " WHERE id_eleve = '$idEleve'; ";
-			// 			$req_4 = $this->_db->query($sql_upd);
-			// 		}
-					
-			// 		// On introduit les notes de la 4ème Séquence 
-			// 		$sequence_4 = $this->viewNoteSequentielleEleve($classe,
-			// 														4, 
-			// 														$idEleve);
-			// 		for($e=0;$e<count($sequence_4);$e++){
-			// 			$mat1 = $sequence_4[$e]['id_matiere'];
-			// 			$note1 = $sequence_4[$e]['note_simple'];
-			// 			$prof1 = $sequence_4[$e]['sexe_enseignant']." ";
-			// 			$prof1 .= strtoupper($sequence_4[$e]['nom_enseignant'])." ";
-			// 			$prof1 .= ucwords($sequence_4[$e]['prenom_enseignant']);
-			// 			$sql_upd1 = "UPDATE $table SET ";
-			// 			$sql_upd1 .= $mat1."_seq2 = '$note1',";
-			// 			$sql_upd1 .= $mat1."_enseignant = '$prof1'";
-			// 			$sql_upd1 .= " WHERE id_eleve = '$idEleve'; ";
-			// 			$req_5 = $this->_db->query($sql_upd1);
-			// 		}
-					
-			// 		// On produit les Notes Trimestrielles par matière 
-			// 		$this->calculNoteTrimestre(2, $classe, $idEleve);
-			// 		$req_traite = "INSERT INTO bull_trim(pret, classe, trim) ";
-			// 		$req_traite .= "VALUES('oui', '$classe', '$trimestre')";
-			// 		$req_traite_del = "DELETE FROM bull_trim";
-			// 		$req_traite_del .= " WHERE classe='$classe' 
-			// 								AND trim='$trimestre'";
-			// 		$exec_traite_del = $this->_db->query($req_traite_del);
-			// 		$exec_traite = $this->_db->query($req_traite);
-					
-			// 		// On Introduit les heures d'Absence qu'il faut  
-			// 		$absences = $this->calculAbsenceTrimestre($idEleve,2);
-			// 		$sql_10 = "UPDATE $table SET 
-			// 					absence_total = '".$absences['total']."',
-			// 					absence_non_just = '".$absences['non_justif']."',
-			// 					absence_just = '".$absences['justif']."'
-			// 					WHERE id_eleve = '$idEleve'";
-			// 		$this->_db->query($sql_10);
-			// 		// print_r($absences);
-					
-			// 		$_SESSION['message'] = "Notes du Trimestre ";
-			// 		$_SESSION['message'] .= $trimestre." traitées";
-			// 		header('Location: '.$source);
-			// 	}
-			// 	elseif($trimestre==3){
-			// 		// On introduit les notes de la 5ème Séquence 
-			// 		$sequence_5 = $this->viewNoteSequentielleEleve($classe,
-			// 														5,
-			// 														$idEleve);					
-			// 		for($d=0;$d<count($sequence_5);$d++){
-			// 			$mat = $sequence_5[$d]['id_matiere'];
-			// 			$note = $sequence_5[$d]['note_simple'];
-			// 			$prof = $sequence_5[$d]['sexe_enseignant']." ";
-			// 			$prof .= strtoupper($sequence_5[$d]['nom_enseignant'])." ";
-			// 			$prof .= ucwords($sequence_5[$d]['prenom_enseignant']);
-			// 			$sql_upd = "UPDATE $table SET ";
-			// 			$sql_upd .= $mat."_seq1 = '$note',";
-			// 			$sql_upd .= $mat."_enseignant = '$prof'";
-			// 			$sql_upd .= " WHERE id_eleve = '$idEleve'; ";
-			// 			$req_4 = $this->_db->query($sql_upd);
-			// 		}
-					
-			// 		// On duplique les Notes de la Séquence 5 à la Séquence 6 
-			// 		$sequence_6 = $this->viewNoteSequentielleEleve($classe,
-			// 														6, 
-			// 														$idEleve);
-			// 		for($e=0;$e<count($sequence_6);$e++){
-			// 			$mat1 = $sequence_6[$e]['id_matiere'];
-			// 			$note1 = $sequence_6[$e]['note_simple'];
-			// 			$prof1 = $sequence_6[$e]['sexe_enseignant']." ";
-			// 			$prof1 .= strtoupper($sequence_6[$e]['nom_enseignant'])." ";
-			// 			$prof1 .= ucwords($sequence_6[$e]['prenom_enseignant']);
-			// 			$sql_upd1 = "UPDATE $table SET ";
-			// 			$sql_upd1 .= $mat1."_seq2 = '$note1',";
-			// 			$sql_upd1 .= $mat1."_enseignant = '$prof1'";
-			// 			$sql_upd1 .= " WHERE id_eleve = '$idEleve'; ";
-			// 			$req_5 = $this->_db->query($sql_upd1);
-			// 		}
-					
-			// 		// On produit les Notes Trimestrielles par matière 
-			// 		$this->calculNoteTrimestre(3, $classe, $idEleve);
-			// 		$req_traite = "INSERT INTO bull_trim(pret, classe, trim) ";
-			// 		$req_traite .= "VALUES('oui', '$classe', '$trimestre')";
-			// 		$req_traite_del = "DELETE FROM bull_trim";
-			// 		$req_traite_del .= " WHERE classe='$classe' 
-			// 								AND trim='$trimestre'";
-			// 		$exec_traite_del = $this->_db->query($req_traite_del);
-			// 		$exec_traite = $this->_db->query($req_traite);
-					
-			// 		// On Introduit les heures d'Absence qu'il faut  
-			// 		$absences = $this->calculAbsenceTrimestre($idEleve,3);
-			// 		$sql_10 = "UPDATE $table SET 
-			// 					absence_total = '".$absences['total']."',
-			// 					absence_non_just = '".$absences['non_justif']."',
-			// 					absence_just = '".$absences['justif']."'
-			// 					WHERE id_eleve = '$idEleve'";
-			// 		$this->_db->query($sql_10);
-			// 		// print_r($absences);
-					
-			// 		$_SESSION['message'] = "Notes du Trimestre ";
-			// 		$_SESSION['message'] .= $trimestre." traitées";
-			// 		header('Location: '.$source);
-			// 	}
-								
-			// }
 		}
 
 
@@ -6450,6 +6593,85 @@
 
 
 
+
+		public function importNoteSequence($source, $info, $fichier){
+			// echo '<pre>'; print_r($fichier);
+			// Si aucun fichier n'a été téléchargé, on ne fait aucun traitement. 
+			if($fichier['error']==4){
+				$_SESSION['message'] = 'Aucun fichier sélectionné';
+				header('Location:'.$source);
+			}else{
+				// On vérifie l'extension de fichier.
+				$infosFichier = pathinfo($fichier['name']);
+				// echo '<pre>';print_r($infosFichier); echo '</pre>';
+				$extension_recue = $infosFichier['extension'];
+				$extension_autorisee = array('xlsx', 'xls');
+				if(in_array($extension_recue, $extension_autorisee)){
+					// On enregistre le fichier avant de le convertir 
+					$stockage = 'uploads/';
+					$stockage .= $infosFichier['filename'];
+					$stockage .= $infosFichier['dirname'].'csv';
+					// echo $stockage;
+					$fileName = $infosFichier['filename'].$infosFichier['dirname'].'csv';
+					move_uploaded_file($fichier['tmp_name'],
+										$stockage);
+					$exploitation = $this->saveNoteImport($fileName);
+				}else{
+					$_SESSION['message'] = 'Extension de fichier non autorisée.';
+					header('Location:'.$source);
+				}
+				
+			}
+		}
+
+
+
+
+
+
+
+
+		public function saveNoteImport($fileName){
+			$dossier = scandir('uploads/');
+			// echo var_dump($dossier);
+			$a = 1;
+			foreach($dossier as $fichier){
+				if($fichier==$fileName){
+					$open = fopen($fichier,"r+");
+
+
+
+
+
+					// On exploite donc le fichier en mode csv simple. 
+					if(($handle = fopen($fichier, "r")) !== false){
+						$donnees = []; // tableau pour stocker les données
+						// Parcours chaque ligne du fichier
+						while (($ligne = fgetcsv($handle, 1000, ";")) !== false) {
+							// $ligne est un tableau contenant les valeurs séparées par des virgules
+							$donnees[] = $ligne;
+						}
+						fclose($handle);
+						// Affiche les données récupérées
+						echo "<pre>";
+						print_r($donnees);
+						echo "</pre>";
+					}
+				}
+			$a++;
+			}
+		}
+
+
+
+
+
+		/**
+		 * Mon objectif est de recevoir un fichier excel, et de le convertir en methode brute
+		 * en fichier CSV que je pourrai exploiter. Je veux contourner
+		 * l'utilisation des bibliothèques
+		 */
+		public function changerExtensionFichier($fichier){}
 
 
 
